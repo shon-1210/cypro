@@ -2,7 +2,7 @@
 % Please edit documentation in R/get-family.R
 \name{getVariableDf}
 \alias{getVariableDf}
-\title{Obtain variable centered summarys}
+\title{Obtain variable centered summaries}
 \usage{
 getVariableDf(object, variable_subset = NULL, phase = NULL)
 }

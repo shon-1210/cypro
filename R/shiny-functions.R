@@ -252,8 +252,6 @@ evaluate_file_availability_shiny <- function(wp_list, recursive = TRUE, keep_fil
 #'
 #' @param well_plate_list A list of well plate lists. 
 #' 
-#' @usage In shiny-module \code{moduleLoadData}.
-#'
 
 loading_status_table_shiny <- function(well_plate_list){
   

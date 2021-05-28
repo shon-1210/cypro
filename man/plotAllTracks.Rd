@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot-module-migration.R
 \name{plotAllTracks}
 \alias{plotAllTracks}
-\title{Plot cell migration}
+\title{Plot scaled cell migration}
 \usage{
 plotAllTracks(
   object,

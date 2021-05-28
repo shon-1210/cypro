@@ -23,9 +23,3 @@ The default input for many recurring arguments is carried with
 the cypro object. Use this function to savely adjust the default
 according to your preference.
 }
-\examples{
-
- object <- adjustDefaultInstructions(object, pt_clrp = "jco", pt_alpha = 0.6, method_dist = "spearman")
-
-
-}

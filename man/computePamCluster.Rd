@@ -2,7 +2,7 @@
 % Please edit documentation in R/clustering-pam.R
 \name{computePamCluster}
 \alias{computePamCluster}
-\title{Compute cluster with Partitioning Around Medoids (PAM)}
+\title{Compute cluster with partitioning around medoids (PAM)}
 \usage{
 computePamCluster(
   object,

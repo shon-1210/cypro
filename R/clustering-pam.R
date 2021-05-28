@@ -4,7 +4,7 @@
 
 
 
-#' @title Compute cluster with Partitioning Around Medoids (PAM)
+#' @title Compute cluster with partitioning around medoids (PAM)
 #'
 #' @description Performs partitioning around medoids for every combination of 
 #' \code{method_pam} and \code{k} and saves the results in the cypro object. 

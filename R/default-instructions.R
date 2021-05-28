@@ -63,10 +63,6 @@ assign_default <- function(object){
 #' @inherit updated_object return
 #' @export
 #'
-#' @examples
-#' 
-#'  object <- adjustDefaultInstructions(object, pt_clrp = "jco", pt_alpha = 0.6, method_dist = "spearman")
-#' 
 #' 
 adjustDefaultInstructions <- function(object, ...){
   

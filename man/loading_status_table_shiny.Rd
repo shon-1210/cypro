@@ -4,7 +4,7 @@
 \alias{loading_status_table_shiny}
 \title{Display loading status}
 \usage{
-In shiny-module \code{moduleLoadData}.
+loading_status_table_shiny(well_plate_list)
 }
 \arguments{
 \item{well_plate_list}{A list of well plate lists.}

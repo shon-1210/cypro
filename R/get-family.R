@@ -550,7 +550,7 @@ getSetUpDf <- function(object, well_plate_name = NULL){
 }
 
 
-#' @title Obtain variable centered summarys
+#' @title Obtain variable centered summaries
 #' 
 #' @description Acces function for the data.frame that contains summary information 
 #' of all numeric data variables. 
@@ -803,14 +803,6 @@ getOutlierIds <- function(object, method_outlier = NULL, check = FALSE, flatten 
 #'
 #' @return Character vector of group names. 
 #' 
-#' @examples 
-#' 
-#'  all_conditions <- getGroupNames(object, grouping_variable = "condition")
-#'  
-#'  all_cell_lines <- getGroupNames(object, grouping_variable = "cell_line")
-#'  
-#'  pam_k4_cluster <- getGroupNames(object, grouping_variable = "pam_euclidean_k_4")
-#' 
 #' @export
 
 getGroupNames <- function(object, grouping_variable, ..., phase = NULL){
@@ -818,6 +810,8 @@ getGroupNames <- function(object, grouping_variable, ..., phase = NULL){
   check_object(object)
   
   assign_default(object)
+  
+  confuns::is_value(grouping_variable, "character")
   
   group_vec <- 
     getGroupingDf(object = object, phase = phase, verbose = FALSE) %>% 
@@ -1239,7 +1233,7 @@ getStorageDirectory <- function(object){
   
   check_object(object, set_up_req = "experiment_design")
   
-  dir <- object@information$directory_cto
+  dir <- object@information$storage_directory
   
   if(base::is.null(dir) | dir == "not defined yet"){
     
@@ -1262,27 +1256,6 @@ getStorageDirectory <- function(object){
 
 # NOT EXPORTED ------------------------------------------------------------
 
-
-#' @title Helper functions to extract information from the
-#'
-#' @return
-
-getCategoricalVariablesNames <- function(object, phase = NULL){
-  
-  warning("getCategoricalVariablesNames() is deprecated.")
-  
-  check_object(object)
-  assign_default(object)
-  
-  phase <- check_phase(object, phase = phase, max_phases = 1)
-  
-  getStats(object = object, phase = phase) %>% 
-    dplyr::select_if(.predicate = base::is.factor) %>% 
-    base::colnames()
-  
-}
-
-#' @rdname getCategoricalVariablesNames
 getNumericVariableNames <- function(object){
   
   warning("getNumericVariableNames() is deprecated.")
@@ -1293,7 +1266,6 @@ getNumericVariableNames <- function(object){
   
 }
 
-#' @rdname getCategoricalVariablesNames
 getFrameSeq <- function(object, phase = NULL){
   
   check_object(object)
@@ -1307,7 +1279,6 @@ getFrameSeq <- function(object, phase = NULL){
   
 }
 
-#' @rdname getCategoricalVariablesNames
 getFrameTimeSeq <- function(object, phase = NULL){
   
   check_object(object)
@@ -1322,7 +1293,6 @@ getFrameTimeSeq <- function(object, phase = NULL){
   
 }
 
-#' @rdname getCategoricalVariablesNames
 getFrameLevels <- function(object, phase = NULL){
   
   check_object(object)
@@ -1335,102 +1305,23 @@ getFrameLevels <- function(object, phase = NULL){
   
 }
 
-
-#' @rdname getCategoricalVariablesNames
 getInterval <- function(object){
   
   object@set_up$itvl
   
 }
 
-
-#' @rdname getCategoricalVariablesNames
 getIntervalUnit <- function(object){
   
   object@set_up$itvl_u
   
 }
 
-
-#' @rdname getCategoricalVariablesNames
 getPhases <- function(object){
   
   object@set_up$phases %>% base::names()
   
 }
-
-#' @rdname getCategoricalVariablesNames
-getVariableNames <- function(object,
-                             phase = NULL,
-                             variable_classes = c("cluster", "meta", "stats", "well_plate"),
-                             flatten = TRUE){
-  
-  warning("getVariableNames() is deprecated.")
-  
-  
-  check_object(object)
-  assign_default(object)
-  
-  phase <- check_phase(object, phase = phase, max_phases = 1)
-  
-  select_list <- list()
-  
-  if("cluster" %in% variable_classes){
-    
-    cluster <- 
-      getClusterDf(object, phase = phase) %>% 
-      dplyr::select(-cell_id, -phase) %>% 
-      base::colnames()
-    
-    select_list$cluster <- cluster
-    
-  }
-  
-  # meta input
-  
-  if("meta" %in% variable_classes){
-    
-    meta <-
-      getMetaDf(object, phase = phase) %>% 
-      dplyr::select(-dplyr::all_of(x = invalid_groups), -phase) %>% 
-      base::colnames()
-    
-    select_list$meta <- meta
-    
-  }
-  
-  # meta well
-  
-  if("well_plate" %in% variable_classes){
-    
-    select_list$well_plate <- 
-      getMetaDf(object, phase = phase) %>% 
-      dplyr::select(dplyr::starts_with(match = "well"), -well_plate_index) %>% 
-      base::colnames()
-    
-  }
-  
-  # stats
-  
-  if("stats" %in% variable_classes){
-    
-    select_list[["stats"]] <- 
-      getStatVariableNames(object)
-    
-  }
-  
-  # ...
-  
-  if(base::isTRUE(flatten) & base::length(select_list) == 1){
-    
-    select_list <- purrr::flatten_chr(select_list)
-    
-  }
-  
-  base::return(select_list)
-  
-}
-
 
 
 

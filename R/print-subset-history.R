@@ -34,7 +34,7 @@ printSubsetHistory <- function(object){
             confuns::call_flexibly(
               fn = fn_name, 
               fn.ns = "cypro", 
-              default = list(info = info, slot_name = slot_name)
+              default = list(info = info, slot_name = slot_name, object = object)
             )
           
           return(text_out)
@@ -123,7 +123,7 @@ make_phase <- function(object, info){
 
 # specific helper ---------------------------------------------------------
 
-subset_history_cell_id <- function(info, slot_name){
+subset_history_cell_id <- function(info, slot_name, object){
   
   header <- make_header(info, slot_name)
   
@@ -147,7 +147,7 @@ subset_history_cell_id <- function(info, slot_name){
   
 }
 
-subset_history_cell_lines <- function(info, slot_name){
+subset_history_cell_lines <- function(info, slot_name, object){
   
   header <- make_header(info, slot_name)
   
@@ -164,7 +164,7 @@ subset_history_cell_lines <- function(info, slot_name){
   
 }
 
-subset_history_conditions <- function(info, slot_name){
+subset_history_conditions <- function(info, slot_name, object){
   
   header <- make_header(info, slot_name)
   
@@ -182,7 +182,7 @@ subset_history_conditions <- function(info, slot_name){
   
 }
 
-subset_history_cluster <- function(info, slot_name){
+subset_history_cluster <- function(info, slot_name, object){
   
   header <- make_header(info, slot_name)
   
@@ -203,7 +203,7 @@ subset_history_cluster <- function(info, slot_name){
   
 }
 
-subset_history_group <- function(info, slot_name){
+subset_history_group <- function(info, slot_name, object){
   
   header <- make_header(info, slot_name)
   
@@ -224,7 +224,7 @@ subset_history_group <- function(info, slot_name){
   
 }
 
-subset_history_filter <- function(info, slot_name){
+subset_history_filter <- function(info, slot_name, object){
   
   header <- make_header(info, slot_name)
   
@@ -255,8 +255,7 @@ subset_history_filter <- function(info, slot_name){
   
 }
 
-
-subset_history_number <- function(info, slot_name){
+subset_history_number <- function(info, slot_name, object){
   
   header <- make_header(info, slot_name)
   

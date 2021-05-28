@@ -1,0 +1,229 @@
+template:
+  params:
+    bootswatch: flatly
+
+home:
+ links:
+ - text: Visit us
+   href: https://themilolab.com/
+
+navbar:
+   structure:
+      left: [home, reference, about, installation, terminology, articles]
+   components:
+      about:
+       text: About
+       href: articles/about.html
+      installation:
+       text: Installation
+       href: articles/installation.html
+      terminology:
+       text: Terminology
+       href: articles/terminology.html
+      articles:
+       text: Articles
+       menu: 
+       - text: The cypro object
+       - text: Experiment design and data loading
+         href: articles/getting-started.html
+       - text: Create data subsets
+         href: articles/subsetting.html
+       - text: Extract data and information
+         href: articles/extract-data.html
+       - text: Rename content
+         href: articles/renaming.html
+       - text: Variable sets 
+         href: articles/variable-sets.html
+       - text: Analysis & Profiling
+       - text: Dimensionality reduction
+         href: articles/dim-red.html
+       - text: Correlation
+         href: articles/correlation.html
+       - text: Clustering
+         href: articles/clustering.html
+       - text: Statistical tests and pltos
+         href: articles/plotting-stats.html
+       - text: Modules
+       - text: Migration
+         href: articles/module-migration.html
+
+reference:
+
+ - title: Object Initiation
+   desc: Four functions are needed to set up a fully functional cypro object.
+ - contents:
+   - designExperiment
+   - loadData
+   - checkDataQuality
+   - processData
+   
+ - title: Object Summary and Information 
+   desc: Keep track of progress and set up by printing summaries in the console. 
+ - contents: 
+   - starts_with("print")
+
+ - title: Object Loading and Saving
+   desc: Some handy functions that make saving and loading corresponding objects more convenient.
+ - contents:
+   - starts_with("save")
+
+
+ - title: Object Subsetting
+   desc: Create cypro object from data subsets for more in depth analysis.
+ - contents:
+   - starts_with("subsetBy")
+
+
+ - title: Object Manipulation
+   desc: cypro invites you to extract your analysis and to add the results of your
+         analysis. Constant change of the object's content is therefore inevitable. The following
+         functions serve as handy, helping hands to add cypro extern content to the object
+         without disturbing it's integrity regarding cypro intern processes.
+
+ - subtitle: Set Content
+   desc: The set-functions let you set the content of specific slots.
+ - contents:
+   - starts_with("set")
+   - -starts_with("set_")
+
+ - subtitle: Add Content
+   desc: The add-functions let you add content to the cypro object.
+ - contents:
+   - starts_with("add")
+   - -starts_with("add_")
+
+ - subtitle: Discard Content
+   desc: The discard-functions let you delete unwanted information savely.
+ - contents:
+   - starts_with("discard")
+
+ - subtitle: Adjust Content
+   desc: The adjust-functions let you adjust content of the cypro object without overwriting it in it's essence.
+ - contents:
+   - starts_with("adjust")
+
+ - subtitle: Rename Content
+   desc: The rename-functions let you adjust the names of data variables and of groups.
+ - contents:
+   - starts_with("rename")
+
+ - title: Extract Data
+   desc: cypro invites you to extract your analysis. get-functions let you access every imaginable aspect of information conveniently.
+
+ - subtitle: Data frames
+   desc: A lot of data comes in form of tidy data.frames. 
+ - contents:
+   - ends_with("Df")
+   - -starts_with("rename")
+   - -starts_with("set")
+   
+ - subtitle: Data variable names and group names
+   desc: Functions that return object dependent input options for different arguments. 
+ - contents:
+   - ends_with("VariableNames")
+   - getGroupNames
+   
+ - subtitle: Names and content of variable sets 
+   desc: Keep track of your data variables by gathering them to variable sets. 
+ - contents:
+   - contains("VariableSet")
+   - -starts_with("add")
+   
+ - subtitle: Analysis results 
+   desc: Extract analysis results for cypro extern analysis. 
+ - contents: 
+   - getHclustObject
+   - getKmeansObject
+   - getPamObject
+   - getCorrObject
+   - getPcaObject
+   - getTsneObject
+   - getUmapObject
+   
+ - subtitle: Outlier detection
+ - contents: 
+   - starts_with("getOutlier")
+   
+ - subtitle: Miscellaneous
+ - contents: 
+   - starts_with("n")
+
+ - title: Quality Check 
+   desc: Clean your data before conducting analysis with common quality checks. 
+ - subtitle: Outlier detection
+ - contents: 
+   - detectOutliers
+   - removeOutliers
+
+ - title: Analysis and Profiling 
+   desc: Leverage convenient implementations of several machine learning algorithms 
+         to cluster and profile your cells. 
+ - subtitle: Dimensional reduction
+ - contents: 
+   - runPca
+   - runTsne
+   - runUmap
+ - subtitle: Clustering 
+ - contents: 
+   - initiateKmeansClustering
+   - inittiateHierarchicalClustering
+   - initiatePamClustering
+   - computeDistanceMatrices
+   - agglomerateHierarchicalCluster
+   - computeKmeansCluster
+   - computePamCluster
+ - subtitle: Correlation
+ - contents: 
+   - initiateCorrelation
+   - correlateAll
+   - correlateAcross
+   
+ - title: Visualization and Animation
+ - subtitle: Statistics and common plots 
+ - contents: 
+   - plotBoxplot 
+   - plotViolinplot
+   - plotHistogram
+   - plotDensityplot
+   - plotRidgeplot
+   - plotStatisticsInteractive
+   - plotScatterplot
+   
+ - subtitle: Dimensional reduction
+ - contents: 
+   - plotPca
+   - plotTsne 
+   - plotUmap 
+
+ - subtitle: Clustering 
+ - contents:
+   - plotScreeplot
+   - plotAvgSilhouetteWidths
+   - plotSilhouetteWidths
+   - plotPamMedoids
+   
+ - subtitle: Timelapse dependent
+ - contents:
+   - starts_with("plotTime")
+  
+ - title: Modules
+   desc: Depending on the experiment set up and the data input different modules (collections of functions)
+         are at your your disposal.
+         
+ - subtitle: Migration
+   desc: In case of timelapse experiments that come with x- and y-coordinates you can explore cellular migration 
+         behaviour.
+ - contents: 
+   - plotSingleTracks
+   - plotAllTracks 
+   - animateAllTracks
+   
+   
+ - title: Valid argument input 
+   desc: Functions that don't take any argument specifications but simply return valid input options 
+         for several arguments. 
+ - contents: 
+   - starts_with("valid")
+   - -starts_with("valid_")
+           
+

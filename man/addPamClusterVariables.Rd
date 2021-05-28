@@ -48,7 +48,7 @@ over all combinations of \code{method_pam} and \code{k} and
 adds the respective clustering variables to the object's overall data named according to
 the following syntax: \emph{pam_\code{method_pam}_k_\code{k}_\code{(variable_set)}}.
 This naming concept results in somewhat bulky but unambiguous clustering names. You can always
-rename grouping variables with \code{renameGroupingVariable()}.
+rename grouping variables with \code{renameClusterDf()}.
 
 Use \code{getGroupingVariableNames()} afterwards to obtain all grouping variables.
 }

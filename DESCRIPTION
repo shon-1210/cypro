@@ -1,16 +1,40 @@
 Package: cypro
-Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9000
-Authors@R: 
-    person(given = "First",
-           family = "Last",
-           role = c("aut", "cre"),
-           email = "first.last@example.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+Type: Package
+Title: A Toolbox for Analysis of Single Cell Microscopy Data
+Version: 0.1.0
+Authors@R: as.person(c(
+    "Jan Kueckelhaus <jan.kueckelhaus@uniklinik-freiburg.de> [aut, cre]", 
+    "Dieter-Henrik Heiland <dr.dieter.henrik.heiland@uniklinik-freiburg.de> [aut]"
+  ))
+Description: This package provides a framework of functions and shiny applications for handling, analyzing and visualizing multitudes of data files generated via high throughput microscopy. 
 Encoding: UTF-8
 LazyData: true
+License: GPL-3
+BugReports: https://github.com/theMILOlab/cypro/issues
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
+Imports: 
+    bbmle,
+    cluster,
+    english,
+    dplyr,
+    ggplot2,
+    ggpubr,
+    glue,
+    readr,
+    readxl,
+    progress,
+    purrr,
+    stringr,
+    stringi,
+    tidyr,
+    shiny,
+    shinybusy,
+    shinycssloaders,
+    shinydashboard,
+    shinydashboardPlus,
+    shinyFeedback,
+    shinyFiles,
+    shinyhelper,
+    shinyWidgets,
+    shinyjqui

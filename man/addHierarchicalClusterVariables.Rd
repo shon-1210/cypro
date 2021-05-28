@@ -62,7 +62,7 @@ over all combinations of \code{method_dist}, \code{method_aggl}, \code{k} and \c
 adds the respective clustering variables to the object's overall data named according to
 the following syntax: \emph{hcl_\code{method_dist}_\code{method_aggl}_k/h_\code{k}/\code{h}_\code{(variable_set)}}.
 This naming concept results in somewhat bulky but unambiguous clustering names. You can always
-rename grouping variables with \code{renameGroupingVariable()}.
+rename grouping variables with \code{renameClusterDf()}.
 
 Use \code{getGroupingVariableNames()} afterwards to obtain all grouping variables.
 }

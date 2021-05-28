@@ -1,7 +1,7 @@
 
 
 
-#' @title Plot cell migration 
+#' @title Plot scaled cell migration 
 #' 
 #' @description Visualizes the cells migration in a typical migration plot.
 #' Scales the cell's x- and y-coordinates such that all cell's migration

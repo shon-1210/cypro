@@ -27,12 +27,3 @@ Character vector of group names.
 This function returns the names of the groups in which a specific grouping
 variable groups the cells. Useful to obtain input options for arguments like \code{across_subset}.
 }
-\examples{
-
- all_conditions <- getGroupNames(object, grouping_variable = "condition")
- 
- all_cell_lines <- getGroupNames(object, grouping_variable = "cell_line")
- 
- pam_k4_cluster <- getGroupNames(object, grouping_variable = "pam_euclidean_k_4")
-
-}
