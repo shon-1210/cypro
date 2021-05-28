@@ -1,0 +1,93 @@
+#' @title Shiny feedback messages
+#'
+#' @description Wrapper around \code{shiny::req()} and \code{shiny::showNotification()}.
+#' Prevents application from crashing and displays guiding message about what the user
+#' is supposed to do in order to continue without this message to appear.
+#'
+#' @param evaluate A vector of logical tests to be evaluated.
+#' @param case_false A character string indicating the message to be displayed if one element of
+#' \code{evaluate} turns out to be FALSE. Needs to be in \code{base::names(\code{error/warning_notifiations})}.
+#' @param error_notifications A named list of character strings.
+#' @param warning_notifications A named list of character strings.
+#' @param duration The duration the message is displayed.
+#' @param stop_process,stop_app Logical. What is supposed to happen if one element of \code{evaluate}
+#' turns out to be FALSE.
+#'
+#' @return A shiny notification.
+#'
+checkpoint <- function(evaluate = TRUE,
+                       case_false = NULL,
+                       error_notifications = list(
+                         
+                         # miscellaneous
+                         "incomplete_cto" = "The cypro object has not been initiated yet.",
+                         "incomplete_cto2" = "The results have not been saved yet. Click on 'Save & Proceed' first.",
+                         
+                         # experiment set up
+                         "cell_line_condition_overlap" = "Could not save well information. Cell line name and condition name must not overlap.", 
+                         "empty_well_plate" = "Could not add well plate. At least one well must have information regarding cell line and condition.",
+                         "incomplete_software_input" = "Please load a valid example file and provide the information required.",
+                         "invalid_column_input" = "If x-coordinates and y-coordinates are not part of the example file you must at least choose one additional column.",
+                         "invalid_example_df" = "The example data must have at least four columns.",
+                         "invalid_image_number" = "The number of covered areas per well must not be 0.",
+                         "invalid_meas_number" = "The number of measurements must not be 0.",
+                         "invalid_wp_name" = "Invalid or already existing well plate name.",
+                         "missing_both_inputs" = "Please specify at least one of cell line or condition input.",
+                         "missing_condition_input" = "Could not save well information. Please make sure to denote a condition for all phases before clicking on 'Add Info'.",
+                         "missing_software" = "Please choose the software from which the files derived.", 
+                         "no_software_input" = "Please denote the software you used to generate the data files.",
+                         "no_storage_directory" = "Please choose a folder in which to store the cypro object and name the experiment.",
+                         "no_well_plates_added" = "No well plates have been added yet.",
+                         "no_well_plate_chosen" = "Please choose a well plate first.",
+                         "no_wells_chosen" = "Could not save well information. Please select at least one well.",
+                         
+                         # load data
+                         "no_set_up_saved" = "No experiment set up has been saved yet.",
+                         "well_plates_not_ready" = "There are still well plates left that do not match the requirements to be loaded.",
+                         "no_data_read_in" = "No files have been loaded yet.",
+                         "no_cells_remaining" = "The filter criteria discard all cells. At least one cell must remain.", 
+                         "errors_left" = "Trying to load some files resulted in errors. To proceed without them enable 'Ignore Errors'. If you want the files to be included fix the error and load the files again.",
+                         
+                         # quality check 
+                         "no_qc_data" = "Data has to undergo quality check first before the cell tracer object can be returned.",
+                         
+                         # descriptive / categorical statistics
+                         "no_features_selected" = "Please selecte at least one feature."
+                         
+                       ),
+                       warning_notifications = list(),
+                       duration = 4,
+                       stop_process = TRUE,
+                       stop_app = FALSE){
+  
+  ##-- check if truthy for all elements
+  results <- shiny::isTruthy(evaluate)
+  
+  if(any(results == F)){##-- at least one of the elements is not truthy
+    
+    if(!is.null(case_false) & case_false %in% names(warning_notifications)){
+      
+      ##-- show notification
+      shiny::showNotification(ui = warning_notifications[[case_false]], duration = duration, closeButton = T, type = "warning")
+      
+    } else if(!is.null(case_false) & case_false %in% names(error_notifications)){
+      
+      ##-- show notification
+      shiny::showNotification(ui = error_notifications[[case_false]], duration = duration, closeButton = T, type = "error")
+      
+      ##-- stop computation and or stop app?
+      if(isFALSE(stop_app) & isTRUE(stop_process)){
+        
+        shiny::req(evaluate)
+        
+      } else if(isTRUE(stop_app)) {
+        
+        shiny::stopApp()
+        
+      }
+      
+    }
+    
+  }
+  
+}

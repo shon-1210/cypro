@@ -1,0 +1,86 @@
+---
+title: "About"
+output:
+   html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, message = F, warning = F, rows.print = 10)
+
+library(tidyverse)
+
+```
+
+Automated fluorescence microscopy has enabled researchers to study biological systems and cellular behavior on a large scale. Elaborate algorithms for image analysis implemented in open source software like [CellProfiler](https://cellprofiler.org/) or [CellTracker](https://celltracker.website/index.html) allow to quantify a variety of cellular aspects obtained by the imaging process. Handling the multitude of data files generated this way, however, poses a substantial obstacle to researchers.
+
+The R package `cypro` provides a toolkit of R-functions and interactive applications to enable and facilitate the analysis of single cell high throughput imaging results. clickable interfaces allow to easily read in hundreds of data files across a multitude of experiment designs. Moreover, `cypro` implements a variety of statistical and machine learning tools in convenient functions to profile and classify cells deriving from all kinds of imaging set ups. The tutorials you'll find on this website will guide you through everything `cypro` provides.
+
+`cypro` is compatible with the output of all state of the art image processing softwares such as [CellProfiler]((https://cellprofiler.org/)), [CellTracker](https://celltracker.website/index.html), [ImageJ](https://imagej.nih.gov/ij/).  
+
+
+
+## 1. Concept
+
+Throughout all functions and applications `cypro` implements the [tidy-data](https://vita.had.co.nz/papers/tidy-data.pdf)-concept and draws it's main power from the [tidyverse](https://www.tidyverse.org/). With respect to the integration of individual analysis concepts this means in particular that all data.frames in `cypro` are oriented towards the tidy-data [structure](terminology.html#2-data-input) in which each row represents an observation and every column represents a variable (information) of that observation. A consistent output and a consistent terminology facilitates the application of individual ideas via powerful tidyverse- and tidymodelling functions.
+
+## 2. Data Input
+
+There are two kinds of output tables exported by image processing software mainly depending on the experiment design with which the underlying images have been generated. 
+
+### 2.1 Timelapse Experiments
+
+In timelapse experiments cells are repeatedly imaged over a defined timespan. Data tables that quantify the measurements of every image contain observations/rows that represent a cell at a given point of time with all its measured features. The track files of the [CellTracker](https://celltracker.website/index.html)-software exemplify that. 
+
+```{r track-file-example}
+
+df <- 
+  readxl::read_xls(path = "data/A4_1_Tracks.xls") %>% 
+  select(`Cell ID`, `Frame number`, everything()) %>% 
+  head(200)
+
+df 
+
+```
+
+
+The cell is identified by the *Cell ID*-variable and the point of time is identified by the *Frame number*-variable. As long as your data tables contain columns that represent these two variables you can analyze them with celltracer. Every additional variable such as coordinates, distances, or - in case of CellProfiler outputs - shape and intensity related features provide optional additional information. 
+
+Based on the timelapse results summary statistics can be computed that describe a cells mean or median characteristics. This is exemplified by the stat files of the [CellTracker](https://celltracker.website/index.html)-software. 
+
+```{r stat-file-example}
+
+df <- 
+  readxl::read_xls(path = "data/A4_1_Stats.xls") %>% 
+  select(`Cell ID`,everything()) %>% 
+  head(200)
+
+df 
+
+```
+
+Here, the focus shifts from cells at a given point of time to only cells which is why the identifying variable referring to the point of time is no longer needed and the *Cell ID*-variable is sufficient. `cypro` calculates the summary statistics automatically if you provide it with track files. If you only have files that contain summarized time lapse data you can analyze them with celltracer, too, though you would have to take a pass on the analysis of cellular states at given points of time as the information is missing. 
+
+### 2.2 One Time Imaging 
+
+In one time imaging experiments cells are imaged only one time. The [Human MCF7 cells-compound-profiling-experiment](https://bbbc.broadinstitute.org/BBBC021) serves as an example for that. In this case again the data files observations refer to cells at a given point of time. As there is, however, only one point of time the variable referring to it is negligible. The table below is a subset of an output file derived from the CellProfiler pipeline that has been published together with the data set you find using the link above. 
+
+```{r cp-file-example}
+
+df <- 
+  readr::read_csv(file = "data/B10_1.csv") %>% 
+  select(ObjectNumber, starts_with("AreaShape")) %>% 
+  rename_with(.fn = ~ str_remove(.x, pattern = "^AreaShape_")) %>% 
+  select(-contains("Zernike")) %>% 
+  head(200)
+
+df
+
+```
+
+
+Here, the variable referring to the cell ID is called *ObjectNumber*.
+
+## 3. Conclusion
+
+You can use `cypro` for downstream analysis as long as your date files contain the mentioned identifier variables (*Cell ID* and *Frame / Point of time*), irrespective of the software of origin or the way columns are named.
