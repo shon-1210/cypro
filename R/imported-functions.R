@@ -31,3 +31,8 @@ contains <- tidyselect::contains
 #' @rdname starts_with
 #' @export
 matches <- tidyselect::matches
+
+
+#' @importFrom magrittr %>%
+#'
+NULL
