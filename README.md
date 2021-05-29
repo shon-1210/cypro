@@ -1,2 +1,1 @@
-# cypro
-Toolkit for microscopy data
+This package provides a framework of functions and interactive applications for handling, analyzing and visualizing multitudes of data files generated via high throughput microscopy. Checkout our github page for tutorials and examples: https://themilolab.github.io/cypro/
