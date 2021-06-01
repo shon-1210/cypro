@@ -43,7 +43,6 @@ moduleLoadDataServer <- function(id, object){
         ns <- session$ns
         
         shiny::tagList(
-          #shiny::h5(shiny::strong("Added Well Plates:")),
           shiny::selectInput(inputId = ns("ld_added_well_plates"), 
                              label = NULL, 
                              choices = well_plate_names())
@@ -179,8 +178,6 @@ moduleLoadDataServer <- function(id, object){
             keep = input$ld_keep_filetype
           )
         
-        assign(x = "xlist", value = well_plate_list_new, .GlobalEnv)
-        
         check <- check_wp_directories(well_plate_list = well_plate_list_new)
         
         if(check != "unique"){
@@ -217,8 +214,6 @@ moduleLoadDataServer <- function(id, object){
                       session = session)
         
         shiny::showNotification(ui = "Reading done.", type = "message")
-        
-        assign("data_list", data_list, .GlobalEnv)
         
         # update read_in_data
         read_in_data(data_list)
@@ -537,26 +532,7 @@ moduleLoadDataServer <- function(id, object){
       
       # Module return value -----------------------------------------------------
       
-      # currently not in use !!! ------- start
-      return_value <- shiny::reactive({ 
-        
-        rv <- 
-        list(well_plate_list = ld_output$well_plate_list,
-             track_list = ld_output$track_list, 
-             proceed = ld_output$proceed, 
-             object = ld_output$object)
-        
-        assign(x = "rv_load_data", value = rv, .GlobalEnv)
-        
-        return(rv)
-        
-      })
-      
-      # currently not in use !!! ------- end
-      
-      
       base::return(ld_output)
-      
       
     })
   

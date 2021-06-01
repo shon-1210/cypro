@@ -153,7 +153,6 @@ moduleQualityCheckServer <- function(id, object){
         
         shiny_fdb(in_shiny = TRUE, ui = glue::glue("Results have been saved.  Click on 'Return Cypro Object' and proceed with processData()."))
         
-        
       })
       
       # ----- 
@@ -307,11 +306,13 @@ moduleQualityCheckServer <- function(id, object){
           dplyr::select(cell_id, cell_line) %>% 
           dplyr::distinct()
 
-        plot_qc_barplot_shiny(df = filtered_df, 
-                              aes_x = "cell_line", 
-                              aes_fill = "cell_line", 
-                              bar_position = "stack") + 
-          confuns::scale_color_add_on(aes = "fill", variable = "discrete", clrp = "milo")
+        plot_qc_barplot_shiny(
+          df = filtered_df,
+          aes_x = "cell_line",
+          aes_fill = "cell_line", 
+          bar_position = "stack"
+          ) + 
+        confuns::scale_color_add_on(aes = "fill", variable = "discrete", clrp = "milo")
         
       })
       
@@ -323,10 +324,6 @@ moduleQualityCheckServer <- function(id, object){
       })
       
       # ---
-      
-      
-      
-      
       # -----
       
       
@@ -412,28 +409,6 @@ moduleQualityCheckServer <- function(id, object){
   
 
 # Return value ------------------------------------------------------------
-
-  # currently not in use !!! ------- start
-      
-  return_value <- shiny::reactive({ 
-    
-    filter_fdb <- 
-      purrr::map(.x = base::names(filter), ~ base::return(filter[[.x]])) %>% 
-      purrr::set_names(nm = base::names(filter))
-    
-    rv <- 
-    list(info_list = qc_list$info_list, 
-         data = qc_list$data, 
-         filter = filter_fdb
-         )
-    
-    assign(x = "rv_quality_check", value = rv, .GlobalEnv)
-    
-    return(rv)
-    
-    })
-      
-  # currently not in use !!! ------- start
   
   base::return(qc_list)
   

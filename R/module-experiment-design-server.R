@@ -25,8 +25,8 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
   example_list <- shiny::reactiveVal(value = list(loaded = FALSE))
   
   well_plate_df <- shiny::reactiveVal(value = data.frame())
-  well_plate_name <- shiny::reactiveVal(value = base::character(1))
   well_plate_list <- shiny::reactiveVal(value = list())
+  well_plate_name <- shiny::reactiveVal(value = base::character(1))
   
   
   # list containing all the information regarding the experiment's design
@@ -46,59 +46,6 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
   # -----  
   
 # Render UIs --------------------------------------------------------------
-  
-  
-  # currently not in use !!! ------- start
-  
-  output$ed_treatment_start <- shiny::renderUI({
-    
-    ns <- session$ns
-    
-    shiny::selectInput(inputId = ns("ed_treatment_start"),
-                       label = "Treatment Start:",
-                       choices = c("No treatment", "From beginning",
-                                   stringr::str_c(1:input$ed_meas_num * input$ed_meas_interval,
-                                                  input$ed_interval_unit,
-                                                  sep = " ")
-                       )
-    )
-    
-  })  
-  
-  output$ed_control_variable <- shiny::renderUI({
-    
-    ns <- session$ns
-    
-    shiny::req(input$ed_treatment_start)
-    shiny::req(input$ed_treatment_start != "No treatment")
-    
-    shiny::validate(
-      shiny::need(
-        expr = !base::identical(well_plate_list(), list()), 
-        message = "No well plates have been added yet."
-      )
-    )
-    
-    choices <- 
-      purrr::map(.x = well_plate_list(),
-                 .f = ~ dplyr::filter(.x[["wp_df"]], information_status == "Complete") %>% 
-                        dplyr::pull(var = "condition")
-                 ) %>%
-      purrr::flatten_chr() %>%
-      base::unique()
-    
-    if(input$ed_treatment_start != "No treatment"){
-      
-      shiny::selectInput(inputId = ns("ed_control_variable"), 
-                         label = "Control Variable:", 
-                         choices = choices, 
-                         multiple = FALSE)
-      
-    }
-    
-  })
-  
-  # currently not in use !!! ------- end
 
   ###--- overall information
   
@@ -337,7 +284,7 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
     
     ns <- session$ns
     
-    # not going to appear if non time lapse exp as ed_phasees_number is not going to appear 
+    # not going to appear if non time lapse exp as ed_phases_number is not going to appear 
     #shiny::req(base::isTRUE(ed_list$module_progress$imaging_set_up) & shiny::isTruthy(input$ed_phases_number))
     
     shiny::req(ed_list$set_up$experiment_type == "time_lapse" & shiny::isTruthy(input$ed_phases_number))
@@ -451,8 +398,6 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
             
           )
           
-                     
-                     
                    })
       
     }
@@ -686,8 +631,6 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
     
     example_list(example_list)
     
-    assign(x = "example_list", value = example_list, envir = .GlobalEnv)
-    
     shiny::removeModal()
     
   })
@@ -837,6 +780,7 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
     # check well plate name
     wp_list_new <- well_plate_list()
     wp_name <- input$ed_well_plate_name 
+    
     new_name <- !wp_name %in% base::names(wp_list_new)
     valid_name <- !wp_name == ""
     
@@ -845,7 +789,6 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
     
     # update current well plate name
     well_plate_name(wp_name)
-    
     
     # data.frame (obs => well)
     well_plate_df_new <- 
@@ -915,9 +858,11 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
     if(new_cell_line != ""){
       
       well_plate_df_new <- 
-        dplyr::mutate(.data = well_plate_df_new, 
-                      cell_line = dplyr::case_when(selected ~ {{new_cell_line}},
-                                                   TRUE ~ cell_line)
+        dplyr::mutate(well_plate_df_new, 
+          cell_line = dplyr::case_when(
+            selected ~ {{new_cell_line}},
+            TRUE ~ cell_line
+            )
         )
       
     }
@@ -944,14 +889,14 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
     
     well_plate_df_final <- 
       dplyr::mutate(.data = well_plate_df_new, 
-                    cl_condition = stringr::str_c(cell_line, condition, sep = " & "),
-                    information_status = base::as.character(information_status),
-                    information_status = dplyr::case_when(
-                      condition == "unknown" & cell_line == "unknown" ~ "Missing", 
-                      condition != "unknown" & cell_line != "unknown" ~ "Complete", 
-                      TRUE ~ "Incomplete"), 
-                    information_status = base::factor(x = information_status,
-                                                      levels = c("Complete", "Incomplete", "Missing"))
+        cl_condition = stringr::str_c(cell_line, condition, sep = " & "),
+        information_status = base::as.character(information_status),
+        information_status = dplyr::case_when(
+            condition == "unknown" & cell_line == "unknown" ~ "Missing", 
+            condition != "unknown" & cell_line != "unknown" ~ "Complete", 
+            TRUE ~ "Incomplete"
+            ), 
+        information_status = base::factor(x = information_status, levels = c("Complete", "Incomplete", "Missing"))
       ) %>% 
       dplyr::select(-selected)
     
@@ -986,13 +931,13 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
     
     well_plate_df_new <- 
       dplyr::mutate(.data = all_wells(), 
-                    selected = well %in% selected_wells()$well, 
-                    condition = dplyr::case_when(selected ~ "unknown", TRUE ~ condition),
-                    cell_line = dplyr::case_when(selected ~ "unknown", TRUE ~ cell_line),
-                    cl_condition = stringr::str_c(cell_line, condition, sep = " & "),
-                    condition_df = purrr::map2(.x = condition_df, .y = selected, ecdf = ecdf, .f = function(cdf, selected, ecdf){
-                      
-                      if(base::isTRUE(selected)){
+        selected = well %in% selected_wells()$well, 
+        condition = dplyr::case_when(selected ~ "unknown", TRUE ~ condition),
+        cell_line = dplyr::case_when(selected ~ "unknown", TRUE ~ cell_line),
+        cl_condition = stringr::str_c(cell_line, condition, sep = " & "),
+        condition_df = purrr::map2(.x = condition_df, .y = selected, ecdf = ecdf, .f = function(cdf, selected, ecdf){
+                
+              if(base::isTRUE(selected)){
                         
                         return(ecdf)
                         
@@ -1003,22 +948,20 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
                       }
                       
                     }),
-                    information_status = base::as.character(information_status),
-                    information_status = dplyr::case_when(
-                      condition == "unknown" & cell_line == "unknown" ~ "Missing", 
-                      condition != "unknown" & cell_line != "unknown" ~ "Complete", 
-                      TRUE ~ "Incomplete"), 
-                    information_status = base::factor(x = information_status,
-                                                      levels = c("Complete", "Incomplete", "Missing"))
+        information_status = base::as.character(information_status),
+        information_status = dplyr::case_when(
+            condition == "unknown" & cell_line == "unknown" ~ "Missing", 
+            condition != "unknown" & cell_line != "unknown" ~ "Complete", 
+            TRUE ~ "Incomplete"
+            ), 
+        information_status = base::factor(x = information_status, levels = c("Complete", "Incomplete", "Missing"))
       ) %>% 
       dplyr::select(-selected)
-    
     
     # update well_plate_df()
     well_plate_df(well_plate_df_new)
     
     shiny_fdb(in_shiny = TRUE, ui = "Well information successfully removed.")
-    
     
   })
   
@@ -1067,11 +1010,11 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
     ed_list$proceed <- TRUE
     
     ed_list$object <- 
-      initiateEmptyCyproObject( 
-                   information = list(storage_directory = ed_list$default_directory),
-                   name = ed_list$experiment_name,
-                   set_up = ed_list$set_up, 
-                   well_plates = well_plate_list()
+      initiateEmptyCyproObject(
+        information = list(storage_directory = ed_list$default_directory),
+        name = ed_list$experiment_name,
+        set_up = ed_list$set_up, 
+        well_plates = well_plate_list()
       )
     
     
@@ -1216,10 +1159,10 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
     if(base::isTRUE(is_selected)){
       
       selected_wells <- 
-      dplyr::filter(.data = well_plate_df(),
-                    dplyr::between(col_num, xmin, xmax), 
-                    dplyr::between(row_num, ymin, ymax)
-                    )
+      dplyr::filter(well_plate_df(),
+        dplyr::between(col_num, xmin, xmax),
+        dplyr::between(row_num, ymin, ymax)
+        )
       
     } 
     
@@ -1269,9 +1212,11 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
     } else {
       
       base::colnames(condition_df) <- 
-        stringr::str_replace_all(base::colnames(condition_df), 
-                                 pattern = "Phase", 
-                                 replacement = "Condition")
+        stringr::str_replace_all(
+          base::colnames(condition_df),
+          pattern = "Phase",
+          replacement = "Condition"
+          )
       
     }
     
@@ -1296,12 +1241,17 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
                   message = "No well plate chosen.")
       )
     
-    plot_well_plate_shiny(wp_df = all_wells(), 
-                          selected_wells_df = selected_wells(), 
-                          aes_fill = "cl_condition", 
-                          aes_color = "information_status",
-                          color_values = status_colors) +
-      ggplot2::labs(color = "Information Status", subtitle = stringr::str_c("Name:", well_plate_name(), sep = " ")) 
+    plot_well_plate_shiny(
+      wp_df = all_wells(),
+      selected_wells_df = selected_wells(),
+      aes_fill = "cl_condition",
+      aes_color = "information_status",
+      color_values = status_colors
+      ) +
+      ggplot2::labs(
+        color = "Information Status",
+        subtitle = stringr::str_c("Name:", well_plate_name(), sep = " ")
+        ) 
     
   })
   
@@ -1400,8 +1350,6 @@ example_selected <- function(lst, slot = "denoted_columns", col, nth, choices = 
       base::return(choices)  
       
     }
-    
-    
     
   }
   
