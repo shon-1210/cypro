@@ -232,7 +232,7 @@ subsetByCellId <- function(object, new_name, cell_ids, reasoning = NULL, verbose
   object@information$directory_cto <- NULL
   
   confuns::give_feedback(
-    msg = "Default directory has been reset. Make sure to set a new one via 'setDefaultDirectory()'",
+    msg = "Default directory has been reset. Make sure to set a new one via 'setStorageDirectory()'",
     verbose = TRUE
   )
   

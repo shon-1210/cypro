@@ -1,3 +1,21 @@
+
+#' @title Initiate empty cypro object 
+#' 
+#' @description Initiates an empty cypro object and 
+#' adds the version under which is is created.
+#'
+#' @param ... 
+#'
+initiateEmptyCyproObject <- function(...){
+  
+  object <- methods::new(Class = "cypro", ...)
+  
+  object@version <- current_version
+  
+  base::return(object)
+  
+}
+
 #' @title Object initiation: Step 1
 #' 
 #' @description Opens an interactive application in which the experiment can be set 
@@ -35,7 +53,7 @@ designExperiment <- function(){
                                       shiny::fluidRow(
                                         shiny::column(width = 12, align = "center", 
                                                       
-                                                      shiny::uiOutput(outputId = "return_cto")
+                                                      shiny::uiOutput(outputId = "return_cypro")
                                                       
                                         )
                                       )
@@ -55,7 +73,7 @@ designExperiment <- function(){
           moduleExperimentDesignServer(id = "ed", usage = "in_function")
         
         
-        output$return_cto <- shiny::renderUI({
+        output$return_cypro <- shiny::renderUI({
           
           ed_list <- shiny::reactiveValuesToList(ed_results)
           
@@ -69,20 +87,20 @@ designExperiment <- function(){
             
           }
           
-          shinyWidgets::actionBttn(inputId = "return_cto",
+          shinyWidgets::actionBttn(inputId = "return_cypro",
                                    label = "Return Cypro Object", 
                                    color = color, 
                                    style = "gradient")
           
         })
         
-        oe <- shiny::observeEvent(input$return_cto, {
+        oe <- shiny::observeEvent(input$return_cypro, {
           
           ed_list <- shiny::reactiveValuesToList(ed_results)
           
           check <- base::tryCatch({
             
-            base::class(ed_list$object) == "cto"
+            base::class(ed_list$object) == "cypro"
             
           }, error = function(error){
             
@@ -149,7 +167,7 @@ loadData <- function(object){
                                       shiny::fluidRow(
                                         shiny::column(width = 12, align = "center", 
                                                       
-                                                      shiny::uiOutput(outputId = "return_cto")
+                                                      shiny::uiOutput(outputId = "return_cypro")
                                                       
                                         )
                                       )
@@ -168,7 +186,7 @@ loadData <- function(object){
         ld_results <-
           moduleLoadDataServer(id = "ld", object = object)
         
-        output$return_cto <- shiny::renderUI({
+        output$return_cypro <- shiny::renderUI({
           
           ld_list <- shiny::reactiveValuesToList(ld_results)
           
@@ -182,7 +200,7 @@ loadData <- function(object){
             
           }
           
-          shinyWidgets::actionBttn(inputId = "return_cto",
+          shinyWidgets::actionBttn(inputId = "return_cypro",
                                    label = "Return Cypro Object", 
                                    color = color, 
                                    style = "gradient")
@@ -190,13 +208,13 @@ loadData <- function(object){
         })
         
         
-        oe <- shiny::observeEvent(input$return_cto, {
+        oe <- shiny::observeEvent(input$return_cypro, {
           
           ld_list <- shiny::reactiveValuesToList(ld_results)
           
           check <- base::tryCatch({
             
-            base::class(ld_list$object) == "cto"
+            base::class(ld_list$object) == "cypro"
             
           }, error = function(error){
             
@@ -274,7 +292,7 @@ checkDataQuality <- function(object){
                                       shiny::fluidRow(
                                         shiny::column(width = 12, align = "center", 
                                                       
-                                                      shiny::uiOutput(outputId = "return_cto")
+                                                      shiny::uiOutput(outputId = "return_cypro")
                                                       
                                         )
                                       )
@@ -293,7 +311,7 @@ checkDataQuality <- function(object){
         qc_results <-
           moduleQualityCheckServer(id = "qc", object = object)
         
-        output$return_cto <- shiny::renderUI({
+        output$return_cypro <- shiny::renderUI({
           
           qc_list <- shiny::reactiveValuesToList(qc_results)
           
@@ -307,20 +325,20 @@ checkDataQuality <- function(object){
             
           }
           
-          shinyWidgets::actionBttn(inputId = "return_cto",
+          shinyWidgets::actionBttn(inputId = "return_cypro",
                                    label = "Return Cypro Object", 
                                    color = color, 
                                    style = "gradient")
           
         })
         
-        oe <- shiny::observeEvent(input$return_cto, {
+        oe <- shiny::observeEvent(input$return_cypro, {
           
           qc_list <- shiny::reactiveValuesToList(qc_results)
           
           check <- base::tryCatch({
             
-            base::class(qc_list$object) == "cto"
+            base::class(qc_list$object) == "cypro"
             
           }, error = function(error){
             

@@ -181,7 +181,7 @@ plotWellPlate <- function(object,
                           make_pretty = NULL, 
                           ...){
   
-  check_object(object)
+  check_object(object, set_up_req = "experiment_design")
   assign_default(object)
   
   if(base::is.null(well_plate)){
@@ -191,7 +191,13 @@ plotWellPlate <- function(object,
   }
   
   wp_df <- object@well_plates[[well_plate]]$wp_df_eval
-  
+
+  if(base::is.null(wp_df)){
+    
+    wp_df <- object@well_plates[[well_plate]]$wp_df
+    
+  }
+    
   pt_size <- size_well
   pt_stroke <- 2
   

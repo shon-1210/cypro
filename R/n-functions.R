@@ -44,3 +44,30 @@ nConditions <- function(object, phase = NULL){
   
 }
 
+
+
+#' @title Number of files read in 
+#' 
+#' @inherit nCells description
+#'
+#' @inherit argument_dummy params 
+#'
+#' @return A numeric vector named by well plate. Values indicate the number of valid directories
+#' that have been read in via \code{loadData()}
+#' 
+#' @export
+#'
+nFiles <- function(object){
+  
+  check_object(object, set_up_req = "load_data")
+  
+  purrr::map_int(
+    .x = object@well_plates, 
+    .f = ~ base::length(.x$valid_directories)
+  ) %>% 
+  purrr::set_names(
+    x = ., 
+    nm = getWellPlateNames(object)
+  )
+  
+}

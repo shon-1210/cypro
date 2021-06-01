@@ -4,17 +4,17 @@
 \alias{discardStatVariables}
 \title{Discard unwanted variables from your data}
 \usage{
-discardStatVariables(object, stat_variables, phase = NULL)
+discardStatVariables(object, stat_variables, verbose = NULL)
 }
 \arguments{
 \item{object}{A valid cypro object.}
 
 \item{stat_variables}{Character vector. The variables from the cell statistics data you want to discard.}
 
-\item{phase}{Character value. The ordinal value referring to the phase of interest (e.g. \emph{'first'}, \emph{'second'} etc.).
-referring to the phase of interest. If set to NULL takes the phase denoted as default with \code{adjustDefault()}.
+\item{verbose}{Logical. If set to TRUE informative messages regarding
+the computational progress will be printed.
 
-Ignored if the experiment design contains only one phase.}
+(Warning messages will always be printed.)}
 
 \item{cluster_variables}{Character vector. The cluster variables you want to discard.}
 }
@@ -22,5 +22,17 @@ Ignored if the experiment design contains only one phase.}
 An updated version of the input \code{cypro}-object.
 }
 \description{
-Discard unwanted variables from your data
+This function discards unwanted variables from the cypro object
+and makes them unavailable for subsequent analysis steps. Might be useful for
+decreasing the overall object size.
+}
+\details{
+As clustering and dimensional reduction results base on stat variables
+or variable sets to be more precise all clustering results in slot @analysis that included variables denoted
+in argument \code{stat_variables} are discarded, too! This is because clustering
+results based on variable x, y and z might differ from results based
+on only variables x and y.
+
+Correlation results are not discarded but only filtered accordingly. This is because correlation
+results between variable x and variable y are not affected by discarding variable z.
 }

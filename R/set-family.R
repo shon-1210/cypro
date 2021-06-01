@@ -118,6 +118,12 @@ setStorageDirectory <- function(object, directory){
   
   confuns::is_value(directory, "character")
   
+  if(!stringr::str_detect(directory, pattern = "\\.RDS$")){
+    
+    base::stop("Input directory has to end with '.RDS'")
+    
+  }
+  
   object@information$storage_directory <- directory
   
   base::return(object)  

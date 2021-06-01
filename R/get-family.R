@@ -171,7 +171,7 @@ getCorrConv <- function(object, variable_set, phase = NULL){
     dplyr::select(dplyr::all_of(corr_object@variables_num)) %>% 
     base::as.matrix()
   
-  corr_object@variables_discrete <- getGroupingVariableNames(object, phase = phase)
+  corr_object@variables_discrete <- getGroupingVariableNames(object, phase = phase, verbose = FALSE)
   
   base::return(corr_object)
   
@@ -1234,6 +1234,11 @@ getStorageDirectory <- function(object){
   check_object(object, set_up_req = "experiment_design")
   
   dir <- object@information$storage_directory
+  
+  if(is.null(dir)){
+    
+    dir <- object@information$directory_cto
+  }
   
   if(base::is.null(dir) | dir == "not defined yet"){
     

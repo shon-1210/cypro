@@ -1067,8 +1067,8 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
     ed_list$proceed <- TRUE
     
     ed_list$object <- 
-      methods::new(Class = "cto", 
-                   information = list(directory_cto = ed_list$default_directory),
+      initiateEmptyCyproObject( 
+                   information = list(storage_directory = ed_list$default_directory),
                    name = ed_list$experiment_name,
                    set_up = ed_list$set_up, 
                    well_plates = well_plate_list()

@@ -235,7 +235,7 @@ plotDistribution <- function(object,
   
   # 1. Control --------------------------------------------------------------
   
-  df <- getStats(object, phase = phase)
+  df <- getStatsDf(object, phase = phase)
   
   if(!plot_type %in% c("histogram", "density", "ridgeplot", "boxplot", "violinplot")){
     
@@ -623,7 +623,7 @@ plotDistributionDiscrete <- function(object,
   
   
   plot_df <-
-    getStats(object, phase = phase) %>% 
+    getStatsDf(object, phase = phase) %>% 
     tidyr::pivot_longer(data = .,
                         cols = dplyr::all_of(features),
                         names_to = "features",

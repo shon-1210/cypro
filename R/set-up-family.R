@@ -251,7 +251,7 @@ set_up_cdata_well_plate <- function(object, verbose = TRUE){
 
 # EXPORTED ----------------------------------------------------------------
 
-#' @title Well Plate Data.frame 
+#' @title Create data.frame representing a well plate
 #' 
 #' @description Sets up a data.frame in which each observation refers
 #' to a well.

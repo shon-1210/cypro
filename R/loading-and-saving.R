@@ -6,18 +6,14 @@
 
 saveCyproObject <- function(object, verbose = TRUE){
   
-  
-  if(base::is.character(object@information$directory_cto)){
+  dir <- object@information$storage_directory
+
+  if(!base::is.character(dir)){
     
-    object@information$storage_directory <- 
-      object@information$directory_cto
-    
-    object@information$directory_cto <- NULL
+    base::stop("No storage directory set. Use `setStorageDirectory()` first.")
     
   }
   
-  dir <- object@information$storage_directory
-
   confuns::give_feedback(
     msg = glue::glue("Saving cypro object under '{dir}'."), 
     verbose = verbose

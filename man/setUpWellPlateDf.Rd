@@ -2,7 +2,7 @@
 % Please edit documentation in R/set-up-family.R
 \name{setUpWellPlateDf}
 \alias{setUpWellPlateDf}
-\title{Well Plate Data.frame}
+\title{Create data.frame representing a well plate}
 \usage{
 setUpWellPlateDf(type = "8x12 (96)", phases = NULL)
 }
