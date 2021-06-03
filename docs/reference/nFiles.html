@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Obtain variable overview — getVariableValues • cypro</title>
+<title>Number of files read in — nFiles • cypro</title>
 
 
 <!-- jquery -->
@@ -39,10 +39,11 @@
 
 
 
-<meta property="og:title" content="Obtain variable overview — getVariableValues" />
-<meta property="og:description" content="If the variable denoted in variable_name is categorical (character or factor)
-all unique values/levels are returned. If the variable is numeric it is given to
-psych::describe() which returns a statistical summary." />
+<meta property="og:title" content="Number of files read in — nFiles" />
+<meta property="og:description" content="These functions return a numeric value describing the number
+of n*() the object contains. (E.g. nCells() returns the total
+number of cells about which the object contains data, nConditions()
+returns the total number of conditions, etc. )" />
 
 
 
@@ -164,18 +165,19 @@ psych::describe() which returns a statistical summary." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Obtain variable overview</h1>
-    <small class="dont-index">Source: <a href='https://github.com/theMILOlab/cypro/blob/master/R/deprecated.R'><code>R/deprecated.R</code></a></small>
-    <div class="hidden name"><code>getVariableValues.Rd</code></div>
+    <h1>Number of files read in</h1>
+    <small class="dont-index">Source: <a href='https://github.com/theMILOlab/cypro/blob/master/R/n-functions.R'><code>R/n-functions.R</code></a></small>
+    <div class="hidden name"><code>nFiles.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>If the variable denoted in <em>variable_name</em> is categorical (character or factor)
-all unique values/levels are returned. If the variable is numeric it is given to
-<code><a href='https://rdrr.io/pkg/psych/man/describe.html'>psych::describe()</a></code> which returns a statistical summary.</p>
+    <p>These functions return a numeric value describing the number
+of <code>n*()</code> the object contains. (E.g. <code><a href='nCells.html'>nCells()</a></code> returns the total
+number of cells about which the object contains data, <code><a href='nCells.html'>nConditions()</a></code>
+returns the total number of conditions, etc. )</p>
     </div>
 
-    <div class="ref-usage sourceCode"><pre class='sourceCode r'><code><span class='fu'>getVariableValues</span><span class='op'>(</span><span class='va'>object</span>, phase <span class='op'>=</span> <span class='cn'>NULL</span>, <span class='va'>variable_name</span><span class='op'>)</span></code></pre></div>
+    <div class="ref-usage sourceCode"><pre class='sourceCode r'><code><span class='fu'>nFiles</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span></code></pre></div>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -184,22 +186,12 @@ all unique values/levels are returned. If the variable is numeric it is given to
       <th>object</th>
       <td><p>A valid cypro object.</p></td>
     </tr>
-    <tr>
-      <th>phase</th>
-      <td><p>Character value. The ordinal value referring to the phase of interest (e.g. <em>'first'</em>, <em>'second'</em> etc.).
-referring to the phase of interest. If set to NULL takes the phase denoted as default with <code>adjustDefault()</code>.</p>
-<p>Ignored if the experiment design contains only one phase.</p></td>
-    </tr>
-    <tr>
-      <th>variable_name</th>
-      <td><p>Character value. Denotes the variable of interest. Valid inputs can be
-obtained via the function <code>getVariableNames()</code>.</p></td>
-    </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A character vector or a data.frame of one row containing basic descriptive statistics.</p>
+    <p>A numeric vector named by well plate. Values indicate the number of valid directories
+that have been read in via <code><a href='loadData.html'>loadData()</a></code></p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

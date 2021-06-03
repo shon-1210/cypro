@@ -67,6 +67,19 @@ check_object <- function(object, experiment = NULL, set_up_req = "process_data",
       
     }
     
+    if(exp_type_req == "one_time_imaging"){
+      
+      if(!object@set_up$experiment_type != "one_time_imaging"){
+        
+        msg <- "This function requires a one time imaging experiment set up."
+        
+        base::stop(msg)
+        
+      }
+      
+      
+    }
+    
   }
   
   

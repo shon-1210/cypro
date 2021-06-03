@@ -167,92 +167,275 @@ plotScatterplot <- function(object,
 #' @title Plot the well plate set up 
 #' 
 #' @inherit argument_dummy params
+#' @param plot_type Character value. Either \emph{'well'} or \emph{'tile'}.
+#' Affects the geometry with which the wells are displayed. (Either 
+#' with \code{ggplot2::geom_point()} or with \code{ggplot2::geom_tile()}).
+#' @param display_border Logical value. If set to TRUE a line is drawn around 
+#' the geometric objects displaying the wells. 
+#' @param border_clr Character value. Denotes the color of the wells borders. 
+#' @param border_size Numeric value. Denotes the thickness of the wells borders.
+#' @param display_edge Logical value. If set to TRUE \code{ggforce::geom_mark_rect()}
+#' is used to display the edges of the well plate.
+#' @param edge_clr Character value. Denotes the color of the well plates edge. 
+#' @param well_size Numeric value. Denotes the size with which each well is plotted
+#' if argument \code{plot_type} is set to \emph{'well'}. 
 #'
 #' @inherit ggplot_return return 
 #' @export
 #'
 
 plotWellPlate <- function(object, 
-                          well_plate = NULL,
+                          phase = NULL, 
+                          well_plates = NULL,
                           color_by = "condition", 
-                          size_well = 13.5, 
+                          summarize_with = "median",
+                          plot_type = "well",
+                          well_size = 13.5,
+                          display_border = TRUE, 
+                          border_clr = "black",
+                          border_size = 1,
+                          display_edge = TRUE, 
+                          edge_clr = "black",
                           display_labels = TRUE,
+                          alpha = 0.9,
+                          clrp = "milo",
                           clrp_adjust = NULL,
-                          make_pretty = NULL, 
+                          clrsp = "Blues",
+                          ncol = NULL, 
+                          nrow = NULL, 
                           ...){
   
+  # check input
   check_object(object, set_up_req = "experiment_design")
   assign_default(object)
   
-  if(base::is.null(well_plate)){
+  phase <- check_phase(object, phase = phase)
+  
+  if(base::is.null(well_plates)){
     
-    well_plate <- getWellPlateNames(object)[1]
+    well_plates <- getWellPlateNames(object)
+    
+  } else {
+    
+    confuns::check_one_of(
+      input = well_plates, 
+      against = getWellPlateNames(object)
+    )
     
   }
   
+  # color_by
+  stat_vars <- getStatVariableNames(object)
+  
+  confuns::check_one_of(
+    input = color_by, 
+    against = c("cell_line", "condition", "count", stat_vars)
+  )
+  
+  # summarize_with
+  confuns::check_one_of(
+    input = summarize_with, 
+    against = base::names(stat_funs)
+  )
+  
+  stat_fun <- stat_funs[[summarize_with]]
+  
+  
+  # prepare well plate set up data.frame  
   wp_df <- object@well_plates[[well_plate]]$wp_df_eval
-
-  if(base::is.null(wp_df)){
-    
-    wp_df <- object@well_plates[[well_plate]]$wp_df
-    
-  }
-    
-  pt_size <- size_well
-  pt_stroke <- 2
   
-  border <- 0.75
+  wp_df <-
+    purrr::imap_dfr(
+      .x = object@well_plates[well_plates],
+      .f = function(wp_list, wp_name){
+      
+      wp_df <- wp_list$wp_df
+      
+      if(base::is.null(wp_df)){
+        
+        wp_df <- wp_list$wp_df_eval
+        
+      }
+      
+      wp_df$well_plate_name <- wp_name
+      
+      base::return(wp_df)
+      
+    })
   
-  limit_x <- base::max(wp_df$col_num) + border
-  limit_y <- base::max(wp_df$row_num) + border
+  wp_df <- 
+    dplyr::select(wp_df,
+      row_num, col_num, row_letter, well, availability_status, 
+      cell_line, condition, group, well_plate_name
+      )
   
-  if(multiplePhases(object) && base::is.character(color_by) && color_by == "condition"){
+  # extract data df
+  if(multiplePhases(object) & color_by %in% c(stat_vars, "count")){
     
-    getPhases(object)
+    data_df <- 
+      purrr::map_df(.x = phase, .f = function(p){
+        
+        getStatsDf(object, phase = p, with_cluster = FALSE, with_meta = FALSE, with_well_plate = TRUE) %>% 
+          dplyr::mutate(phase = {{p}})
+        
+      }) %>% 
+      dplyr::group_by(well_plate_name, well, phase) 
     
-    c_names <- base::colnames(wp_df$condition_df[[1]])
+    data_df$phase <- 
+      stringr::str_c( confuns::make_capital_letters(data_df$phase, collapse.with = NULL), "Phase:", sep = " ")
     
-    wp_df <- 
-      tidyr::unnest(wp_df, cols = "condition_df") %>% 
-      dplyr::select(-condition) %>% 
-      tidyr::pivot_longer(
-        cols = dplyr::all_of(x = c_names), 
-        names_to = "phases", 
-        values_to = "condition"
+    join_df <- dplyr::select(wp_df, well, row_num, col_num) 
+    
+    complete_well_df <- 
+      tidyr::expand_grid(
+        well = base::unique(wp_df$well), 
+        well_plate_name = base::unique(wp_df$well_plate_name), 
+        phase = base::unique(data_df$phase)
       ) %>% 
-      dplyr::mutate(
-        condition = tidyr::replace_na(condition, replace = "unknown"), 
-        condition = dplyr::case_when(information_status == "Discarded" ~ "Discarded", TRUE ~ condition)
-        )
-    
-    facet_add_on <- ggplot2::facet_wrap(facets = . ~ phases, ...)
-    
-    border_add_on <- NULL
+      dplyr::left_join(
+        x = ., 
+        y = join_df, 
+        by = "well"
+      )
       
     
   } else {
     
-    facet_add_on <- NULL
+    # phase irrelevant
+    phase <- 1
     
-    border_add_on <- 
-      ggforce::geom_mark_rect(
-        mapping = ggplot2::aes(x = col_num, y = row_num, color = group),
-        color = "black", size = 1, expand = ggplot2::unit(15, "mm")
-      ) 
+    data_df <-
+      getStatsDf(
+        object = object,
+        phase = phase,
+        with_meta = TRUE,
+        with_well_plate = TRUE,
+        with_cluster = FALSE
+      ) %>% 
+      dplyr::group_by(well_plate_name, well)
+    
+    join_df <- dplyr::select(wp_df, well, row_num, col_num) 
+    
+    complete_well_df <- 
+      tidyr::expand_grid(
+        well = base::unique(wp_df$well), 
+        well_plate_name = base::unique(wp_df$well_plate_name)
+      ) %>% 
+      dplyr::left_join(
+        x = ., 
+        y = join_df, 
+        by = "well"
+      )
     
   }
   
+  # set plot values 
+  pt_size <- well_size
+  pt_stroke <- 2
+  border <- 0.75
+  limit_x <- base::max(wp_df$col_num) + border
+  limit_y <- base::max(wp_df$row_num) + border
   
-  if(color_by == "information_status"){
+  # calculate numeric summary if necessary
+  if(!color_by %in% c("cell_line", "condition")){
     
-    clrp_adjust <- colors_information_status
+    # numeric coloring
+    color_add_on <- 
+      confuns::scale_color_add_on(
+        aes = "fill", variable = wp_df[[color_by]], clrsp = clrsp, 
+        na.value = "lightgrey", ...
+      ) 
+    
+    guides_add_on <- ggplot2::guides(color = FALSE)
+    
+    if(color_by == "count"){
+      
+      smrd_df <- 
+        dplyr::summarise(data_df, count = dplyr::n())
+      
+    } else {
+      
+      confuns::give_feedback(
+        msg = glue::glue("Summarizing variable '{color_by}' with {summarize_with}."),
+        verbose = verbose
+      )
+      
+      smrd_df <- 
+        dplyr::summarise(
+          .data = data_df, 
+          dplyr::across(
+            .cols = !!rlang::sym(color_by), 
+            .fns = stat_fun
+          )
+        )
+      
+    }
+    
+    wp_df <- 
+      dplyr::left_join(x = wp_df, y = smrd_df, by = c("well", "well_plate_name"))
+    
+    
+    if("phase" %in% base::colnames(smrd_df)){
+      
+      wp_df <- 
+        dplyr::left_join(x = complete_well_df, y = wp_df, by = c("row_num", "col_num", "well", "well_plate_name", "phase")) %>% 
+        # column for geom_mark_rect - aes(color = )
+        dplyr::mutate(well_plate_name_phase = stringr::str_c(well_plate_name, phase, sep = "_"))
+      
+    } else {
+      
+      wp_df <- 
+        dplyr::left_join(x = complete_well_df, y = wp_df, by = c("row_num", "col_num", "well", "well_plate_name"))
+      
+    }
+    
     
   } else {
     
-    clrp_adjust <- c(clrp_adjust, "Discarded" = "lightgrey")
+    # discrete coloring 
+    color_add_on <- 
+      confuns::scale_color_add_on(
+        aes = "fill", variable = wp_df[[color_by]], clrp = "milo", 
+        clrp.adjust = c(clrp_adjust, "unknown" = "lightgrey", "unknown & unknown" = "lightgrey")
+      )
+    
+    guides_add_on <- 
+      ggplot2::guides(
+        color = FALSE, 
+        fill = ggplot2::guide_legend(override.aes = list(size = 10, shape = 21))
+      )
+    
+  }
+
+  # prepare add ons 
+  # well plate edge
+  if(base::isTRUE(display_edge)){
+    
+    if("phase" %in% base::colnames(data_df)){
+      
+      mapping_edge <- 
+        ggplot2::aes(x = col_num, y = row_num, color = well_plate_name_phase)
+      
+    } else {
+      
+      mapping_edge <- 
+        ggplot2::aes(x = col_num, y = row_num, color = well_plate_name)
+      
+    }
+    
+    edge_add_on <- 
+      ggforce::geom_mark_rect(
+        mapping = mapping_edge,
+        size = 1, expand = ggplot2::unit(15, "mm")
+      ) 
+    
+  } else {
+    
+    edge_add_on <- NULL
     
   }
   
+  # well labels
   if(base::isTRUE(display_labels)){
     
     text_add_on <- ggplot2::geom_text(mapping = ggplot2::aes(label = well))
@@ -263,30 +446,107 @@ plotWellPlate <- function(object,
     
   }
   
+  # well geometries
+  if(plot_type == "well"){
+    
+    geom_add_on <- 
+      ggplot2::geom_point(
+        data = wp_df,
+        mapping = ggplot2::aes(fill = .data[[color_by]]),
+        alpha = alpha,
+        shape = 21,
+        size = well_size,
+        stroke = border_size, 
+        color = border_clr
+      )
+    
+  } else if(plot_type == "tile"){
+    
+    if(base::isTRUE(display_border)){
+      
+      geom_add_on <- 
+        ggplot2::geom_tile(
+          data = wp_df,
+          mapping = ggplot2::aes(fill = .data[[color_by]]),
+          alpha = alpha,
+          color = border_clr,
+          size = border_size
+        )
+      
+    } else {
+      
+      geom_add_on <- 
+        ggplot2::geom_tile(
+          data = wp_df,
+          mapping = ggplot2::aes(fill = .data[[color_by]])
+        )
+      
+    }
+    
+  }
+  
+  # split by phase 
+  if("phase" %in% base::colnames(data_df)){
+    
+    facet_add_on <- 
+      ggplot2::facet_grid(rows = well_plate_name ~ phase, switch = "y")
+    
+  } else {
+    
+    facet_add_on <-
+      ggplot2::facet_wrap(facets = . ~ well_plate_name, nrow = nrow, ncol = ncol)
+    
+  }
+  
+  if(color_by == "information_status"){
+    
+    clrp_adjust <- colors_information_status
+    
+    edge_adjust <- NULL
+    
+  } else {
+    
+    clrp_adjust <- c(clrp_adjust, "Discarded" = "lightgrey")
+  
+    if("phase" %in% base::colnames(data_df)){
+      
+      well_plates <- base::unique(wp_df$well_plate_name_phase)
+      
+    }
+    
+    edge_adjust <- 
+      purrr::set_names(x = base::rep(edge_clr, base::length(well_plates)), well_plates)  
+  }
+  
   
   # plot output
   ggplot2::ggplot(data = wp_df, mapping = ggplot2::aes(x = col_num,y = row_num)) + 
-    ggplot2::geom_point(data = wp_df, mapping = ggplot2::aes(fill = .data[[color_by]]),
-      size = pt_size, shape = 21, alpha = 1, stroke = pt_stroke, 
-    ) + 
+    geom_add_on + 
     text_add_on +
+    color_add_on +
+    facet_add_on + 
+    edge_add_on +
+    guides_add_on + 
     ggplot2::scale_x_continuous(limits = c(-border, limit_x)) +
     ggplot2::scale_y_reverse(limits = c(border + limit_y, -border)) +
-    ggplot2::theme_void() +
-    ggplot2::guides(
-      color = ggplot2::guide_legend(override.aes = list(size = 10, shape = 21)), 
-      fill = ggplot2::guide_legend(override.aes = list(size = 10, shape = 21))
-      ) + 
+    ggplot2::labs(x = NULL, y = NULL)  + 
     confuns::scale_color_add_on(
-      aes = "fill", variable = wp_df[[color_by]], clrp = "milo", 
-      clrp.adjust = c(clrp_adjust, "unknown" = "lightgrey", "unknown & unknown" = "lightgrey")
-      ) + 
-    ggplot2::labs(
-      fill = confuns::make_capital_letters(string = color_by, capital.letters = make_pretty)
+      aes = "color", 
+      variable = wp_df$well_plate_name, 
+      clrp = "milo",
+      clrsp = clrsp,
+      clrp.adjust = edge_adjust
     ) + 
-    facet_add_on + 
-    border_add_on
-  
+    ggplot2::theme_classic() + 
+    ggplot2::theme(
+      panel.grid.major = ggplot2::element_blank(), 
+      panel.grid.minor = ggplot2::element_blank(), 
+      strip.background = ggplot2::element_rect(fill = ggplot2::alpha("steelblue", 0.75)),
+      panel.background = ggplot2::element_blank(), 
+      axis.line = ggplot2::element_blank(), 
+      axis.ticks = ggplot2::element_blank(), 
+      axis.text = ggplot2::element_blank()
+    ) 
   
 }
 

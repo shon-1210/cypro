@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Obtain variable overview — getVariableValues • cypro</title>
+<title>Initiate empty cypro object — initiateEmptyCyproObject • cypro</title>
 
 
 <!-- jquery -->
@@ -39,10 +39,9 @@
 
 
 
-<meta property="og:title" content="Obtain variable overview — getVariableValues" />
-<meta property="og:description" content="If the variable denoted in variable_name is categorical (character or factor)
-all unique values/levels are returned. If the variable is numeric it is given to
-psych::describe() which returns a statistical summary." />
+<meta property="og:title" content="Initiate empty cypro object — initiateEmptyCyproObject" />
+<meta property="og:description" content="Initiates an empty cypro object and
+adds the version under which is is created." />
 
 
 
@@ -164,42 +163,27 @@ psych::describe() which returns a statistical summary." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Obtain variable overview</h1>
-    <small class="dont-index">Source: <a href='https://github.com/theMILOlab/cypro/blob/master/R/deprecated.R'><code>R/deprecated.R</code></a></small>
-    <div class="hidden name"><code>getVariableValues.Rd</code></div>
+    <h1>Initiate empty cypro object</h1>
+    <small class="dont-index">Source: <a href='https://github.com/theMILOlab/cypro/blob/master/R/object-initiation.R'><code>R/object-initiation.R</code></a></small>
+    <div class="hidden name"><code>initiateEmptyCyproObject.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>If the variable denoted in <em>variable_name</em> is categorical (character or factor)
-all unique values/levels are returned. If the variable is numeric it is given to
-<code><a href='https://rdrr.io/pkg/psych/man/describe.html'>psych::describe()</a></code> which returns a statistical summary.</p>
+    <p>Initiates an empty cypro object and
+adds the version under which is is created.</p>
     </div>
 
-    <div class="ref-usage sourceCode"><pre class='sourceCode r'><code><span class='fu'>getVariableValues</span><span class='op'>(</span><span class='va'>object</span>, phase <span class='op'>=</span> <span class='cn'>NULL</span>, <span class='va'>variable_name</span><span class='op'>)</span></code></pre></div>
+    <div class="ref-usage sourceCode"><pre class='sourceCode r'><code><span class='fu'>initiateEmptyCyproObject</span><span class='op'>(</span><span class='va'>...</span><span class='op'>)</span></code></pre></div>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>object</th>
-      <td><p>A valid cypro object.</p></td>
-    </tr>
-    <tr>
-      <th>phase</th>
-      <td><p>Character value. The ordinal value referring to the phase of interest (e.g. <em>'first'</em>, <em>'second'</em> etc.).
-referring to the phase of interest. If set to NULL takes the phase denoted as default with <code>adjustDefault()</code>.</p>
-<p>Ignored if the experiment design contains only one phase.</p></td>
-    </tr>
-    <tr>
-      <th>variable_name</th>
-      <td><p>Character value. Denotes the variable of interest. Valid inputs can be
-obtained via the function <code>getVariableNames()</code>.</p></td>
+      <th>...</th>
+      <td></td>
     </tr>
     </table>
 
-    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
-
-    <p>A character vector or a data.frame of one row containing basic descriptive statistics.</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

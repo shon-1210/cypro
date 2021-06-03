@@ -18,8 +18,6 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
       
 # Reactive values ---------------------------------------------------------
   
-  # a list again containing a list for each set up well plate
-      
   measurements_string <- shiny::reactiveVal(value = base::character())
   
   example_list <- shiny::reactiveVal(value = list(loaded = FALSE))
@@ -27,7 +25,6 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
   well_plate_df <- shiny::reactiveVal(value = data.frame())
   well_plate_list <- shiny::reactiveVal(value = list())
   well_plate_name <- shiny::reactiveVal(value = base::character(1))
-  
   
   # list containing all the information regarding the experiment's design
   # - the return value of this module

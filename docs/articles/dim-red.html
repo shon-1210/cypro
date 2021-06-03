@@ -85,7 +85,7 @@
       <a href="../articles/clustering.html">Clustering</a>
     </li>
     <li>
-      <a href="../articles/plotting-stats.html">Statistical tests and pltos</a>
+      <a href="../articles/plotting-stats.html">Statistical tests and plots</a>
     </li>
     <li class="dropdown-header">Modules</li>
     <li>
@@ -215,14 +215,12 @@ Figure 1.1 Visualization of PCA based on the variable set ‘intensity’
 <code class="sourceCode R"><span class="fu"><a href="../reference/plotPca.html">plotUmap</a></span><span class="op">(</span><span class="va">object</span>, 
          variable_set <span class="op">=</span> <span class="st">"intensity"</span>, 
          color_by <span class="op">=</span> <span class="st">"condition"</span>, 
-         pt_size <span class="op">=</span> <span class="fl">1</span>, 
-         nrow <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>
+         pt_size <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>
 
 <span class="fu"><a href="../reference/plotPca.html">plotUmap</a></span><span class="op">(</span><span class="va">object</span>, 
          variable_set <span class="op">=</span> <span class="st">"intensity"</span>, 
          color_by <span class="op">=</span> <span class="st">"kmeans_Lloyd_k_4_(intensity)"</span>, 
-         pt_size <span class="op">=</span> <span class="fl">1</span>, 
-         nrow <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> </code></pre></div>
+         pt_size <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> </code></pre></div>
 <div class="figure">
 <img src="dim-red_files/figure-html/plot-u-1.png" alt="Figure 1.2 Visualization of UMAP embedding based on the variable set 'intensity'" width="50%"><img src="dim-red_files/figure-html/plot-u-2.png" alt="Figure 1.2 Visualization of UMAP embedding based on the variable set 'intensity'" width="50%"><p class="caption">
 Figure 1.2 Visualization of UMAP embedding based on the variable set ‘intensity’
@@ -232,7 +230,7 @@ Figure 1.2 Visualization of UMAP embedding based on the variable set ‘intensit
 <div id="extraction" class="section level2">
 <h2 class="hasAnchor">
 <a href="#extraction" class="anchor" aria-hidden="true"></a>4. Extraction</h2>
-<p>Dimensional reduction is stored in the <code>@analysis</code>-slot under <code>$dim_red</code>. Every dimensional reduction for every variable set is stored in a specific S4-object as programmed in the package <a href="https://github.com/kueckelj/confuns/blob/master/R/dimensional-reduction.R" class="external-link"><code>confuns</code></a> called <em>dim_red_conv</em>. Use the respective function <code><a href="../reference/getPcaConv.html">getPcaConv()</a></code>, <code><a href="../reference/getPcaConv.html">getTsneConv()</a></code>, <code><a href="../reference/getPcaConv.html">getUmapConv()</a></code> to extract the S4-objects containing all data needed to proceed with the analysis on your own terms.</p>
+<p>Dimensional reduction is stored in the <code>@analysis</code>-slot under <code>$dim_red</code>. Every dimensional reduction for every variable set is stored in a specific S4-object as programmed in the package <a href="https://github.com/kueckelj/confuns/blob/master/R/dimensional-reduction.R" class="external-link"><code>confuns</code></a> called <em>dim_red_conv</em>. Use the respective function <code><a href="../reference/getPcaConv.html">getPcaObject()</a></code>, <code><a href="../reference/getPcaConv.html">getTsneObject()</a></code>, <code><a href="../reference/getPcaConv.html">getUmapObject()</a></code> to extract the S4-objects containing all data needed to proceed with the analysis on your own terms.</p>
 </div>
   </div>
 
