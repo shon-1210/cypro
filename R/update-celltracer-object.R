@@ -13,7 +13,7 @@
 #'
 updateCyproObject <- function(object){
   
-  stopifnot(base::class(object) == "cto")
+  stopifnot(base::class(object) == "cypro")
   
   # include old Cypro objects
   all_slot_names <- methods::slotNames(object)
@@ -47,7 +47,7 @@ updateCyproObject <- function(object){
   }
   
   # updating 
-  new_object <- methods::new(Class = "cto")
+  new_object <- initiateEmptyCyproObject()
   
   if(base::identical(version, current_version)){
     

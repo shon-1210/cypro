@@ -26,6 +26,11 @@ Removes the data from the cell ids detected by \code{detectOutliers()} from
 the object. As this changes the data set all clustering-, correlation- and dimensional
 reduction results are reset.
 }
+\details{
+Cell are removed via a reversed application of \code{subsetByCellId()}.
+You can therefore keep track of conducted outlier removal by using function \code{printSubsetHistory()}
+which prints summary text on how, when and why you subsetted the cypro object.
+}
 \seealso{
 detectOutliers()
 }

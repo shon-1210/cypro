@@ -620,6 +620,8 @@ subsetByFilter <- function(object, new_name, ..., phase = NULL, verbose = NULL){
 #' every group. 
 #' @param n_total Numeric value or NA If numeric, denotes the final number of cells that the subsetted object is supposed 
 #' to contain. The number of cells that is randomly selected by group is calculated accordingly. 
+#' @param weighted Logical value. If set to TRUE and the object is subsetted according to \code{n_total} it makes sure that 
+#' the proportion each group specified in argument \code{across} represents stays the same. See details for more.
 #' 
 #' @details Creating subsets of your data affects analysis results such as clustering and correlation which 
 #' is why these results are reset in the subsetted object and must be computed again. To prevent inadvertent overwriting 
@@ -645,6 +647,14 @@ subsetByFilter <- function(object, new_name, ..., phase = NULL, verbose = NULL){
 #' E.g \code{across} = \emph{'condition'} and \code{n_total} = 10.000, if the cypro object contains 
 #' 4 different conditions 2500 cells of each condition will be in the returned object. 
 #' 
+#' If you want to keep the distribution across a grouping variable as is set argument \code{weighted}
+#' to TRUE. In this case every groups proportion of cells is computed and the number of cells 
+#' representative for each group is adjusted. 
+#' 
+#' E.g \code{across} = \emph{'condition'} and \code{n_total} = 10.000, if the cypro object contains 
+#' 4 different conditions and condition a represents 40% of all cells while condition b-d each represent
+#' 20 % the returned cypro object contains 4000 cells of condition a and each 2000 cells of condition b-d. 
+#' 
 #' @note In case of experiment set ups with multiple phases: 
 #' 
 #' As creating subsets of your data affects downstream analysis results you have to
@@ -656,7 +666,14 @@ subsetByFilter <- function(object, new_name, ..., phase = NULL, verbose = NULL){
 #' @return A cypro object that contains the data for the subsetted cells. 
 #' @export
 #'
-subsetByNumber <- function(object, new_name, across = c("cell_line", "condition"), n_by_group = NA, n_total = NA, phase = NULL, verbose = NULL){
+subsetByNumber <- function(object,
+                           new_name,
+                           across = c("cell_line", "condition"),
+                           n_by_group = NA,
+                           n_total = NA,
+                           weighted = FALSE, 
+                           phase = NULL,
+                           verbose = NULL){
   
   check_object(object)
   check_phase_manually(object, phase = phase)
@@ -689,6 +706,7 @@ subsetByNumber <- function(object, new_name, across = c("cell_line", "condition"
   } else if(base::is.numeric(n_by_group)){
     
     ref_arg <- "n_by_group"
+    weighted <- FALSE # FALSE, irrespective of input
     
     cell_ids <- 
       dplyr::group_by(cell_ids_df, !!rlang::sym(combined_name)) %>% 
@@ -703,12 +721,55 @@ subsetByNumber <- function(object, new_name, across = c("cell_line", "condition"
       dplyr::pull(cell_ids_df, var = {{combined_name}}) %>% 
       dplyr::n_distinct()
     
-    n_by_group <- base::round(n_total/n_groups, digits = 0)
+    all_groups <- 
+      dplyr::pull(cell_ids_df, var = {{combined_name}}) %>% 
+      base::unique()
     
-    cell_ids <- 
-      dplyr::group_by(cell_ids_df, !!rlang::sym(combined_name)) %>% 
-      dplyr::slice_sample(n = n_by_group) %>% 
-      dplyr::pull(cell_id)
+    if(base::isTRUE(weighted)){
+      
+      weights_df <- 
+        dplyr::group_by(cell_ids_df, !!rlang::sym(combined_name)) %>% 
+        dplyr::summarise(count = dplyr::n()) %>% 
+        dplyr::ungroup() %>% 
+        dplyr::mutate(
+          total = nCells(object), 
+          perc = count / total
+          )
+      
+      cell_ids <- 
+        purrr::map(
+          .x = all_groups, 
+          .f = function(group){
+            
+            perc_val <- 
+              dplyr::filter(weights_df, !!rlang::sym(combined_name) == {{group}}) %>% 
+              dplyr::pull(perc)
+            
+            n_of_group <-
+              base::round(n_total * perc_val, digits = 0)
+            
+            ids <- 
+              dplyr::filter(cell_ids_df, !!rlang::sym(combined_name) == {{group}}) %>% 
+              dplyr::slice_sample(n = n_of_group) %>% 
+              dplyr::pull(cell_id)
+            
+            base::return(ids)
+            
+          }
+        ) %>% 
+        purrr::flatten_chr()
+      
+      
+    } else {
+      
+      n_by_group <- base::round(n_total/n_groups, digits = 0)
+      
+      cell_ids <- 
+        dplyr::group_by(cell_ids_df, !!rlang::sym(combined_name)) %>% 
+        dplyr::slice_sample(n = n_by_group) %>% 
+        dplyr::pull(cell_id)
+      
+    }
     
   }
   
@@ -727,7 +788,7 @@ subsetByNumber <- function(object, new_name, across = c("cell_line", "condition"
                    phase = phase,
                    verbose = FALSE,
                    new_name = new_name,
-                   subset_by = list(by = "number", across = across, n_type = ref_arg, n_val = n_by_group)
+                   subset_by = list(by = "number", across = across, n_type = ref_arg, n_val = n_by_group, weighted = weighted)
     )
   
   confuns::give_feedback(msg = "Done.", verbose = verbose)

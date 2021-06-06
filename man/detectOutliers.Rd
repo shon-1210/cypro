@@ -2,7 +2,7 @@
 % Please edit documentation in R/outlier-detection.R
 \name{detectOutliers}
 \alias{detectOutliers}
-\title{Detect outliers}
+\title{Detect outlier cells}
 \usage{
 detectOutliers(
   object,
@@ -28,13 +28,29 @@ the computational progress will be printed.
 An updated version of the input \code{cypro}-object.
 }
 \description{
-There are several methods according to which outliers can be detected or
+There are several methods according to which outlier cells can be detected or
 defined. Which one to use strongly depends on the researchers question at hand. See details
 for more information on which method does what exactly.
 }
 \details{
 This function only detects outliers. It does not remove them from the object. Use \code{removeOutliers()}
-for that matter.
+for that matter. To get more insights in the outlier detection results before removing them
+use \code{getOutlierResults()}.
+
+Method: Interquartile Range (iqr)
+
+Every stat variable denoted in argument \code{variable_names} is screened via
+R's built in function \code{grDevices::boxplot.stats()}. Every ID that is
+recognized as an outlier is stored in a list slot named after the stat variable
+under which it was detected as an outlier.
+
+Method: mahalanobis
+
+Multivariate outlier detection method. Mahalanobis distance is computed including
+all stat variables denoted in argument \code{variable_names} via \code{stats::mahalanobis()}.
+P-values are calculated via \code{stats::pchisq()} and cells are filtered according
+to the threshold set with argument \code{threshold_pval}. Cells with a mahalanobis distance
+p-value lower or equal than the threshold are defined as outliers.
 }
 \seealso{
 removeOutliers()

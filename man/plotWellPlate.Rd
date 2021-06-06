@@ -6,25 +6,72 @@
 \usage{
 plotWellPlate(
   object,
-  well_plate = NULL,
+  phase = NULL,
+  well_plates = NULL,
   color_by = "condition",
-  size_well = 13.5,
+  summarize_with = "median",
+  plot_type = "well",
+  well_size = 13.5,
+  display_border = TRUE,
+  border_clr = "black",
+  border_size = 1,
+  display_edge = TRUE,
+  edge_clr = "black",
   display_labels = TRUE,
+  alpha = 0.9,
+  clrp = "milo",
   clrp_adjust = NULL,
-  make_pretty = NULL,
+  clrsp = "Blues",
+  ncol = NULL,
+  nrow = NULL,
   ...
 )
 }
 \arguments{
 \item{object}{A valid cypro object.}
 
-\item{well_plate}{Character value. The name of the well plate of interest. Valid inputs can be obtained
-via \code{getWellPlateNames()}.}
+\item{phase}{Character value. The ordinal value referring to the phase of interest (e.g. \emph{'first'}, \emph{'second'} etc.).
+referring to the phase of interest. If set to NULL takes the phase denoted as default with \code{adjustDefault()}.
+
+Ignored if the experiment design contains only one phase.}
+
+\item{plot_type}{Character value. Either \emph{'well'} or \emph{'tile'}.
+Affects the geometry with which the wells are displayed. (Either
+with \code{ggplot2::geom_point()} or with \code{ggplot2::geom_tile()}).}
+
+\item{well_size}{Numeric value. Denotes the size with which each well is plotted
+if argument \code{plot_type} is set to \emph{'well'}.}
+
+\item{display_border}{Logical value. If set to TRUE a line is drawn around
+the geometric objects displaying the wells.}
+
+\item{border_clr}{Character value. Denotes the color of the wells borders.}
+
+\item{border_size}{Numeric value. Denotes the thickness of the wells borders.}
+
+\item{display_edge}{Logical value. If set to TRUE \code{ggforce::geom_mark_rect()}
+is used to display the edges of the well plate.}
+
+\item{edge_clr}{Character value. Denotes the color of the well plates edge.}
+
+\item{clrp}{Character value. Specifies the color palette to be used to represent
+groups of discrete variables. Run \code{validColorPalettes()} to obtain valid
+input options.}
 
 \item{clrp_adjust}{Named character vector or NULL. If character, it adjusts the
 color palette that is used to represent the groups. Names of the input vector must refer
 to the group and the respective named element denotes the color with which to
 represent the group.}
+
+\item{clrsp}{Character value. Specifies the color spectrum to be used to represent
+continuous values of numeric variables. Run \code{validColorSpectra()} to obtain
+valid input options.}
+
+\item{ncol}{Given to \code{ggplot2::facet_wrap()}. Affects the way the subplots
+are displayed.}
+
+\item{nrow}{Given to \code{ggplot2::facet_wrap()}. Affects the way the subplots
+are displayed.}
 }
 \value{
 A ggplot.

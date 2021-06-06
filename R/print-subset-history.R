@@ -263,12 +263,18 @@ subset_history_number <- function(info, slot_name, object){
   
   phase <- make_phase(object, info)
   
+  method <- 
+    stringr::str_c("Method: ", info$n_type)
+  
+  weighted <- 
+    stringr::str_c("Weighted: ", info$weighted)
+  
   across <- 
     glue::glue_collapse(info$across, sep = "', '", last = "' and '") %>% 
     stringr::str_c("Across: '", ., "'")
   
   text <- 
-    stringr::str_c(header, phase, across, footer, sep = "\n")
+    stringr::str_c(header, phase, method, weighted, across, footer, sep = "\n")
   
   base::return(text)
   

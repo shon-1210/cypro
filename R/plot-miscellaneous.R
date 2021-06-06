@@ -4,12 +4,9 @@
 ggplot_return <- function(){}
 
 
-
 #' @title ggplot_return
 #' @return A ggplot. 
 ggplot_family <- function(){}
-
-
 
 
 #' @title Plot cell count 

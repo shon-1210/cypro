@@ -1,14 +1,17 @@
 
+
+# confuns helpers ---------------------------------------------------------
+
 #' @title Valid colorpanels & -spectra
 #' @export
-allColorpanels <- confuns::all_color_palettes
+allColorpalettes <- confuns::all_color_palettes
 
-#' @rdname allColorpanels
+#' @rdname allColorpalettes
 #' @export
 allColorspectra <- confuns::all_color_spectra
 
-
-
+# not exported 
+scollapse <- confuns::scollapse
 
 
 # tidyselect helpers ------------------------------------------------------

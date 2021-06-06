@@ -1,7 +1,7 @@
 Package: cypro
 Type: Package
 Title: A Toolbox for Analysis of Single Cell Microscopy Data
-Version: 0.1.0
+Version: 0.2.0
 Authors@R: as.person(c(
     "Jan Kueckelhaus <jan.kueckelhaus@uniklinik-freiburg.de> [aut, cre]", 
     "Dieter-Henrik Heiland <dr.dieter.henrik.heiland@uniklinik-freiburg.de> [aut]"

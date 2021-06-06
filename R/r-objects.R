@@ -62,7 +62,7 @@ colors_information_status = c("Complete" = "forestgreen",
                               "Missing" = "red", 
                               "Discarded" = "lightgrey")
 
-current_version <- list(major = 0, minor = 1, patch = 0)
+current_version <- list(major = 0, minor = 2, patch = 0)
 
 debug_ct <- FALSE
 

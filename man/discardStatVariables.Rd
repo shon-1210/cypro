@@ -2,14 +2,18 @@
 % Please edit documentation in R/discard-family.R
 \name{discardStatVariables}
 \alias{discardStatVariables}
+\alias{keepStatVariables}
 \title{Discard unwanted variables from your data}
 \usage{
 discardStatVariables(object, stat_variables, verbose = NULL)
+
+keepStatVariables(object, stat_variables, verbose = NULL)
 }
 \arguments{
 \item{object}{A valid cypro object.}
 
-\item{stat_variables}{Character vector. The variables from the cell statistics data you want to discard.}
+\item{stat_variables}{Character vector. The variables from the cell statistics data you want to discard
+in case of \code{discardStatVariables()} or keep in case of \code{keepStatVariables()}.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
@@ -29,9 +33,12 @@ decreasing the overall object size.
 \details{
 As clustering and dimensional reduction results base on stat variables
 or variable sets to be more precise all clustering results in slot @analysis that included variables denoted
-in argument \code{stat_variables} are discarded, too! This is because clustering
+in argument \code{stat_variables} are discarded, too. This is because clustering
 results based on variable x, y and z might differ from results based
 on only variables x and y.
+
+Defined variable sets including variables that are discarded are modified in a way that
+they only contain variables that remain in the cypro object.
 
 Correlation results are not discarded but only filtered accordingly. This is because correlation
 results between variable x and variable y are not affected by discarding variable z.

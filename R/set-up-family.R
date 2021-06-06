@@ -195,9 +195,10 @@ set_up_vdata <- function(object, verbose = TRUE){
     
     vdata$summary <- 
       purrr::map(.x = getPhases(object), 
-                 .f = function(phase){
+                 .f = function(p){
                    
-                   getStatsDf(object, phase = phase) %>% 
+                   vdf <- 
+                    getStatsDf(object, phase = p) %>% 
                      dplyr::select_if(base::is.numeric) %>% 
                      base::as.matrix() %>% 
                      psych::describe(IQR = TRUE) %>% 
@@ -205,12 +206,22 @@ set_up_vdata <- function(object, verbose = TRUE){
                      tibble::rownames_to_column(var = "variable") %>% 
                      tibble::as_tibble() 
                    
+                   confuns::give_feedback(msg = "Counting NAs.", verbose = verbose)
+                   
+                   vdf$count_na <- 
+                     getStatsDf(object, phase = p) %>% 
+                     dplyr::select_if(base::is.numeric) %>% 
+                     purrr::map_int(.f = ~ base::is.na(.x) %>% base::sum())
+                   
+                   base::return(vdf)
+                   
                  }) %>% 
       purrr::set_names(nm = getPhases(object))
     
   } else {
     
-    # over all phases
+    confuns::give_feedback(msg = "Counting NAs.", verbose = verbose)
+    
     stats_mtr <- 
       getStatsDf(object) %>% 
       dplyr::select_if(.predicate = base::is.numeric) %>% 
@@ -221,6 +232,11 @@ set_up_vdata <- function(object, verbose = TRUE){
       base::as.data.frame() %>% 
       tibble::rownames_to_column(var = "variable") %>% 
       tibble::as_tibble() 
+    
+    vdata$summary$count_na <- 
+      getStatsDf(object, phase = p) %>% 
+      dplyr::select_if(base::is.numeric) %>% 
+      purrr::map_int(.f = ~ base::is.na(.x) %>% base::sum())
     
   }
   

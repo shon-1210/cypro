@@ -249,6 +249,20 @@ check_renamed_variables <- function(cnames){
 }
 
 
+#' @title Input check of summarize_with
+check_summarize_with <- function(summarize_with, max_length = 1){
+  
+  confuns::is_vec(x = summarize_with, mode = "character", max.length = 1)
+  
+  confuns::check_one_of(
+    input = summarize_with, 
+    against = base::names(stat_funs)
+  )
+  
+  
+}
+
+
 #' @title Check track data.frame 
 #'
 #' @param track_df A data.frame in which each observation refers to a cell at a given frame and 

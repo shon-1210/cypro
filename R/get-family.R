@@ -716,7 +716,7 @@ getOutlierResults <- function(object, method_outlier = NULL, check = TRUE){
     
   }
   
-  outlier_list <- object@analysis$outlier_detection
+  outlier_list <- object@qcheck$outlier_detection
   
   if(base::is.character(method_outlier)){
     
@@ -741,7 +741,7 @@ getOutlierIds <- function(object, method_outlier = NULL, check = FALSE, flatten 
   
   if(base::is.null(method_outlier)){
     
-    method_outlier <- base::names(object@analysis$outlier_detection)
+    method_outlier <- base::names(object@qcheck$outlier_detection)
     
   }
   

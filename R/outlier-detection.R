@@ -1,15 +1,32 @@
 
 
-#' @title Detect outliers
+#' @title Detect outlier cells 
 #' 
-#' @description There are several methods according to which outliers can be detected or 
+#' @description There are several methods according to which outlier cells can be detected or 
 #' defined. Which one to use strongly depends on the researchers question at hand. See details
 #' for more information on which method does what exactly.
 #'
 #' @inherit argument_dummy
 #' 
 #' @details This function only detects outliers. It does not remove them from the object. Use \code{removeOutliers()}
-#' for that matter.
+#' for that matter. To get more insights in the outlier detection results before removing them 
+#' use \code{getOutlierResults()}.
+#' 
+#' Method: Interquartile Range (iqr)
+#' 
+#' Every stat variable denoted in argument \code{variable_names} is screened via 
+#' R's built in function \code{grDevices::boxplot.stats()}. Every ID that is 
+#' recognized as an outlier is stored in a list slot named after the stat variable
+#' under which it was detected as an outlier. 
+#'
+#' Method: mahalanobis
+#' 
+#' Multivariate outlier detection method. Mahalanobis distance is computed including 
+#' all stat variables denoted in argument \code{variable_names} via \code{stats::mahalanobis()}.
+#' P-values are calculated via \code{stats::pchisq()} and cells are filtered according 
+#' to the threshold set with argument \code{threshold_pval}. Cells with a mahalanobis distance
+#' p-value lower or equal than the threshold are defined as outliers. 
+#' 
 #'
 #' @inherit updated_object return
 #' 
@@ -41,8 +58,6 @@ detectOutliers <- function(object,
   
   confuns::give_feedback(msg = "Done.", verbose = verbose)
   
-  
-  
   base::return(object)
   
 }
@@ -55,8 +70,11 @@ detectOutliers <- function(object,
 #' reduction results are reset. 
 #'
 #' @inherit argument_dummy params 
-#'
 #' @inherit updated_object return
+#' 
+#' @details Cell are removed via a reversed application of \code{subsetByCellId()}.
+#' You can therefore keep track of conducted outlier removal by using function \code{printSubsetHistory()}
+#' which prints summary text on how, when and why you subsetted the cypro object. 
 #' 
 #' @seealso detectOutliers()
 #' @export
@@ -89,12 +107,29 @@ removeOutliers <- function(object, method_outlier = NULL, verbose = NULL){
     
     confuns::give_feedback(msg = msg, verbose = verbose)
     
-    object <- subsetByCellId(object, cell_ids = keep_ids, verbose = verbose)
+    object <-
+      subsetByCellId(
+        object = object,
+        cell_ids = keep_ids,
+        reasoning = glue::glue("Outlier removal. Methods: '{scollapse(method_outlier)}'"),
+        verbose = verbose)
     
     object@analysis <- list()
     
-    object@information$outliers_removed <-
-      list(ids = outlier_ids, methods = outlier_methods)
+    # set information
+    if(!base::is.null(object@information$outliers_removed)){
+      
+      object@information$outliers_removed <-
+        c(object@information$outliers_removed, list(outlier_ids = outlier_ids, methods = outlier_methods))
+      
+    } else {
+      
+      object@information$outliers_removed <- list(outlier_ids = outlier_ids, methods = outlier_methods)
+      
+    }
+    
+    base::names(object@information$outliers_removed) <- 
+      base::seq_along(object@information$outliers_removed) %>% english::ordinal()
     
   }
   
@@ -120,11 +155,11 @@ detect_outliers_iqr <- function(object, variable_names = NULL, verbose = NULL){
   confuns::give_feedback(msg = "Running outlier detection with method = 'iqr'")
   
   outlier_results <- 
-    purrr::map(.x = getPhases(object), # in case of non time lapse experiment phase is ignored anyway
+    purrr::map(.x = getPhases(object), # iterate over phases: in case of non time lapse experiment phase is ignored anyway
                .f = function(phase){
                  
                  stat_df <-
-                   getStatsDf(object, phase = phase, with_cluster = FALSE, with_meta = FALSE) %>% 
+                   getStatsDf(object, phase = phase, with_grouping = FALSE) %>% 
                    dplyr::select(cell_id, dplyr::all_of(variable_names))
                  
                  numeric_vars <-
@@ -149,8 +184,6 @@ detect_outliers_iqr <- function(object, variable_names = NULL, verbose = NULL){
                    }) %>% 
                    purrr::set_names(nm = numeric_vars)
                  
-                 
-                 
                }) %>% 
     purrr::set_names(getPhases(object))
   
@@ -160,7 +193,7 @@ detect_outliers_iqr <- function(object, variable_names = NULL, verbose = NULL){
     
   }
   
-  object@analysis$outlier_detection$iqr <- outlier_results
+  object@qcheck$outlier_detection$iqr <- outlier_results
   
   msg <- glue::glue("Found {n} {ref_outliers}.",
                     n = base::length(getOutlierIds(object, method_outlier = "iqr")), 
@@ -190,26 +223,28 @@ detect_outliers_mahalanobis <- function(object, variable_names = NULL, threshold
                .f = function(phase){
                  
                  stat_df <-
-                   getStatsDf(object, phase = phase, with_cluster = FALSE, with_meta = FALSE) %>% 
+                   getStatsDf(object, phase = phase, with_grouping = FALSE) %>% 
                    dplyr::select(cell_id, dplyr::all_of(variable_names)) %>% 
                    tibble::column_to_rownames(var = "cell_id")
                  
                  stat_df$mahal <- 
-                   stats::mahalanobis(x = stat_df,
-                                      center = base::colMeans(stat_df), 
-                                      cov = stats::cov(stat_df)
-                                      )
+                   stats::mahalanobis(
+                     x = stat_df,
+                     center = base::colMeans(stat_df),
+                     cov = stats::cov(stat_df)
+                     )
                  
                  stat_df$pval <- 
-                   stats::pchisq(q = stat_df$mahal, 
-                                 df = base::length(variable_names)-1, 
-                                 lower.tail = FALSE
-                                 )
+                   stats::pchisq(
+                     q = stat_df$mahal,
+                     df = base::length(variable_names)-1,
+                     lower.tail = FALSE
+                   )
                  
                  outlier_ids <- 
                    tibble::rownames_to_column(stat_df, var = "cell_id") %>% 
                    dplyr::filter(pval <= {{threshold_pval}}) %>% 
-                   pull(cell_id)
+                   dplyr::pull(cell_id)
                  
                  base::return(outlier_ids)
                  
@@ -222,7 +257,7 @@ detect_outliers_mahalanobis <- function(object, variable_names = NULL, threshold
     
   }
   
-  object@analysis$outlier_detection$mahalanobis <- 
+  object@qcheck$outlier_detection$mahalanobis <- 
     list(
       outlier_ids = outlier_results, 
       threshold_pval = threshold_pval, 

@@ -83,13 +83,17 @@ discardMetaVariables <- function(object, meta_variables, phase = NULL){
 #'
 #' @inherit argument_dummy 
 #' @param cluster_variables Character vector. The cluster variables you want to discard.
-#' @param stat_variables Character vector. The variables from the cell statistics data you want to discard. 
+#' @param stat_variables Character vector. The variables from the cell statistics data you want to discard
+#' in case of \code{discardStatVariables()} or keep in case of \code{keepStatVariables()}. 
 
 #' @details As clustering and dimensional reduction results base on stat variables 
 #' or variable sets to be more precise all clustering results in slot @@analysis that included variables denoted
-#' in argument \code{stat_variables} are discarded, too! This is because clustering
+#' in argument \code{stat_variables} are discarded, too. This is because clustering
 #' results based on variable x, y and z might differ from results based 
 #' on only variables x and y. 
+#' 
+#' Defined variable sets including variables that are discarded are modified in a way that 
+#' they only contain variables that remain in the cypro object.
 #' 
 #' Correlation results are not discarded but only filtered accordingly. This is because correlation 
 #' results between variable x and variable y are not affected by discarding variable z. 
@@ -103,15 +107,12 @@ discardStatVariables <- function(object, stat_variables, verbose = NULL){
   
   assign_default(object)
   
-  phase <- check_phase(object, phase = phase, max_phases = 1)
-  
   stat_variables <- base::unique(stat_variables)
   
   confuns::check_one_of(
     input = stat_variables, 
-    against = getStatVariableNames(object, phase = phase)
+    against = getStatVariableNames(object)
   )
-  
   
   # variable sets 
   affected_vsets <- 
@@ -220,6 +221,32 @@ discardStatVariables <- function(object, stat_variables, verbose = NULL){
   confuns::give_feedback(msg = msg, verbose = verbose)
   
   base::return(object)
+  
+}
+
+#' @rdname discardStatVariables
+#' @export
+keepStatVariables <- function(object, stat_variables, verbose = NULL){
+  
+  check_object(object)
+  
+  assign_default(object)
+  
+  all_stat_variables <- getStatVariableNames(object)
+  
+  confuns::check_one_of(
+    input = stat_variables, 
+    against = all_stat_variables
+  )
+  
+  discard_variables <-
+    all_stat_variables[!all_stat_variables %in% stat_variables]
+  
+  object <-
+    discardStatVariables(object, stat_variables = discard_variables, verbose = verbose)
+  
+  base::return(object)
+  
   
 }
 
