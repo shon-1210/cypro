@@ -49,6 +49,8 @@ app_title <- "Cypro"
 
 ambiguity_colors <- c("Clear" = "#1CE35B", "Ambiguous" = "#E02424", "Dismissed" = "lightgrey")
 
+cdata_slots <- c("cluster", "meta", "stats", "tracks", "well_plate")
+
 colors_grey <- c("unknown" = "lightgrey",
                  "unknown & unknown" = "lightgrey",
                  "Dismissed" = "lightgrey")
@@ -204,7 +206,8 @@ object_class <- "cypro"
 base::attr(object_class, which = "package") <- "cypro"
 
 protected_vars <- c("cell_id", "cell_line", "condition",
-                    "well_plate_name", "well_plate_index", "well",  "well_image")
+                    "well_plate_name", "well_plate_index", "well",  "well_image", 
+                    "x_coords", "y_coords")
 
 set_up_funs <- list(experiment_design = "designExperiment()", 
                     load_data = "loadData()", 

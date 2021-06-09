@@ -813,8 +813,7 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
     if(base::length(all_phases()) > 1){
      
       new_condition <- 
-        purrr::map(.x = all_phases(), 
-                   .f = function(p){
+        purrr::map(.x = all_phases(), .f = function(p){
                      
                      input[[stringr::str_c("ed_condition", p, sep = "_")]]
                      

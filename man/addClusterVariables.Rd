@@ -39,6 +39,21 @@ referring to the phase of interest. If set to NULL takes the phase denoted as de
 
 Ignored if the experiment design contains only one phase.}
 
+\item{overwrite}{Logical value. Must be set to TRUE in case of overlapping
+variable names.
+
+(Note that overwriting stat variables leads to all analysis progress of affected
+variable sets being discarded.)}
+
+\item{by}{Character value. Denotes the variable by which the new informational
+variables specified in argument \code{variable_names} are supposed to be joined.
+In case of \code{addClusterVariables()} and \code{addMetaVariables()} this does not
+have to be \emph{'cell_id'}.
+
+E.g. if you want to add additional grouping options that refer to the conditions such
+as \emph{'mechanism_of_action'} again grouping the conditions you can specify
+\code{by} = \emph{'condition'}.}
+
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 

@@ -64,6 +64,15 @@ addVariableSet <- function(object, variable_names, set_name, overwrite = FALSE, 
 #' 
 #' @inherit argument_dummy params
 #' @inherit check_object params 
+#' @param by Character value. Denotes the variable by which the new informational 
+#' variables specified in argument \code{variable_names} are supposed to be joined. 
+#' In case of \code{addClusterVariables()} and \code{addMetaVariables()} this does not 
+#' have to be \emph{'cell_id'}. 
+#' 
+#' E.g. if you want to add additional grouping options that refer to the conditions such 
+#' as \emph{'mechanism_of_action'} again grouping the conditions you can specify
+#' \code{by} = \emph{'condition'}.
+#' 
 #' @param input_df A data.frame that contains the variables denoted in argument \code{variable_names}
 #' as well as a character variable named according to input of argument \code{by} that is used to match 
 #' and join both data.frames. 
@@ -175,7 +184,6 @@ addMetaVariables <- function(object,
 #' 
 #' @inherit addClusterVariables params
 #' @inherit argument_dummy params
-#' @inherit check_object params 
 #' @param stat_df A data.frame that contains the variables denoted in argument \code{variable_names}
 #' as well as a character variable named \emph{cell_id} matching the cell ids of the input object. 
 #' @param variable_names Character vector. The name of the variables that are to be joined.
@@ -193,12 +201,14 @@ addStatVariables <- function(object,
   check_object(object)
   assign_default(object)
   
-  phase <- check_phase(object, phase, max_phases = 1)
+  phase <- check_phase(object, phase = phase, max_phases = 1)
   
   new_input_df <- 
     dplyr::select(input_df, dplyr::all_of(x = c("cell_id", variable_names)))
   
-  if(phase %in% base::colnames(new_input_df)){
+  new_vars <- base::colnames(input_df) %>% confuns::vselect(-cell_id)
+  
+  if(phase %in% new_vars){
     
     new_input_df$phase <- NULL
     
@@ -208,7 +218,45 @@ addStatVariables <- function(object,
     
   }
   
-  old_stat_df <- getGroupingDf(object, phase = phase)
+  old_stat_df <-
+    getStatsDf(
+      object = object,
+      phase = phase,
+      with_grouping = FALSE,
+      verbose = FALSE
+      )
+  
+  stat_vars <- getStatVariableNames(object, phase = phase)
+  
+  overlap <- base::intersect(new_vars, stat_vars)
+  
+  if(base::length(overlap) >= 1){
+    
+    if(base::isTRUE(overwrite)){
+      
+      confuns::give_feedback(msg = "Discarding overlapping variables.", verbose = verbose)
+      
+      object <- discardStatVariables(object, stat_variables = overlap, verbose = verbose)
+      
+    } else {
+      
+      msg <- 
+        glue::glue(
+          "Data variables of 'input_df' and stat data.frame overlap:", 
+          " '{confuns::scollapse(overlap)}' ", 
+          "Set argument 'overwrite' to TRUE in order to allow overwriting.",
+          ref_vars = confuns::adapt_reference(overlap, "variable", "variables")
+        )
+      
+      confuns::give_feedback(
+        msg = msg, 
+        fdb.fn = "stop", 
+        with.time = FALSE
+      )
+      
+    }
+    
+  }
   
   updated_stat_df <- 
     confuns::join_safely(

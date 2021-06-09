@@ -6,18 +6,32 @@
 
 #' @title Detect batch effects
 #' 
-#' @description Batch effects result from undesired technical variation and can lead to 
-#' misenterpretation and false conclusion. This function computes the distances of each
-#' well median profile across all well plates. 
+#' @description This function does the necessary computation to detect 
+#' batch effects in your data. See details for more.  
 #'
 #' @inherit argument_dummy params
+#' 
+#' @details Batch effects result from undesired technical variation and can lead to 
+#' misinterpretation and false conclusion. This does two things: 
+#' First it creates summarized median profiles for each well by grouping the 
+#' cell data by well plate name and well via \code{dplyr::group_by()} and 
+#' then summarizes all stat variables via \code{dplyr::summarize_all()}. 
+#' 
+#' It then computes the distances between all wells. If wells of well plates 
+#' that were set up in one batch cluster together it is likely that batch effects
+#' impact your data. 
+#' 
+#' Hint: This logic only applies to experiment designs in which conditions are 
+#' randomly distributed over well plates as a wells condition highly impacts
+#' its median profile. 
 #'
 #' @inherit updated_object return
+#' 
+#' @seealso plotBatchHeatmap(), getBatchEffectDf()
+#' 
 #' @export
 #'
-detectBatchEffects <- function(object,
-       
-                               verbose = TRUE){
+detectBatchEffects <- function(object, verbose = TRUE){
   
   check_object(object)
   
@@ -49,7 +63,7 @@ detectBatchEffects <- function(object,
   
   # compute well profiles 
   
-  confuns::give_feedback(msg = "Computing profiles by well.", verbose = verbose)
+  confuns::give_feedback(msg = "Computing median profiles by well.", verbose = verbose)
   
   well_profile_df <- 
     getStatsDf(object, phase = phase, with_well_plate = TRUE) %>% 
@@ -66,11 +80,9 @@ detectBatchEffects <- function(object,
     dplyr::select(where(base::is.numeric))
   
   # compute distances 
+  confuns::give_feedback(msg = "Computing euclidean distance across all wells.", verbose = verbose)
+  
   dist_mtr <- stats::dist(x = num_df)
-  
-  mtr <- base::as.matrix(dist_mtr)
-  
-  corr_mtr <- stats::cor(mtr)
   
   object@qcheck$batch_effects <- 
     list(
@@ -78,6 +90,8 @@ detectBatchEffects <- function(object,
       profiles = well_profile_df, 
       dist_mtr = dist_mtr
     )
+  
+  confuns::give_feedback(msg = "Done.", verbose = verbose)
   
   base::return(object)
   
@@ -148,6 +162,12 @@ plotBatchHeatmap <- function(object, clrp = "milo", verbose = NULL, correlated =
   )
   
 }
+
+
+
+
+
+
 
 
 

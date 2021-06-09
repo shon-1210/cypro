@@ -133,6 +133,13 @@ dim_red_df <- function(dim_red_df){}
 #' 
 #' @param n_cells Numeric calue. Determines the number of cells that are randomly chosen from 
 #' every group to be displayed. Useful to keep plots insightful and aesthetically pleasing.
+#' 
+#' @param overwrite Logical value. Must be set to TRUE in case of overlapping 
+#' variable names.
+#' 
+#' (Note that overwriting stat variables leads to all analysis progress of affected
+#' variable sets being discarded.)  
+#' 
 #' @param pretty_names Logical. If set to TRUE the function attempts to convert the concisely named 
 #' variables into more aesthetically pleasing ones. 
 #' @param pt_alpha Numeric value. Specifies the degree of transparency of all points.

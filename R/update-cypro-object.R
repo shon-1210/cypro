@@ -19,7 +19,7 @@ updateCyproObject <- function(object){
   all_slot_names <- methods::slotNames(object)
   
   content <- 
-    purrr::map(all_slot_names, .f =purrr::safely(~methods::slot(object, name = .x))) %>% 
+    purrr::map(all_slot_names, .f = purrr::safely(~ methods::slot(object, name = .x))) %>% 
     purrr::set_names(nm = all_slot_names)
   
   success <- 
@@ -32,19 +32,7 @@ updateCyproObject <- function(object){
   
   error_names <- base::names(errors)
   
-  if(!shiny::isTruthy(error_names)){
-    
-    version <- object@version
-    
-  } else if(base::all(new_slots %in% error_names)){
-    
-    version <- "old"
-    
-  } else {
-    
-    version <- "alpha-development"
-    
-  }
+  version <- object@version
   
   # updating 
   new_object <- initiateEmptyCyproObject()
@@ -53,11 +41,11 @@ updateCyproObject <- function(object){
     
     stop("Updating not possible. Input object already has been updated to the newest version.")
     
-  } else if(version == "old"){
+  } else if(!base::is.list(version)){
     
     stop("Updating not possible. Please initiate the cypro object again.")
     
-  } else if(version == "alpha-development"){
+  } else {
     
     for(slot in success_names){
       

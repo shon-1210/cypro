@@ -15,6 +15,21 @@ adjustableDefaultInstructions <- function(){
 }
 
 
+#' @title Protected variables
+#' 
+#' @description Obtain a character vector of names from variables
+#' that must not be renamed and whose content must not be changed. 
+#' 
+#' @return Character vector. 
+#' 
+#' @export
+#' 
+protectedVariables <- function(){
+  
+  protected_vars  
+  
+}
+  
 
 #' @title Valid input options
 #' 

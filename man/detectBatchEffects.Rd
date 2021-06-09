@@ -18,7 +18,24 @@ the computational progress will be printed.
 An updated version of the input \code{cypro}-object.
 }
 \description{
+This function does the necessary computation to detect
+batch effects in your data. See details for more.
+}
+\details{
 Batch effects result from undesired technical variation and can lead to
-misenterpretation and false conclusion. This function computes the distances of each
-well median profile across all well plates.
+misinterpretation and false conclusion. This does two things:
+First it creates summarized median profiles for each well by grouping the
+cell data by well plate name and well via \code{dplyr::group_by()} and
+then summarizes all stat variables via \code{dplyr::summarize_all()}.
+
+It then computes the distances between all wells. If wells of well plates
+that were set up in one batch cluster together it is likely that batch effects
+impact your data.
+
+Hint: This logic only applies to experiment designs in which conditions are
+randomly distributed over well plates as a wells condition highly impacts
+its median profile.
+}
+\seealso{
+plotBatchHeatmap(), getBatchEffectDf()
 }

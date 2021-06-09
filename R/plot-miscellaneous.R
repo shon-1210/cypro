@@ -239,8 +239,6 @@ plotWellPlate <- function(object,
   
   
   # prepare well plate set up data.frame  
-  wp_df <- object@well_plates[[well_plate]]$wp_df_eval
-  
   wp_df <-
     purrr::imap_dfr(
       .x = object@well_plates[well_plates],
