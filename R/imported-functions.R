@@ -35,6 +35,14 @@ contains <- tidyselect::contains
 #' @export
 matches <- tidyselect::matches
 
+#' @rdname starts_with
+#' @export
+all_of <- tidyselect::all_of
+
+#' @rdname starts_with
+#' @export
+any_of <- tidyselect::any_of
+
 
 #' @importFrom magrittr %>%
 #'

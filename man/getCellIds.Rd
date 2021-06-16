@@ -4,14 +4,15 @@
 \alias{getCellIds}
 \title{Get cell ids}
 \usage{
-getCellIds(object, ..., na_max = Inf, phase = NULL)
+getCellIds(object, ..., phase = NULL)
 }
 \arguments{
 \item{object}{A valid cypro object.}
 
-\item{na_max}{Numeric value. Sets the threshold of the maximum number of missing values
-a cell can have across all variables. Ignored if set to NULL or if the experiment
-is not of type \emph{timelapse}.}
+\item{...}{<\code{\link[dplyr:dplyr_data_masking]{data-masking}}> Expressions that return a
+logical value, and are defined in terms of the variables in \code{.data}.
+If multiple expressions are included, they are combined with the \code{&} operator.
+Only rows for which all conditions evaluate to \code{TRUE} are kept.}
 
 \item{phase}{Character value. The ordinal value referring to the phase of interest (e.g. \emph{'first'}, \emph{'second'} etc.).
 referring to the phase of interest. If set to NULL takes the phase denoted as default with \code{adjustDefault()}.
@@ -22,5 +23,6 @@ Ignored if the experiment design contains only one phase.}
 Character vector of cell ids.
 }
 \description{
-Allows to filter cell ids according to a variety of aspects.
+Using the ... options the stats data can be
+subsetted in the style of \code{dplyr::filter()}.
 }

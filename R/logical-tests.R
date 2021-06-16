@@ -1,3 +1,6 @@
+#' @include cypro-modules.R
+NULL
+
 #' @title Logical Tests
 #' 
 #' @description Logical tests that return TRUE if the specified functions/algorithms
@@ -28,9 +31,25 @@ isTimeLapseExp <- function(object){
 
 #' @rdname existOutlierResults
 #' @export
-isUsable <- function(object, module){
+isUsable <- function(object, module, verbose = FALSE){
   
-  base::return(base::isTRUE(object@information$modules[[module]]))
+  if(base::is.list(object@modules[[module]])){
+    
+    res <- TRUE
+    
+  } else {
+    
+    res <- FALSE
+    
+    if(base::isTRUE(verbose)){
+      
+      stop(glue::glue("Module '{module}' is not usable with this cypro object."))
+      
+    }
+    
+  }
+  
+  base::return(res)
   
 }
 
@@ -49,5 +68,14 @@ multiplePhases <- function(object){
   }
   
 }
+
+
+
+
+
+# not exported ------------------------------------------------------------
+
+
+
 
 

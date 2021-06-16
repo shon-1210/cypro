@@ -11,12 +11,17 @@ existOutlierResults(object)
 
 isTimeLapseExp(object)
 
-isUsable(object, module)
+isUsable(object, module, verbose = FALSE)
 
 multiplePhases(object)
 }
 \arguments{
 \item{object}{A valid cypro object.}
+
+\item{verbose}{Logical. If set to TRUE informative messages regarding
+the computational progress will be printed.
+
+(Warning messages will always be printed.)}
 }
 \value{
 TRUE or FALSE

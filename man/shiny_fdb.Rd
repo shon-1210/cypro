@@ -4,7 +4,7 @@
 \alias{shiny_fdb}
 \title{Show shiny - notifications}
 \usage{
-shiny_fdb(in_shiny, ui, type = "message", ...)
+shiny_fdb(in_shiny = TRUE, ui, type = "message", ...)
 }
 \arguments{
 \item{in_shiny}{Logical value.}

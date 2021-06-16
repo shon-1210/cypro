@@ -196,31 +196,32 @@ check_phase_manually <- function(object, phase = NULL){
 #' 
 #' @description Returns \code{variable} if it was not detected in the column names 
 #' of the specified data.frame. To be used in \code{purrr::map()} with argument \code{.x}
-#' set to \code{original_ct_variables}
-#' @param variable Character value. The variable to be checked.
+#' set to a vector of all used variable names.
+#' @param variable_name Character value. The name of the variable to be checked.
 #' @param df A read in cell track data.frame.
 #'
 
-check_df_variables <- function(variable, df){
+check_df_variables <- function(variable_name, df){
   
   cnames <- base::colnames(df)
   
-  if(variable %in% cnames){
+  if(variable_name %in% cnames){
     
     NULL
     
-  } else if(base::any(stringr::str_detect(cnames, pattern = variable))){
+  } else if(base::any(stringr::str_detect(cnames, pattern = variable_name))){
     
     NULL
     
   } else {
     
-    base::return(variable)
+    base::return(variable_name)
     
   }
   
 }
 
+find_missing_variables_shiny <- check_df_variables
 
 #' @title Detect protected variables
 #' @description Makes sure that renaming variables does not conflict with 

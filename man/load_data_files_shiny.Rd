@@ -4,7 +4,15 @@
 \alias{load_data_files_shiny}
 \title{Read in cell track data}
 \usage{
-load_data_files_shiny(wp_list, wp_name, session, object)
+load_data_files_shiny(
+  wp_list,
+  wp_name,
+  session,
+  object,
+  assembled_module_info_lists,
+  used_variable_names,
+  mitosis_module_used
+)
 }
 \arguments{
 \item{wp_list}{A well plate list.}

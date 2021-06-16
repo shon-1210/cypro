@@ -4,7 +4,15 @@
 \alias{read_data_files_shiny}
 \title{Reads cell track data}
 \usage{
-read_data_files_shiny(directory, progress_n, progress, object)
+read_data_files_shiny(
+  directory,
+  progress_n,
+  progress,
+  object,
+  used_variable_names,
+  assembled_module_info_lists,
+  mitosis_module_used = FALSE
+)
 }
 \arguments{
 \item{directory}{Character value. The directory from which to read the data.frame.
@@ -13,12 +21,22 @@ of \code{.x} contains.}
 \item{progress_n}{Numeric value. Indicates the iterating progress.}
 
 \item{progress}{A shiny - R6 progress object.}
+
+\item{assembled_module_info_lists}{A list of three slots:
+
+'identifier' = pdl_step_2_info_assembled()
+'analysis_modules' = pdl_step_3_info_assembled(),
+'additional' = pdl_step_4_info_assembled()}
 }
 \value{
 The read in data.frame with three additional informative columns: \emph{well_image, condition}
 and \emph{cell_line}.
 }
 \description{
-A function to be used for argument \code{.f} of \code{purrr::map_df}.
-Calls the respective reading function depending on the directory's ending.
+A function to be used for argument \code{.f} of \code{purrr::map2()}.
+\enumerate{
+\item Calls the respective reading function depending on the directory's ending.
+\item Makes sure that all denoted variables exist
+\item Makes sure that all denoted variables have valid content
+}
 }

@@ -4,14 +4,14 @@
 \alias{compute_migration_efficiency}
 \title{Calculate migration efficiency}
 \usage{
-compute_migration_efficiency(x_coords, y_coords, actual_distance)
+compute_migration_efficiency(x_coords, y_coords, total_dist)
 }
 \arguments{
 \item{x_coords}{Numeric vector. Refers to x-coordinates of object.}
 
 \item{y_coords}{Numeric vector. Refers to y-coordinates of object.}
 
-\item{actual_distance}{Numeric vector/value. Refers to the total distance
+\item{total_dist}{Numeric vector/value. Refers to the total distance
 the object of interested has traveled.}
 }
 \value{

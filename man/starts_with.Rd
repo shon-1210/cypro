@@ -5,6 +5,8 @@
 \alias{ends_with}
 \alias{contains}
 \alias{matches}
+\alias{all_of}
+\alias{any_of}
 \title{Imported selection helpers from package 'tidyselect'}
 \usage{
 starts_with(match, ignore.case = TRUE, vars = NULL)
@@ -14,6 +16,10 @@ ends_with(match, ignore.case = TRUE, vars = NULL)
 contains(match, ignore.case = TRUE, vars = NULL)
 
 matches(match, ignore.case = TRUE, perl = FALSE, vars = NULL)
+
+all_of(x)
+
+any_of(x, ..., vars = NULL)
 }
 \arguments{
 \item{match}{A character vector. If length > 1, the union of the

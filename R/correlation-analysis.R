@@ -33,8 +33,6 @@ initiateCorrelation <- function(object,
   check_object(object)
   assign_default(object)
   
-  variables <- getVariableSet(object, variable_set = variable_set)
-  
   if(multiplePhases(object)){
     
     phase <- check_phase(object, phase = phase, max_phases = 1)
@@ -47,35 +45,49 @@ initiateCorrelation <- function(object,
     
   }
   
+  variables <- getVariableSet(object, variable_set = variable_set)
   
   if(base::class(corr_object) != "corr_conv" | base::isTRUE(force)){
 
-    stat_df <- 
-      getStatsDf(object, with_cluster = FALSE, with_meta = FALSE, with_well_plate = FALSE) %>% 
+    df <- 
+      getStatsOrTracksDf(object = object, phase = phase) %>% 
       dplyr::select(cell_id, dplyr::all_of(variables))
     
-    corr_object <- confuns::initiate_corr_object(corr.data = stat_df, key.name = "cell_id")
+    corr_object <-
+      confuns::initiate_corr_object(
+        corr.data = df,
+        key.name = "cell_id"
+        )
     
-    msg <- glue::glue("Successfully initiated correlation analysis {ref_phase}with '{variable_set}'-variables: '{variables}'", 
-                      variables = glue::glue_collapse(x = variables, sep = "', '", last = "' and '", width = 100), 
-                      ref_phase = hlpr_glue_phase(object, phase))
+    msg <- 
+      glue::glue(
+        "Successfully initiated correlation analysis {ref_phase}with '{variable_set}'-variables: '{variables}'",
+        variables = glue::glue_collapse(x = variables, sep = "', '", last = "' and '", width = 100),
+        ref_phase = hlpr_glue_phase(object, phase)
+        )
     
     confuns::give_feedback(msg = msg, verbose = verbose, with.time = FALSE)
     
   } else {
     
-    msg <- glue::glue("Correlation analysis {ref_phase}with variable set '{variable_set}' already exists. Set argument 'force' to TRUE in order to overwrite it.", 
-                      ref_phase = hlpr_glue_phase(object, phase))
+    msg <-
+      glue::glue(
+        "Correlation analysis {ref_phase}with variable set '{variable_set}' already exists.",
+        "Set argument 'force' to TRUE in order to overwrite it.", 
+        ref_phase = hlpr_glue_phase(object, phase)
+        )
     
     confuns::give_feedback(msg = msg, fdb.fn = "stop", with.time = FALSE)
     
   }
   
   object <-
-    setCorrConv(object = object,
-                corr_object = corr_object,
-                variable_set = variable_set,
-                phase = phase)
+    setCorrConv(
+      object = object,
+      corr_object = corr_object,
+      variable_set = variable_set,
+      phase = phase
+    )
   
   base::return(object)  
   
@@ -112,11 +124,19 @@ correlateAll <- function(object, variable_set, method_corr = NULL, phase = NULL,
   
   phase <- check_phase(object, phase = phase, max_phases = 1)
   
-  corr_object <- getCorrConv(object, variable_set = variable_set, phase = phase)
+  corr_object <-
+    getCorrConv(object, variable_set = variable_set, phase = phase)
   
-  corr_object <- confuns::correlate_all(corr.obj = corr_object, methods.corr = method_corr)
+  corr_object <-
+    confuns::correlate_all(corr.obj = corr_object, methods.corr = method_corr)
   
-  object <- setCorrConv(object, corr_object = corr_object, variable_set = variable_set, phase = phase)
+  object <-
+    setCorrConv(
+      object = object,
+      corr_object = corr_object,
+      variable_set = variable_set,
+      phase = phase
+      )
   
   confuns::give_feedback(msg = "Done.", verbose = verbose)
   
@@ -138,7 +158,12 @@ correlateAcross <- function(object,
   
   phase <- check_phase(object, phase = phase, max_phases = 1)
   
-  corr_object <- getCorrConv(object, variable_set = variable_set, phase = phase)
+  corr_object <- 
+    getCorrConv(
+      object = object,
+      variable_set = variable_set,
+      phase = phase
+      )
   
   corr_object <- 
     confuns::correlate_across(
@@ -150,7 +175,12 @@ correlateAcross <- function(object,
     )
   
   object <-
-    setCorrConv(object, corr_object = corr_object, variable_set = variable_set, phase = phase)
+    setCorrConv(
+      object = object,
+      corr_object = corr_object,
+      variable_set = variable_set,
+      phase = phase
+      )
   
   confuns::give_feedback(msg = "Done.", verbose = verbose)
   

@@ -4,15 +4,15 @@
 \alias{check_df_variables}
 \title{Detect missing variables}
 \usage{
-check_df_variables(variable, df)
+check_df_variables(variable_name, df)
 }
 \arguments{
-\item{variable}{Character value. The variable to be checked.}
+\item{variable_name}{Character value. The name of the variable to be checked.}
 
 \item{df}{A read in cell track data.frame.}
 }
 \description{
 Returns \code{variable} if it was not detected in the column names
 of the specified data.frame. To be used in \code{purrr::map()} with argument \code{.x}
-set to \code{original_ct_variables}
+set to a vector of all used variable names.
 }

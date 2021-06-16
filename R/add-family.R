@@ -24,7 +24,7 @@ add_family <- function(){}
 #' @inherit update_object return
 #' @export
 #'
-addVariableSet <- function(object, variable_names, set_name, overwrite = FALSE, phase = NULL){
+addVariableSet <- function(object, variable_names, set_name, overwrite = FALSE){
   
   check_object(object)
   
@@ -43,9 +43,21 @@ addVariableSet <- function(object, variable_names, set_name, overwrite = FALSE, 
     
   }
   
+  if(isTimeLapseExp(object)){
+    
+    valid_variables <- 
+      getTrackVariableNames(object)
+    
+  } else {
+    
+    valid_variables <- 
+      getStatVariableNames(object)
+    
+  }
+  
   confuns::check_one_of(
     input = variable_names, 
-    against = getStatVariableNames(object, phase = phase)
+    against = valid_variables
   )
   
   object@variable_sets[[set_name]] <- variable_names

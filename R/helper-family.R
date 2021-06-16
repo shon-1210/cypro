@@ -15,7 +15,7 @@ hlpr_add_data_to_cluster_object <- function(object, cluster_object, with_data, p
     variables <- cluster_object@variables
     
     data_mtr <-
-      getStatsDf(object, phase = phase) %>% 
+      getStatsOrTracksDf(object = object, phase = phase) %>% 
       dplyr::select(cell_id, dplyr::all_of(x = variables)) %>% 
       tibble::column_to_rownames(var = "cell_id") %>% 
       base::as.matrix()
@@ -133,6 +133,10 @@ hlpr_caption_add_on <- function(object, phase){
   
 }
 
+
+
+
+
 #' @title ggplot2 add on helpers
 #' 
 #' @description Functions that either return an empty list 
@@ -249,27 +253,42 @@ hlpr_glue_phase <- function(object, phase, empty_space = TRUE, string = "for"){ 
   
 }
 
-#' @title Assess number of missing values
-#' 
-#' @description Returns the maximum count of missing values per cell id 
-#' across all variables
-#'
-hlpr_max_track_na_count <- function(object){
+#' Selects or discards messages from lists within purrr::keep()
+hlpr_keep_messages <- function(x){
   
-  df <- object@information$track_na_count
-  
-  max_nas <- 
-    base::apply(X = dplyr::select(df, -cell_id), 
-                MARGIN = 1, 
-                FUN = base::max)
-  
-  res_df <- 
-    dplyr::mutate(df, max_nas = {{max_nas}}) %>% 
-    dplyr::select(cell_id, max_nas)
-  
-  base::return(res_df)
+  if(base::length(x) == 1 &&
+     base::is.character(x) &&
+     stringr::str_detect(x, pattern = "^ - ")){
+    
+    return(TRUE)
+    
+  } else {
+    
+    return(FALSE)
+    
+  }
   
 }
+
+#' @rdname hlpr_keep_messages
+hlpr_discard_messages_missing <- function(x){
+  
+  if(base::length(x) > 1){
+    
+    return(FALSE)
+    
+  } else if(stringr::str_detect(x, pattern = "is missing\\.$")){
+    
+    return(TRUE)
+    
+  } else {
+    
+    return(FALSE)
+    
+  }
+  
+}
+
 
 
 #' @title Merge conditions
@@ -315,7 +334,15 @@ hlpr_merge_condition_by_id <- function(condition){
   
 }
 
-
+#' Returns a vector of names in example named by the actual reference in cypro
+#'
+hlpr_module_name_pairs <- function(assembled_module_info){
+  
+  purrr::map(.x = assembled_module_info$variables, .f = ~ .x$name_in_example) %>% 
+    purrr::flatten_chr() %>% 
+    purrr::set_names(nm = base::names(assembled_module_info$variables))
+  
+}
 
 
 #' @title Make pretty column names 
@@ -420,7 +447,7 @@ hlpr_order_input <- function(order_input){
  
 hlpr_process_tracks <- function(df, phase, object, verbose){
   
-  # ensure that phase is deault with as a character
+  # ensure that phase is default with as a character
   phase <- check_phase(object, phase = phase)
   
   itvl <- object@set_up$itvl
@@ -436,11 +463,12 @@ hlpr_process_tracks <- function(df, phase, object, verbose){
   
   df <- dplyr::ungroup(df)
   
-  # split dfs to avoid NAs in grouping variables
+  # split df to avoid NAs in grouping variables
   group_df <- 
     dplyr::select(df, cell_id, dplyr::starts_with("well"), where(base::is.factor))
   
-  numeric_df <- dplyr::select(df, cell_id, where(base::is.numeric))
+  numeric_df <-
+    dplyr::select(df, cell_id, where(base::is.numeric))
   
   complete_num_df <- 
     tidyr::expand_grid(cell_id = {{all_cell_ids}}, frame = {{all_frames}}) %>% 
@@ -456,10 +484,10 @@ hlpr_process_tracks <- function(df, phase, object, verbose){
   # ignored if only one phase exist as phase in this case can only be "first"
   if(phase != "first"){
     
-    n_phase <- base::which(getPhases(object) == phase) - 1
+    prev_phase <- base::which(getPhases(object) == phase) - 1
     
     prev_track_df <- 
-      object@cdata$tracks[[n_phase]] %>% 
+      object@cdata$tracks[[prev_phase]] %>% 
       dplyr::group_by(cell_id) %>% 
       dplyr::slice_max(frame) %>% # slice by frame as frame_num is not part of object data yet
       dplyr::select(cell_id, where(base::is.numeric))
@@ -475,8 +503,7 @@ hlpr_process_tracks <- function(df, phase, object, verbose){
   
   mutated_df <- 
     dplyr::mutate(.data = complete_df, 
-      frame_num = frame,
-      frame_time = frame * itvl,
+      frame_time = frame_num * itvl,
       frame_itvl = stringr::str_c(frame_time, itvl_u, sep = " "),
       frame = NULL
       ) %>% 

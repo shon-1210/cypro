@@ -59,21 +59,19 @@ initiateHierarchicalClustering <- function(object,
   
   if(base::class(cluster_object) != "hclust_conv" | base::isTRUE(force)){
     
-    stat_df <- getStatsDf(object = object, 
-                          phase = phase,
-                          with_cluster = FALSE, 
-                          with_meta = FALSE) %>% 
+    df <-
+      getStatsOrTracksDf(object = object, phase = phase) %>% 
       dplyr::select(cell_id, dplyr::all_of(variables))
     
-    cell_ids <- stat_df$cell_id
-    stat_df$cell_id <- NULL
+    cell_ids <- df$cell_id
+    df$cell_id <- NULL
     
-    stat_df <- base::as.data.frame(stat_df)
-    base::rownames(stat_df) <- cell_ids
+    df <- base::as.data.frame(df)
+    base::rownames(df) <- cell_ids
     
     cluster_object <- 
       confuns::initiate_hclust_object(
-        hclust.data = stat_df, 
+        hclust.data = df, 
         key.name = "cell_id",
         scale = scale,
         default.aggl = object@default$method_aggl, 
@@ -135,21 +133,19 @@ initiateKmeansClustering <- function(object,
   
   if(base::class(cluster_object) != "kmeans_conv" | base::isTRUE(force)){
     
-    stat_df <- getStatsDf(object = object, 
-                          phase = phase,
-                          with_cluster = FALSE, 
-                          with_meta = FALSE) %>% 
+    df <- 
+      getStatsOrTracksDf(object = object, phase = phase) %>% 
       dplyr::select(cell_id, dplyr::all_of(x = variables))
     
-    cell_ids <- stat_df$cell_id
-    stat_df$cell_id <- NULL
+    cell_ids <- df$cell_id
+    df$cell_id <- NULL
     
-    stat_df <- base::as.data.frame(stat_df)
-    base::rownames(stat_df) <- cell_ids
+    df <- base::as.data.frame(df)
+    base::rownames(df) <- cell_ids
     
     cluster_object <- 
       confuns::initiate_kmeans_object(
-        kmeans.data = stat_df, 
+        kmeans.data = df, 
         key.name = "cell_id",
         scale = scale, 
         default.method.kmeans = object@default$method_kmeans, 
@@ -174,11 +170,15 @@ initiateKmeansClustering <- function(object,
     
   }
   
-  object <- setClusterConv(object = object, 
-                           cluster_object = cluster_object, 
-                           method = "kmeans", 
-                           phase = phase, 
-                           variable_set = variable_set)  
+  object <- 
+    setClusterConv(
+      object = object,
+      cluster_object = cluster_object,
+      method = "kmeans",
+      phase = phase,
+      variable_set = variable_set
+      )  
+  
   base::return(object)
   
 }
@@ -211,21 +211,19 @@ initiatePamClustering <- function(object,
   
   if(base::class(cluster_object) != "pam_conv" | base::isTRUE(force)){
     
-    stat_df <- getStatsDf(object = object, 
-                          phase = phase,
-                          with_cluster = FALSE, 
-                          with_meta = FALSE) %>% 
+    df <- 
+      getStatsOrTracksDf(object = object, phase = phase) %>% 
       dplyr::select(cell_id, dplyr::all_of(variables))
     
-    cell_ids <- stat_df$cell_id
-    stat_df$cell_id <- NULL
+    cell_ids <- df$cell_id
+    df$cell_id <- NULL
     
-    stat_df <- base::as.data.frame(stat_df)
-    base::rownames(stat_df) <- cell_ids
+    df <- base::as.data.frame(df)
+    base::rownames(df) <- cell_ids
     
     cluster_object <- 
       confuns::initiate_pam_object(
-        pam.data = stat_df, 
+        pam.data = df, 
         scale = scale, 
         key.name = "cell_id",
         verbose = FALSE
@@ -246,11 +244,14 @@ initiatePamClustering <- function(object,
     
   }
   
-  object <- setClusterConv(object = object, 
-                           cluster_object = cluster_object, 
-                           method = "pam", 
-                           phase = phase, 
-                           variable_set = variable_set)
+  object <- 
+    setClusterConv(
+      object = object,
+      cluster_object = cluster_object,
+      method = "pam",
+      phase = phase,
+      variable_set = variable_set
+      )
   
   base::return(object)
   

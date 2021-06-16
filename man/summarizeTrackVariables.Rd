@@ -7,6 +7,7 @@
 summarizeTrackVariables(
   object,
   ...,
+  discard_variables = NULL,
   overwrite = FALSE,
   phase = NULL,
   verbose = NULL
@@ -18,6 +19,10 @@ summarizeTrackVariables(
 \item{...}{Name-value pairs according to the syntax of \code{dplyr::summarize()}.
 This can be single or several expressions as well as usage of \code{dplyr::across()} if several
 variables are supposed to be affected. See details for output requirements.}
+
+\item{discard_variables}{If character, denotes variables that are discarded
+prior to the call to \code{dplyr::summarize()}. Might be useful in case of
+more complex input for argument \code{...}.}
 
 \item{overwrite}{Logical value. Must be set to TRUE in case of overlapping
 variable names.

@@ -4,9 +4,8 @@
 
 set_up_cdata_meta <- function(object, verbose = TRUE){
   
-  confuns::give_feedback(msg = "Creating cell meta data.", verbose = verbose)
-  
-  data_slot <- base::ifelse(test = isTimeLapseExp(object), yes = "tracks", no = "stats")
+  grouping_variables <- 
+    object@information$variable_denotation$additional$grouping_variables
   
   if(multiplePhases(object)){
     
@@ -16,14 +15,16 @@ set_up_cdata_meta <- function(object, verbose = TRUE){
       purrr::map(.x = all_phases,
                  .f = function(phase){
                    
-                   object@cdata[[data_slot]][[phase]] %>% 
-                     dplyr::select(cell_id,cell_line, condition) %>% 
+                   object@cdata[["tracks"]][[phase]] %>% 
+                     dplyr::select(
+                       cell_id, cell_line, condition,
+                       dplyr::any_of(grouping_variables)
+                       ) %>% 
                      dplyr::distinct() %>% 
                      dplyr::mutate(
                        cell_line = base::as.factor(cell_line), 
                        condition = base::as.factor(condition)
                       )
-                   
                    
                  }) %>% 
       purrr::set_names(nm = all_phases)
@@ -31,8 +32,11 @@ set_up_cdata_meta <- function(object, verbose = TRUE){
   } else {
     
     object@cdata$meta <-
-      object@cdata[[data_slot]][[1]] %>% 
-      dplyr::select(cell_id, cell_line, condition) %>% 
+      object@cdata[["tracks"]][[1]] %>% 
+      dplyr::select(
+        cell_id, cell_line, condition,
+        dplyr::any_of(grouping_variables)
+      ) %>% 
       dplyr::distinct()
     
   }
@@ -43,9 +47,6 @@ set_up_cdata_meta <- function(object, verbose = TRUE){
 
 set_up_cdata_cluster <- function(object, verbose){
   
-  confuns::give_feedback(msg = "Creating cell cluster data.", verbose = verbose)
-  
-  data_slot <- base::ifelse(test = isTimeLapseExp(object), yes = "tracks", no = "stats")
   
   if(multiplePhases(object)){
     
@@ -55,7 +56,7 @@ set_up_cdata_cluster <- function(object, verbose){
       purrr::map(.x = all_phases,
                  .f = function(phase){
                    
-                   dplyr::select(object@cdata[[data_slot]][[phase]], cell_id) %>% 
+                   dplyr::select(object@cdata[["tracks"]][[phase]], cell_id) %>% 
                      dplyr::distinct()
                    
                    
@@ -65,12 +66,94 @@ set_up_cdata_cluster <- function(object, verbose){
   } else {
     
     object@cdata$cluster <- 
-      dplyr::select(object@cdata[[data_slot]][[1]], cell_id) %>% 
+      dplyr::select(object@cdata[["tracks"]][[1]], cell_id) %>% 
       dplyr::distinct()
     
   }
   
   base::return(object)
+  
+}
+
+set_up_cdata_tracks <- function(object, verbose = TRUE){
+  
+  confuns::give_feedback(
+    msg = "--------------- Setting up cell track data.",
+    verbose = verbose
+    )
+  
+  if(isTimeLapseExp(object)){
+    
+    if(multiplePhases(object)){
+      
+      object@cdata$tracks <- 
+        purrr::map2(
+          .x = object@cdata$tracks,
+          .y = getPhases(object),
+          object = object,
+          verbose = verbose,
+          .f = complete_tracks
+        ) %>% 
+        purrr::set_names(nm = getPhases(object))
+      
+    } else {
+      
+      object@cdata$tracks <- 
+        purrr::map_df(
+          .x = object@cdata$tracks,
+          phase = "first",
+          object = object,
+          verbose = verbose,
+          .f = complete_tracks
+        )
+      
+    }
+    
+  }
+  
+  return(object)
+}
+
+set_up_cdata_stats <- function(object, summarize_with, verbose = TRUE){
+  
+  confuns::give_feedback(
+    msg = "--------------- Setting up cell stat data.",
+    verbose = verbose
+    )
+  
+  confuns::check_one_of(
+    input = summarize_with, 
+    against = base::names(stat_funs)
+  )
+  
+  # set up empty stat data.frame(s) with only cell ids (fill with left_join() later on)
+  if(multiplePhases(object)){
+    
+    object@cdata$stats <- 
+      purrr::map2(
+        .x = object@cdata$tracks,
+        .y = getPhases(object),
+        .f = complete_stats, 
+        object = object, 
+        summarize_with = summarize_with, 
+        verbose = verbose
+        )
+    
+  } else {
+    
+    object@cdata$stats <- 
+      purrr::map_df(
+        .x = object@cdata$tracks,
+        .f = complete_stats,
+        phase = "first",
+        object = object, 
+        summarize_with = summarize_with, 
+        verbose = verbose
+      )
+    
+  }
+  
+  return(object)
   
 }
 
@@ -92,7 +175,7 @@ set_up_cdata_tracks_and_stats <- function(object, verbose = TRUE){
           object = object,
           verbose = verbose,
           .f = hlpr_process_tracks
-          ) %>% 
+        ) %>% 
         purrr::set_names(nm = getPhases(object))
       
       # compute statistics 
@@ -103,7 +186,7 @@ set_up_cdata_tracks_and_stats <- function(object, verbose = TRUE){
           object = object,
           verbose = verbose,
           .f = compute_cell_stats
-          ) %>% 
+        ) %>% 
         purrr::set_names(nm = getPhases(object))
       
     } else {
@@ -127,7 +210,7 @@ set_up_cdata_tracks_and_stats <- function(object, verbose = TRUE){
           phase = NULL,
           verbose = verbose, 
           object = object
-          )
+        )
       
     }
     
@@ -176,6 +259,22 @@ set_up_cdata_tracks_and_stats <- function(object, verbose = TRUE){
   
 }
 
+# wpdata 
+set_up_cdata_well_plate <- function(object, verbose = TRUE){
+  
+  confuns::give_feedback(msg = "Setting up cell well plate data.", verbose = verbose)
+  
+  object@cdata$well_plate <- 
+    dplyr::select(object@cdata[["tracks"]][[1]], dplyr::all_of(x = c("cell_id", well_plate_vars))) %>% 
+    dplyr::distinct() %>% 
+    dplyr::mutate(
+      dplyr::across(.cols = dplyr::starts_with("well"), .fns = base::as.factor)
+    )
+  
+  base::return(object)
+  
+}
+
 # vdata set up 
 
 #' @title Computes variable summaries
@@ -187,7 +286,10 @@ set_up_cdata_tracks_and_stats <- function(object, verbose = TRUE){
 #'
 set_up_vdata <- function(object, verbose = TRUE){
   
-  confuns::give_feedback(msg = "Computing variable statistics and summary.", verbose = verbose)
+  confuns::give_feedback(
+    msg = "--------------- Setting up variable data.",
+    verbose = verbose
+  )
   
   vdata <- list()
   
@@ -197,16 +299,29 @@ set_up_vdata <- function(object, verbose = TRUE){
       purrr::map(.x = getPhases(object), 
                  .f = function(p){
                    
-                   vdf <- 
+                   msg <- 
+                     glue::glue(
+                       "Computing variable statistics and summary of {p} phase."
+                       )
+                   
+                   confuns::give_feedback(msg = msg, verbose = verbose)
+                   
+                   stats_mtr <- 
                     getStatsDf(object, phase = p) %>% 
                      dplyr::select_if(base::is.numeric) %>% 
-                     base::as.matrix() %>% 
-                     psych::describe(IQR = TRUE) %>% 
+                     base::as.matrix()
+                   
+                   vdf <- 
+                     base::suppressWarnings({
+                       
+                       psych::describe(stats_mtr, IQR = TRUE)
+                       
+                     }) %>% 
                      base::as.data.frame() %>% 
                      tibble::rownames_to_column(var = "variable") %>% 
                      tibble::as_tibble() 
                    
-                   confuns::give_feedback(msg = "Counting NAs.", verbose = verbose)
+                   confuns::give_feedback(msg = "Counting NAs by variable.", verbose = verbose)
                    
                    vdf$count_na <- 
                      getStatsDf(object, phase = p) %>% 
@@ -220,18 +335,27 @@ set_up_vdata <- function(object, verbose = TRUE){
     
   } else {
     
-    confuns::give_feedback(msg = "Counting NAs.", verbose = verbose)
+    msg <- "Computing variable statistics and summary."
+    
+    confuns::give_feedback(msg = msg, verbose = verbose)
     
     stats_mtr <- 
-      getStatsDf(object) %>% 
+      getStatsOrTracksDf(object, phase = NULL) %>% 
       dplyr::select_if(.predicate = base::is.numeric) %>% 
       base::as.matrix() 
     
     vdata$summary <- 
-      psych::describe(stats_mtr, IQR = TRUE) %>% 
+      
+      base::suppressWarnings({
+        
+        psych::describe(stats_mtr, IQR = TRUE)
+        
+      }) %>% 
       base::as.data.frame() %>% 
       tibble::rownames_to_column(var = "variable") %>% 
       tibble::as_tibble() 
+    
+    confuns::give_feedback(msg = "Counting NAs by variable.", verbose = verbose)
     
     vdata$summary$count_na <- 
       getStatsDf(object, phase = p) %>% 
@@ -241,23 +365,6 @@ set_up_vdata <- function(object, verbose = TRUE){
   }
   
   object@vdata <- vdata
-  
-  base::return(object)
-  
-}
-
-
-# wpdata 
-set_up_cdata_well_plate <- function(object, verbose = TRUE){
-  
-  data_slot <- base::ifelse(test = isTimeLapseExp(object), yes = "tracks", no = "stats")
-  
-  object@cdata$well_plate <- 
-    dplyr::select(object@cdata[[data_slot]][[1]], dplyr::all_of(x = c("cell_id", well_plate_vars))) %>% 
-    dplyr::distinct() %>% 
-    dplyr::mutate(
-      dplyr::across(.cols = dplyr::starts_with("well"), .fns = base::as.factor)
-    )
   
   base::return(object)
   

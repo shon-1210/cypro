@@ -110,11 +110,11 @@ designExperiment <- function(){
           
           checkpoint(evaluate = check, case_false = "incomplete_cto")
           
-          ct_object <- ed_list$object
+          cypro_object <- ed_list$object
           
-          ct_object@set_up$progress$experiment_design <- TRUE
+          cypro_object@set_up$progress$experiment_design <- TRUE
           
-          shiny::stopApp(returnValue = ct_object)
+          shiny::stopApp(returnValue = cypro_object)
           
         })
         
@@ -222,19 +222,19 @@ loadData <- function(object){
             
           })
           
-          checkpoint(evaluate = check, case_false = "incomplete_cto2")
+          checkpoint(evaluate = check, case_false = "incomplete_cypro2")
           
-          ct_object <- ld_list$object
+          cypro_object <- ld_list$object
           
-          ct_object@set_up$progress$load_data <- TRUE
+          cypro_object@set_up$progress$load_data <- TRUE
           
-          if(!isTimeLapseExp(ct_object)){
+          if(!isTimeLapseExp(cypro_object)){
             
-            ct_object@set_up$progress$quality_check <- TRUE
+            cypro_object@set_up$progress$quality_check <- TRUE
             
           }
           
-          shiny::stopApp(returnValue = ct_object)
+          shiny::stopApp(returnValue = cypro_object)
           
         })
         
@@ -346,13 +346,13 @@ checkDataQuality <- function(object){
             
           })
           
-          checkpoint(evaluate = check, case_false = "incomplete_cto2")
+          checkpoint(evaluate = check, case_false = "incomplete_cypro2")
           
-          ct_object <- qc_list$object
+          cypro_object <- qc_list$object
           
-          ct_object@set_up$progress$quality_check <- TRUE
+          cypro_object@set_up$progress$quality_check <- TRUE
           
-          shiny::stopApp(returnValue = ct_object)
+          shiny::stopApp(returnValue = cypro_object)
           
         })
         
@@ -378,9 +378,19 @@ checkDataQuality <- function(object){
 #' @inherit updated_object return
 #' @export
 #'
-processData <- function(object, verbose = TRUE){
+processData <- function(object,
+                        summarize_with = c("max", "min", "mean", "median"),
+                        verbose = TRUE){
   
-  check_object(object, set_up_req = "quality_check")
+  check_object(object, set_up_req = "load_data")
+  
+  # add default list 
+  object@default <- c(object@default, default_list)
+  
+  confuns::check_one_of(
+    input = summarize_with, 
+    against = base::names(stat_funs)
+  )
   
   if(base::isTRUE(object@set_up$progress$process_data)){
     
@@ -391,64 +401,62 @@ processData <- function(object, verbose = TRUE){
   # update progress slot
   object@set_up$progress$process_data <- TRUE
   
-  # declare module usability ------------------------------------------------
-  
-  if(isTimeLapseExp(object)){
-    
-    # module: migration (TRUE if coordinates vars are available)
-    coords_available <- 
-      base::all(c("x_coords", "y_coords") %in% base::names(object@set_up$example$denoted_columns))
-    
-    object@information$modules$migration <- coords_available
-    
-  } else {
-    
-    # module: migration 
-    object@information$modules$migration <- FALSE
-    
-  }
-
   confuns::give_feedback(msg = "Processing data.", verbose = verbose)
-  
-  if(isTimeLapseExp(object)){
-    
-    confuns::give_feedback(msg = "Counting missing values.", verbose = verbose)
-    
-    # summarise how many missing values every cell id has across all variables
-    track_df <- 
-      purrr::map_df(object@cdata$tracks, .f = ~ .x)
-    
-    all_cell_ids <- base::unique(track_df$cell_id)
-    all_frames <- 1:object@set_up$nom
-    
-    object@information$track_na_count <- 
-      tidyr::expand_grid(cell_id = {{all_cell_ids}}, frame = {{all_frames}}) %>% 
-      dplyr::left_join(x = ., y = track_df, by = c("cell_id", "frame")) %>% 
-      dplyr::group_by(cell_id) %>% 
-      dplyr::summarise_all(.funs = function(var){ base::is.na(var) %>% base::sum()}) %>% 
-      dplyr::select(-phase, -frame)
-    
-  }
   
   # set up different data slots ---------------------------------------------
   
-  # create wp data
+  # set up wp data
   object <- set_up_cdata_well_plate(object, verbose = verbose)
   
-  # create meta data 
+  # set up meta data 
   object <- set_up_cdata_meta(object, verbose = verbose)
   
-  # create cluster data 
+  # set up cluster data 
   object <- set_up_cdata_cluster(object, verbose = verbose)
   
-  # create stats and tracks 
-  object <- set_up_cdata_tracks_and_stats(object, verbose = verbose)
+  # set up tracks 
+  object <- set_up_cdata_tracks(object, verbose = verbose)
   
-  # create variable data
+  # set up stats 
+  if(isTimeLapseExp(object)){
+    
+    object <- 
+      set_up_cdata_stats(
+        object = object,
+        summarize_with = summarize_with,
+        verbose = verbose
+        )  
+    
+  }
+  
+  # set up variable data
   object <- set_up_vdata(object, verbose = verbose)
   
-
   # miscellaneous -----------------------------------------------------------
+  
+  
+  if(multiplePhases(object)){
+    
+    all_phases <- getPhases(object)
+    
+    object@qcheck$na_count <- 
+      purrr::map(
+        .x = all_phases,
+        .f =
+          ~ compute_n_missing_values(
+              object = object,
+              phase = .x,
+              verbose = verbose
+            )
+        ) %>% 
+      purrr::set_names(nm = all_phases)
+    
+  } else {
+    
+    object@qcheck$na_count <- 
+      compute_n_missing_values(object, verbose = verbose)
+    
+  }
   
   # remove wp_df in favor of wp_df_eval
   object@well_plates <-
@@ -459,9 +467,6 @@ processData <- function(object, verbose = TRUE){
                  base::return(wp_list)
                  
                  })
-  
-  # add default list 
-  object@default <- c(object@default, default_list)
   
   confuns::give_feedback(msg = "Done.", verbose = verbose)
   

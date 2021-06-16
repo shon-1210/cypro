@@ -4,7 +4,11 @@
 \alias{processData}
 \title{Object initiation: Step 4}
 \usage{
-processData(object, verbose = TRUE)
+processData(
+  object,
+  summarize_with = c("max", "min", "mean", "median"),
+  verbose = TRUE
+)
 }
 \arguments{
 \item{object}{A valid cypro object.}

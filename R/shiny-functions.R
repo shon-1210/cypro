@@ -1,18 +1,366 @@
 
-#' @title Add helping text 
+
+#' Adds variable denotation from pdl to object 
 #'
-add_helper <- function(shiny_tag, content, title = "What do I have to do here?", type = "inline", size = "s", ...){
+add_vardenotation_to_cypro_object_shiny <- function(object, amils){
+  
+  # identifier 
+  object@information$variable_denotation$identifier <- 
+    purrr::map(.x = amils$identifier$variables, .f = ~ .x$name_in_example)
+  
+  # additional 
+  object@information$variable_denotation$additional <- 
+    purrr::map(.x = amils$additional$variables, .f = ~ .x$name_in_example) %>% 
+    purrr::set_names(nm = c("grouping_variables", "numeric_variables"))
+  
+  # analysis modules 
+  object@modules <- 
+    purrr::map(.x = amils$analysis_modules, .f = function(analysis_module){
+      
+      module_list <- list()
+      
+      module_list$variable_denotation <- 
+        purrr::map(.x = analysis_module$variables, .f = ~ .x$name_in_example)
+      
+      return(module_list)
+      
+    })
+  
+  return(object)
+  
+}
+
+
+#' Title
+#'
+#' @param input_list shiny server input list.
+#' @param object the cypro object of the session
+#' @param example_df the example data file uploaded
+#'
+#' @return the list describing the experiment-type depending identification module containing 
+#' information about the names the identification variables carry in 
+#' the example data.frame
+#' @export
+#'
+assemble_id_module_info_shiny <- function(input_list, object){
+  
+  if(isTimeLapseExp(object)){
+    
+    identification_module <- module_identification_time_lapse
+    
+  } else {
+    
+    identification_module <- module_identification_one_time_imaging
+    
+  }
+  
+  identification_module$variables <- 
+    purrr::map(.x = identification_module$variables, .f = function(var_info){
+      
+      pattern <- stringr::str_c(var_info$name_in_cypro, "$", sep = "")
+      
+      var_name_in_example <- 
+        confuns::lselect(
+          lst = input_list,
+          contains("vardenotation-") &
+          matches(pattern)
+        ) %>% 
+        purrr::flatten_chr()
+      
+      var_info$name_in_example <- var_name_in_example
+      
+      return(var_info)
+      
+    })
+  
+  return(identification_module)
+  
+}
+
+
+#' Title
+#'
+#' @param input_list shiny server input list.
+#' @param object the cypro object of the session
+#' @param example_df the example data file uploaded
+#'
+#' @return the list describing the 'additional data variables' module. it contains 
+#' information about the names the additional variables carry in 
+#' the example data.frame as well as whether they are grouping or numeric
+#' variables
+#' @export
+#'
+assemble_additional_data_variables_module_info_shiny <- function(input_list, object){
+  
+  additional_data_module <- module_additional_data_variables
+  
+  additional_data_module$variables <- 
+    purrr::map(.x = additional_data_module$variables, .f = function(var_info){
+      
+      pattern <- stringr::str_c(var_info$name_in_cypro, "$", sep = "")
+      
+      var_name_in_example <- 
+        confuns::lselect(
+          lst = input_list,
+          contains("vardenotation-") &
+            matches(pattern)
+        ) %>% 
+        purrr::flatten_chr()
+      
+      var_info$name_in_example <- var_name_in_example
+      
+      return(var_info)
+      
+    })
+  
+  return(additional_data_module)
+  
+}
+
+
+#' Title
+#'
+#' @param input_list shiny server input list.
+#' @param object the cypro object of the session
+#' @param example_df the example data file uploaded
+#'
+#' @return the list \code{cypro_modules} subsetted by modules to be used. It 
+#' contains information about how the variables needed are named in the 
+#' example data.frame as well as which of the computable variables 
+#' have to be computed or are already part of the data to be loaded.
+#' 
+#' @export
+#'
+assemble_analysis_module_info_shiny <- function(input_list, object){
+  
+  if(isTimeLapseExp(object)){
+    
+    module_names <- time_lapse_module_names
+    
+  } else {
+    
+    module_names <- one_time_imaging_module_names
+    
+  }
+  
+  module_selection <- 
+    purrr::map(.x = module_names, .f = function(module_name){
+      
+      pattern <- stringr::str_c("module_usage-", module_name)
+      
+      input <- confuns::lselect(input_list, contains(pattern))
+      
+      return(input[[1]])
+      
+    }) %>% 
+    purrr::set_names(module_names) %>% 
+    purrr::keep(.p = base::isTRUE) %>% 
+    base::names()
   
   
-  res <- 
-    shinyhelper::helper(shiny_tag = shiny_tag, 
-                        content = content, 
-                        title = title, 
-                        size = size,
-                        type = type, 
-                        ...)
+  used_modules <- cypro_modules[module_selection]
   
-  base::return(res)
+  used_modules_with_input <- 
+    purrr::map(.x = used_modules, .f = function(used_module){
+      
+      module_name_pattern <- stringr::str_c("-", used_module$name, "$")
+      
+      used_module$variables <- 
+        purrr::map(.x = used_module$variables, .f = function(var_info){
+          
+          module_variable_name_pattern <- 
+            stringr::str_c(
+              var_info$name_in_cypro, 
+              module_name_pattern, 
+              sep = ""
+            )
+          
+          var_name_in_example <- 
+            confuns::lselect(
+              lst = input_list,
+              contains("vardenotation-") &
+                matches(module_variable_name_pattern)
+            ) %>% 
+            purrr::flatten_chr()
+          
+          
+          var_info$name_in_example <- var_name_in_example
+          
+          return(var_info)
+          
+        })
+      
+      return(used_module)
+      
+    })
+  
+}
+
+#' @title Integrate cell stat tables
+#' 
+#' @description Subsets the successfully loaded files 
+#'
+#' @param track_data_list The output of \code{load_track_files_shiny()}.
+#'
+#' @return A list of one slot 'only' with the stat data.frame
+#
+assemble_tracks_one_time_imaging_shiny <- function(stat_data_list, well_plate_list, object){
+  
+  df_list <- 
+    purrr::map(.x = stat_data_list, ~ .x$successful) %>% 
+    purrr::map(.x = ., .f = ~ purrr::map_df(.x = .x, .f = ~ .x))
+  
+  all_data_list <- 
+    list(df_list,
+         well_plate_list,
+         base::seq_along(df_list), 
+         base::names(df_list)
+    )
+  
+  # join well plate information and create final cell id
+  df <- purrr::pmap_dfr(.l = all_data_list, .f = hlpr_assemble_df)
+  
+  cell_lines <- df$cell_line %>% base::unique() %>% base::sort()
+  conditions <- df$condition %>% base::unique() %>% base::sort()
+  cl_conditions <- df$cl_condition %>% base::unique() %>% base::sort()
+  
+  final_df <-
+    dplyr::mutate(
+      .data = df, 
+      cell_line = base::factor(x = cell_line, levels = cell_lines), 
+      condition = base::factor(x = condition, levels = conditions), 
+      cl_condition = base::factor(x = cl_condition, levels = cl_conditions)
+    )
+  
+  stat_list <- base::list("only" = final_df)
+  
+  base::return(stat_list)
+  
+}
+
+#' @title Integrate cell track tables
+#' 
+#' @description Subsets the successfully loaded files. In case of timelapse 
+#' experiments with multiple phases it sorts the data into multiple 
+#' data.frames and returns a list of multiple data.frames named according 
+#' to the ordinal number of the phase ("first", "second" etc.). In case of
+#' non timelapse experimernts the list contains only one data.frame in a 
+#' slot named "first".
+#'
+#' @param track_data_list The output of \code{load_track_files_shiny()}.
+#'
+#' @return A list of data.frames named by 
+
+assemble_tracks_time_lapse_shiny <- function(track_data_list, well_plate_list, object){
+  
+  df_list <- 
+    purrr::map(.x = track_data_list, ~ .x$successful) %>% 
+    purrr::map(.x = ., .f = ~ purrr::map_df(.x = .x, .f = ~ .x))
+  
+  all_data_list <- 
+    list(df_list, well_plate_list, base::seq_along(df_list), base::names(df_list))
+  
+  # join well plate information and create final cell id
+  df <- purrr::pmap_dfr(.l = all_data_list, .f = hlpr_assemble_df)
+  
+  cell_lines <- df$cell_line %>% base::unique() %>% base::sort()
+  conditions <- df$condition %>% base::unique() %>% base::sort()
+  cl_conditions <- df$cl_condition %>% base::unique() %>% base::sort()
+  
+  final_df <-
+    dplyr::mutate(
+      .data = df, 
+      cell_line = base::factor(x = cell_line, levels = cell_lines),
+      condition = base::factor(x = condition, levels = conditions),
+      cl_condition = base::factor(x = cl_condition, levels = cl_conditions)
+    )
+  
+  phases <- object@set_up$phases
+  
+  measurements <- object@set_up$measurement_string
+  
+  conditions <- 
+    stringi::stri_split(str = base::unique(final_df$condition), regex = "->")
+  
+  phase_starts <-
+    purrr::map_dbl(.x = phases, .f = ~ base::which(x = measurements == .x))
+  
+  # if more than one phase exists return list of data.frames named by phase
+  if(base::length(phase_starts) > 1){
+    
+    phase_endings <- 
+      phase_starts[2:base::length(phase_starts)] %>% 
+      base::append(x = ., values = base::max(final_df$frame_num)) %>% 
+      purrr::set_names(nm = base::names(phases))
+    
+    phase_info <-
+      purrr::pmap(
+        .l = list(x = phase_starts, y = phase_endings, z = base::seq_along(phases)),
+        .f = function(x, y, z){ list("start" = x, "end" = y, "index" = z)}
+      ) %>% 
+      purrr::set_names(nm = base::names(phases))
+    
+    track_list <- 
+      purrr::map(.x = phase_info, .f = function(phase){
+                   
+                   phase_index <- phase$index
+                   phase_start <- phase$start
+                   phase_end <- phase$end
+                   
+                   phase_pattern <- stringr::str_c("^", phase_index, "\\.",sep = "")
+                   
+                   df <-
+                     dplyr::filter(final_df, frame_num >= {{phase_start}} & frame_num < {{phase_end}})
+                   
+                   condition_split <- 
+                     stringr::str_split_fixed(
+                       string = df$condition,
+                       pattern = " -> ", 
+                       n = base::length(phase_endings)
+                       ) 
+                   
+                   condition_vec <- 
+                     stringr::str_remove_all(
+                       string = base::as.character(condition_split[,phase_index]),
+                       pattern = phase_pattern
+                       )
+                   
+                   df$condition <- condition_vec
+                   df$cl_condition <- stringr::str_c(df$cell_line, df$condition, sep = " & ")
+                   
+                   base::return(df)
+                   
+                 }) %>% 
+      magrittr::set_names(value = base::names(phase_endings))
+    
+  } else { # if only one phase return list of one data.frame named "first"
+    
+    final_df$phase = "first"
+    
+    track_list <- base::list("first" = final_df)
+    
+  }
+  
+  base::return(track_list)
+  
+}
+
+
+#' @title Return css status
+#' 
+css_status <- function(evaluate,
+                       case_true = "success",
+                       case_false = "warning"){
+  
+  if(base::isTRUE(evaluate)){
+    
+    return(case_true)
+    
+  } else {
+    
+    return(case_false)
+    
+  }
   
 }
 
@@ -242,152 +590,28 @@ evaluate_file_availability_shiny <- function(wp_list, recursive = TRUE, keep_fil
 
 
 
-
-
-#' @title Display loading status
+#' @title Well plate data.frame check
 #' 
-#' @description Creates a data.frame that displays information 
-#' about the file availability evaluation undergone for every well
-#' plate.
-#'
-#' @param well_plate_list A list of well plate lists. 
+#' @description Checks if there is a current well plate data.frame that has
+#' been modified but not saved yet. Prevents 'New Well Plate' from overwriting 
+#' unsaved progress.
 #' 
-
-loading_status_table_shiny <- function(well_plate_list){
+is_modified_wp_df <- function(wp_df){
   
-  well_plates <- base::names(well_plate_list)
-  
-  directories <- purrr::map_chr(.x = well_plate_list, .f = hlpr_wp_directories)
-  
-  num_files <- purrr::map_int(.x = well_plate_list, hlpr_wp_file_number)
-  
-  num_ambiguous <- purrr::map_int(.x = well_plate_list, .f = hlpr_wp_ambiguous_number)
-  
-  num_files_expected <- purrr::map_int(.x = well_plate_list, hlpr_wp_exp_file_number)
-  
-  status_df <- 
-    base::data.frame(
-      "wp" = well_plates, 
-      "asd" = directories, 
-      "nof" = num_files, 
-      "enof" = num_files_expected,
-      "noaf" = num_ambiguous
-    ) %>% 
-    dplyr::mutate(
-      "ready" = dplyr::case_when(
-        asd == "No directory assigned" ~ "No", 
-        nof == 0 ~ "No", 
-        noaf != 0 ~ "No", 
-        TRUE ~ "Yes"
-      )
-    ) %>% 
-    dplyr::rename(
-      "Well Plate" = wp,
-      "Assigned Directory" = asd,
-      "Number of Files" = nof,
-      "Expected Number of Files" = enof,
-      "Number of Ambiguous Directories" = noaf, 
-      "Ready to load" = ready
-    )
-  
-}
-
-
-#' @title Reads cell track data
-#' 
-#' @description A function to be used for argument \code{.f} of \code{purrr::map_df}.
-#' Calls the respective reading function depending on the directory's ending. 
-#'
-#' @param directory Character value. The directory from which to read the data.frame.
-#' of \code{.x} contains.
-#' @param progress A shiny - R6 progress object. 
-#' @param progress_n Numeric value. Indicates the iterating progress.
-#'
-#' @return The read in data.frame with three additional informative columns: \emph{well_image, condition}
-#' and \emph{cell_line}.
-
-read_data_files_shiny <- function(directory, progress_n, progress, object){
-  
-  progress$set(value = progress_n)
-  
-  if(stringr::str_detect(string = directory, pattern = "csv$")){
+  if(base::identical(wp_df, data.frame())){
     
-    df <- 
-      
-      base::suppressMessages({
-        
-        base::suppressWarnings({
-          
-          readr::read_csv(file = directory)
-          
-        })
-        
-      })
-      
+    modified <- FALSE
     
-  } else if(stringr::str_detect(string = directory, pattern = "xls$")){
+  } else {
     
-    df <- readxl::read_xls(path = directory)
+    cell_line <- base::any(wp_df$cell_line != "unknown")
+    condition <- base::any(wp_df$condition != "unknown")
     
-  } else if(stringr::str_detect(string = directory, pattern = "xlsx$")){
-    
-    df <- readxl::read_xlsx(path = directory)
+    modified <- base::any(c(cell_line, condition))
     
   }
   
-  df[base::is.na(df)] <- 0
-  
-  well_image <-
-    stringr::str_extract(string = directory, pattern = file_regex) %>% 
-    stringr::str_extract(pattern = well_image_regex)
-  
-  denoted_columns_list <- object@set_up$example$denoted_columns
-    
-  denoted_columns <- 
-    c(x_coords = denoted_columns_list$x_coords, 
-      y_coords = denoted_columns_list$y_coords, 
-      frame = denoted_columns_list$frame, # NULL (ignored) if non time lapse experiment
-      cell_id = denoted_columns_list$cell_id) %>% 
-    purrr::discard(.p = base::is.null)
-    
-  additional_columns <- denoted_columns_list$additional
-    
-  variable_names <- c(base::unname(denoted_columns), additional_columns)
-  
-  # do the columns of the read in data.frame deviate from the denoted ones?
-  missing_columns <- 
-    purrr::map(.x = variable_names, 
-               .f = check_df_variables,
-               df = df) %>%
-    purrr::discard(.p = base::is.null) %>% 
-    purrr::flatten_chr()
-  
-  n_missing_cols <- base::length(missing_columns)
-  
-  # if so give feedback 
-  if(n_missing_cols > 0){
-    
-    ref <- base::ifelse(n_missing_cols > 1, "columns", "column")
-    ref_cols <- stringr::str_c(missing_columns, collapse = "', '")
-    
-    base::stop(glue::glue("Missing {ref}: '{ref_cols}'"))
-    
-  }
-  
-  df_return <-
-    hlpr_rename_df_cols(
-      df = df,
-      denoted_columns = denoted_columns,
-      additional_columns = additional_columns
-      ) %>% 
-    dplyr::mutate(well_image = {{well_image}}) 
-  
-  list_return <- 
-    list("df" = df_return, 
-         "well_image" = well_image, 
-         "directory" = directory)
-  
-  base::return(list_return)
+  return(modified)  
   
 }
 
@@ -405,222 +629,97 @@ read_data_files_shiny <- function(directory, progress_n, progress, object){
 #' 
 #' @export
 
-load_data_files_shiny <- function(wp_list, wp_name, session, object){
+load_data_files_shiny <- function(wp_list,
+                                  wp_name,
+                                  session,
+                                  object,
+                                  assembled_module_info_lists,
+                                  used_variable_names,
+                                  mitosis_module_used){
   
   directories <- wp_list$valid_directories
   
-  well_image_files <- stringr::str_extract(string = directories, pattern = file_regex)
+  well_image_files <-
+    stringr::str_extract(string = directories, pattern = file_regex)
   
-  num_files <- base::length(directories)
+  n_files <- base::length(directories)
   
   # set up progress bar
-  progress <- shiny::Progress$new(session, min = 1, max = num_files)
+  progress <- shiny::Progress$new(session, min = 1, max = n_files)
   base::on.exit(progress$close())
   
   progress$set(message = glue::glue("Reading data for well plate '{wp_name}' :"), 
-               detail = glue::glue("Total of {num_files} files."))
+               detail = glue::glue("Total of {n_files} files."))
   
   data_list <- 
     purrr::map2(.x = directories, 
                 .y = base::seq_along(directories), # input for progress_n
-                .f = purrr::safely(read_data_files_shiny),
+                .f = read_data_files_shiny,
                 object = object, 
-                progress = progress) %>% 
+                progress = progress,
+                assembled_module_info_lists = assembled_module_info_lists,
+                used_variable_names = used_variable_names,
+                mitosis_module_used = mitosis_module_used) %>% 
     purrr::set_names(nm = well_image_files)
   
-
-  
   # sort successfull and failed loading 
-  track_data_list <- 
-    list("successful" = purrr::keep(.x = data_list, .p = ~ base::is.null(.x[["error"]])),
-         "failed" = purrr::keep(.x = data_list, .p = ~ !base::is.null(.x[["error"]])))
+  output_data_list <- 
+    list(
+      "successful" = purrr::keep(.x = data_list, .p = base::is.data.frame), # data.frame has been returned
+      "failed" = purrr::keep(.x = data_list, .p = base::is.character) # vector of messages has been returned
+    )
   
-  base::return(track_data_list)
+  base::return(output_data_list)
   
 }
 
 
 
-#' @title Integrate cell stat tables
+
+#' @title Display loading status
 #' 
-#' @description Subsets the successfully loaded files 
+#' @description Creates a data.frame that displays information 
+#' about the file availability evaluation undergone for every well
+#' plate.
 #'
-#' @param track_data_list The output of \code{load_track_files_shiny()}.
-#'
-#' @return A list of one slot 'only' with the stat data.frame
-#
-assemble_stat_list_shiny <- function(stat_data_list, well_plate_list, object){
-  
-  df_list <- 
-    purrr::map(.x = stat_data_list, ~.x[["successful"]]) %>% 
-    purrr::map(.x = ., .f = ~ purrr::map(.x = .x, "result")) %>% 
-    purrr::map(.x = ., .f = ~ purrr::map_df(.x = .x, "df"))
-  
-  all_data_list <- 
-    list(df_list,
-         well_plate_list,
-         base::seq_along(df_list), 
-         base::names(df_list)
-    )
-  
-  # join well plate information and create final cell id
-  df <- 
-    purrr::pmap_dfr(.l = all_data_list, .f = hlpr_assemble_df)
-  
-  cell_lines <- df$cell_line %>% base::unique() %>% base::sort()
-  conditions <- df$condition %>% base::unique() %>% base::sort()
-  cl_conditions <- df$cl_condition %>% base::unique() %>% base::sort()
-  
-  final_df <-
-    dplyr::mutate(.data = df, 
-                  cell_line = base::factor(x = cell_line, levels = cell_lines), 
-                  condition = base::factor(x = condition, levels = conditions), 
-                  cl_condition = base::factor(x = cl_condition, levels = cl_conditions)
-    )
-  
-  stat_list <- base::list("only" = final_df)
-  
-  base::return(stat_list)
-  
-}
-
-#' @title Integrate cell track tables
+#' @param well_plate_list A list of well plate lists. 
 #' 
-#' @description Subsets the successfully loaded files. In case of timelapse 
-#' experiments with multiple phases it sorts the data into multiple 
-#' data.frames and returns a list of multiple data.frames named according 
-#' to the ordinal number of the phase ("first", "second" etc.). In case of
-#' non timelapse experimernts the list contains only one data.frame in a 
-#' slot named "first".
-#'
-#' @param track_data_list The output of \code{load_track_files_shiny()}.
-#'
-#' @return A list of data.frames named by 
 
-assemble_track_list_shiny <- function(track_data_list, well_plate_list, object){
+loading_status_table_shiny <- function(well_plate_list){
   
-  df_list <- 
-    purrr::map(.x = track_data_list, ~.x[["successful"]]) %>% 
-    purrr::map(.x = ., .f = ~ purrr::map(.x = .x, "result")) %>% 
-    purrr::map(.x = ., .f = ~ purrr::map_df(.x = .x, "df"))
+  well_plates <- base::names(well_plate_list)
   
-  all_data_list <- 
-    list(df_list, well_plate_list, base::seq_along(df_list), base::names(df_list))
+  directories <- purrr::map_chr(.x = well_plate_list, .f = hlpr_wp_directories)
   
-  df <- 
-    purrr::pmap_dfr(.l = all_data_list, .f = hlpr_assemble_df)
+  n_files <- purrr::map_int(.x = well_plate_list, hlpr_wp_file_number)
   
-  cell_lines <- df$cell_line %>% base::unique() %>% base::sort()
-  conditions <- df$condition %>% base::unique() %>% base::sort()
-  cl_conditions <- df$cl_condition %>% base::unique() %>% base::sort()
+  num_ambiguous <- purrr::map_int(.x = well_plate_list, .f = hlpr_wp_ambiguous_number)
   
-  final_df <-
-    dplyr::mutate(.data = df, 
-      cell_line = base::factor(x = cell_line, levels = cell_lines),
-      condition = base::factor(x = condition, levels = conditions),
-      cl_condition = base::factor(x = cl_condition, levels = cl_conditions)
-    )
+  n_files_expected <- purrr::map_int(.x = well_plate_list, hlpr_wp_exp_file_number)
   
-  phases <- object@set_up$phases
-  
-  measurements <- object@set_up$measurement_string
-  
-  conditions <- 
-    stringi::stri_split(str = base::unique(final_df$condition), regex = "->")
-  
-  phase_starts <-
-    purrr::map_dbl(.x = phases, .f = ~ base::which(x = measurements == .x))
-  
-  # if more than one phase exists return list of data.frames named by phase
-  if(base::length(phase_starts) > 1){
-    
-    phase_endings <- 
-      phase_starts[2:base::length(phase_starts)] %>% 
-      base::append(x = ., values = base::max(final_df$frame)) %>% 
-      purrr::set_names(nm = base::names(phases))
-    
-    phase_info <-
-      purrr::pmap(
-        .l = list(x = phase_starts, y = phase_endings, z = base::seq_along(phases)),
-        .f = function(x, y, z){ list("start" = x, "end" = y, "index" = z)}
-        ) %>% 
-      purrr::set_names(nm = base::names(phases))
-    
-    track_list <- 
-      purrr::map(.x = phase_info, 
-                 .f = function(phase){
-                   
-                   phase_index <- phase$index
-                   phase_start <- phase$start
-                   phase_end <- phase$end
-                   
-                   phase_pattern <- stringr::str_c("^", phase_index, "\\.",sep = "")
-                   
-                   df <-
-                     dplyr::filter(final_df, frame >= {{phase_start}} & frame < {{phase_end}})
-                   
-                   condition_split <- 
-                     stringr::str_split_fixed(df$condition, pattern = " -> ", n = base::length(phase_endings)) 
-                   
-                   condition_vec <- 
-                     stringr::str_remove_all(string = base::as.character(condition_split[,phase_index]), pattern = phase_pattern)
-                   
-                   df$condition <- condition_vec
-                   df$cl_condition <- stringr::str_c(df$cell_line, df$condition, sep = " & ")
-                   df$phase <- english::ordinal(phase_index)
-                   
-                   base::return(df)
-                   
-                 }) %>% 
-      magrittr::set_names(value = base::names(phase_endings))
-    
-  } else { # if only one phase return list of one data.frame named "first"
-    
-    final_df$phase = "first"
-    
-    track_list <- base::list("first" = final_df)
-    
-  }
-  
-  base::return(track_list)
-  
-}
-
-
-
-
-#' @title Show shiny - notifications
-#'
-#' @param in_shiny Logical value. 
-#' @param ui Given to \code{shiny::showNotification()}.
-#' @param type Given to \code{shiny::showNotification()}.
-#' @param ... More arguments given \code{shiny::showNotification()}.
-#'
-#' @return A shiny notification.
-
-shiny_fdb <- function(in_shiny, ui, type = "message", ...){
-  
-  if(base::isTRUE(in_shiny)){
-    
-    shiny::showNotification(ui = ui, type = type, ...)
-    
-  }
-  
-}
-
-
-#' @title Summarize tracking quality
-#'
-#' @param track_df A track data.frame
-
-quality_check_summary_shiny <- function(track_df){
-  
-  dplyr::group_by(.data = track_df, cell_id) %>% 
-    dplyr::summarise(
-      last_meas = base::max(frame), 
-      first_meas = base::min(frame), 
-      total_meas = dplyr::n(), 
-      skipped_meas = base::length(first_meas:last_meas) - total_meas
+  status_df <- 
+    base::data.frame(
+      "wp" = well_plates, 
+      "asd" = directories, 
+      "nof" = n_files, 
+      "enof" = n_files_expected,
+      "noaf" = num_ambiguous
+    ) %>% 
+    dplyr::mutate(
+      "ready" = dplyr::case_when(
+        asd == "No directory assigned" ~ "No", 
+        nof == 0 ~ "No", 
+        noaf != 0 ~ "No", 
+        TRUE ~ "Yes"
+      )
+    ) %>% 
+    dplyr::rename(
+      "Well Plate" = wp,
+      "Assigned Directory" = asd,
+      "Number of Files" = nof,
+      "Expected Number of Files" = enof,
+      "Number of Ambiguous Directories" = noaf, 
+      "Ready to load" = ready
     )
   
 }
@@ -672,15 +771,19 @@ plot_well_plate_shiny <- function(wp_df,
   
   if(base::is.null(fill_values)){
     
-    fill_add_on <- confuns::scale_color_add_on(aes = "fill",
-                                variable = wp_df[[aes_fill]],
-                                clrp.adjust = c("unknown" = "lightgrey", "unknown & unknown" = "lightgrey"),
-                                clrp = "milo", 
-                                guide = FALSE) 
-
+    fill_add_on <-
+      confuns::scale_color_add_on(
+      aes = "fill",
+      variable = wp_df[[aes_fill]],
+      clrp.adjust = c("unknown" = "lightgrey", "unknown & unknown" = "lightgrey"),
+      clrp = "milo",
+      guide = FALSE
+      ) 
+    
   } else {
     
-    fill_add_on <- ggplot2::scale_fill_manual(values = fill_values, drop = FALSE, guide = FALSE) 
+    fill_add_on <- 
+      ggplot2::scale_fill_manual(values = fill_values, drop = FALSE, guide = FALSE) 
     
   }
   
@@ -727,9 +830,9 @@ plot_well_plate_shiny <- function(wp_df,
 #' @param lab_fill Character value.
 
 plot_qc_histogram_shiny <- function(track_summary_df, 
-                                 aes_x = "skipped_meas", 
-                                 lab_x = "Measurements",
-                                 legend_position = "none"){
+                                    aes_x = "skipped_meas", 
+                                    lab_x = "Measurements",
+                                    legend_position = "none"){
   
   labels_breaks <-
     dplyr::pull(track_summary_df, var = {{aes_x}}) %>% 
@@ -762,5 +865,677 @@ plot_qc_barplot_shiny <- function(df, aes_x, aes_fill, bar_position){
     ggplot2::theme_minimal() + 
     ggplot2::labs(x = NULL, y = NULL, fill = NULL,
                   subtitle = stringr::str_c("n = ", base::nrow(df)))
+  
+}
+
+#' @title Summarize tracking quality
+#'
+#' @param track_df A track data.frame
+
+quality_check_summary_shiny <- function(track_df){
+  
+  dplyr::group_by(.data = track_df, cell_id) %>% 
+    dplyr::summarise(
+      last_meas = base::max(frame), 
+      first_meas = base::min(frame), 
+      total_meas = dplyr::n(), 
+      skipped_meas = base::length(first_meas:last_meas) - total_meas
+    )
+  
+}
+
+
+#' @title Read example file 
+#' 
+#' @description Reads in the example table. 
+#' 
+read_example_file_shiny <- function(directory){
+  
+  if(stringr::str_detect(string = directory, pattern = ".csv$")){
+    
+    df <- 
+      base::suppressMessages({
+        
+        base::suppressWarnings({
+          
+          readr::read_csv(file = directory)
+          
+        })
+        
+      })
+    
+  }
+  
+  if(stringr::str_detect(string = directory, pattern = ".xlsx$")){
+    
+    df <- readxl::read_xlsx(path = directory, sheet = 1)
+    
+  }
+  
+  if(stringr::str_detect(string = directory, pattern = ".xls")){
+    
+    df <- readxl::read_xls(path = directory, sheet = 1)
+    
+  }
+  
+  
+  if(tibble::has_rownames(df)){
+    
+    df <- tibble::rownames_to_column(var = "rownames")
+    
+  }
+  
+  df <- dplyr::mutate_if(df, .predicate = is.numeric, .funs = base::round, digits = 2)  
+  
+  return(df)
+  
+}
+
+#' @title Reads cell track data
+#' 
+#' @description A function to be used for argument \code{.f} of \code{purrr::map2()}.
+#' 1. Calls the respective reading function depending on the directory's ending. 
+#' 2. Makes sure that all denoted variables exist
+#' 3. Makes sure that all denoted variables have valid content
+#'
+#' @param directory Character value. The directory from which to read the data.frame.
+#' of \code{.x} contains.
+#' @param progress A shiny - R6 progress object. 
+#' @param progress_n Numeric value. Indicates the iterating progress.
+#' @param assembled_module_info_lists  A list of three slots: 
+#' 
+#' 'identifier' = pdl_step_2_info_assembled()
+#' 'analysis_modules' = pdl_step_3_info_assembled(),
+#' 'additional' = pdl_step_4_info_assembled()
+#'
+#' @return The read in data.frame with three additional informative columns: \emph{well_image, condition}
+#' and \emph{cell_line}.
+
+read_data_files_shiny <- function(directory,
+                                  progress_n,
+                                  progress,
+                                  object,
+                                  used_variable_names,
+                                  assembled_module_info_lists,
+                                  mitosis_module_used = FALSE){
+
+  amils <- assembled_module_info_lists
+
+  assign("amils", value = amils, envir = .GlobalEnv)
+  
+  # 1. Checkpoint: Reading  -------------------------------------------------
+      
+  progress$set(value = progress_n)
+  
+  df <- 
+    base::tryCatch({
+      
+      if(stringr::str_detect(string = directory, pattern = "csv$")){
+        
+        base::suppressMessages({
+          
+          base::suppressWarnings({
+            
+            readr::read_csv(file = directory)
+            
+          })
+          
+        })
+        
+        
+      } else if(stringr::str_detect(string = directory, pattern = "xls$")){
+        
+        readxl::read_xls(path = directory)
+        
+      } else if(stringr::str_detect(string = directory, pattern = "xlsx$")){
+        
+        readxl::read_xlsx(path = directory)
+        
+      }
+      
+    }, error = function(error){
+      
+      return(stringr::str_c("Reading failed with error message:", error$message))
+      
+    })
+  
+  # if is.character -> reading resulted in error -> return error message
+  if(base::is.character(df)){
+    
+    return(df)
+    
+  } else if(base::is.data.frame(df)){
+
+    # 2. Checkpoint: Does data.frame contain data? ----------------------------
+    
+    # if not -> return info
+    if(base::nrow(df) == 0){
+      
+      return("Read in data.frame contains 0 rows.")
+      
+    } else {
+
+      # 3. Checkpoint: Is data of data.frame valid? -----------------------------
+      
+      feedback_messages <- NULL
+      
+      well_image <-
+        stringr::str_extract(string = directory, pattern = file_regex) %>% 
+        stringr::str_extract(pattern = well_image_regex)
+      
+      variable_names <- used_variable_names
+      
+      # 1. Are there any variables missing?
+      missing_variables <- 
+        purrr::map(.x = variable_names, .f = find_missing_variables_shiny, df = df) %>%
+        purrr::discard(.p = base::is.null) %>% 
+        purrr::flatten_chr()
+      
+      n_missing_variables <- base::length(missing_variables)
+      
+      # if so, add to feedback 
+      if(n_missing_variables > 0){
+        
+        ref <- base::ifelse(n_missing_variables > 1, "variables", "variable")
+        ref_cols <- stringr::str_c(missing_variables, collapse = "', '")
+        
+        msg <- glue::glue("Missing {ref}: '{ref_cols}'")
+        
+        feedback_messages <- c(feedback_messages, msg)
+        
+      } else {
+        
+        df <- dplyr::select(df, dplyr::all_of(used_variable_names))
+        
+      }
+      
+      
+      # 2. Are there any variables present that are of invalid type among...
+      # ... identifier variables? 
+      identifier_results <- 
+        base::tryCatch({
+          
+          validate_identifier_variables_shiny(
+            df = df, 
+            assembled_module_info = amils$identifier, 
+            mitosis_module_used = mitosis_module_used,
+            object = object,
+            in_shiny = FALSE
+          )
+          
+        }, error = function(error){
+          
+          return(stringr::str_c(" - ", error$message))
+          
+        }) %>% 
+        # discard error message that indicate missing variables as 
+        # missing variables are reported above
+        purrr::discard(.p = hlpr_discard_messages_missing) 
+      
+      # if so, add to feedback 
+      messages <- 
+        purrr::keep(identifier_results, .p = hlpr_keep_messages)
+      
+      if(base::length(messages) >= 1){
+        
+        feedback_messages <- c(feedback_messages, messages)  
+        
+      }
+      
+      # ... analysis module variables? 
+      analyis_module_results <- 
+        validate_analysis_module_variables_shiny(
+          assembled_module_info = amils$analysis_modules,
+          df = df, 
+          mitosis_module_used = mitosis_module_used,
+          object = object
+        )
+      
+      # if so, add to feedback 
+      messages <- 
+        purrr::keep(analyis_module_results, .p = hlpr_keep_messages)
+      
+      if(base::length(messages) >= 1){
+        
+        feedback_messages <- c(feedback_messages, messages)  
+        
+      }
+      
+      # ... additional variables? 
+      additional_variables_results <- 
+        validate_additional_variables_shiny(
+          assembled_module_info = amils$additional,
+          df = df 
+        )
+      
+      # if so, add to feedback 
+      messages <- 
+        purrr::keep(additional_variables_results, .p = hlpr_keep_messages)
+      
+      if(base::length(messages) >= 1){
+        
+        feedback_messages <- c(feedback_messages, messages)  
+        
+      }
+      
+      
+      # if feedback_messages contains any messages something went wrong
+      if(base::is.character(feedback_messages) &&
+         base::length(feedback_messages) >= 1){
+        
+        return(feedback_messages)
+        
+      } else { # if not, all slots in the three list contain valid data variables
+        
+        id_name_pairs <- 
+          hlpr_module_name_pairs(amils$identifier) 
+        
+        analysis_module_name_pairs <- 
+          purrr::map(.x = amils$analysis_modules, .f = hlpr_module_name_pairs) %>% 
+          purrr::flatten_chr() 
+        
+        analysis_module_name_pairs <- 
+          analysis_module_name_pairs[analysis_module_name_pairs != "not selected"]
+        
+        # assemble to list
+        data_list <- 
+          c(identifier_results, 
+            analyis_module_results,
+            additional_variables_results)
+        
+        # assemble to data.frame
+        final_df <-
+          purrr::map_df(data_list, .f = function(var){ return(var) }) %>% 
+          dplyr::mutate(df, well_image = {{well_image}}) %>% 
+          dplyr::rename(!!!id_name_pairs) %>% 
+          dplyr::rename(!!!analysis_module_name_pairs)
+        
+        return(final_df)
+        
+      }
+    }
+  }
+}
+
+
+
+#' @title Show shiny - notifications
+#'
+#' @param in_shiny Logical value. 
+#' @param ui Given to \code{shiny::showNotification()}.
+#' @param type Given to \code{shiny::showNotification()}.
+#' @param ... More arguments given \code{shiny::showNotification()}.
+#'
+#' @return A shiny notification.
+
+shiny_fdb <- function(in_shiny = TRUE, ui, type = "message", ...){
+  
+  if(base::isTRUE(in_shiny)){
+    
+    shiny::showNotification(ui = ui, type = type, ...)
+    
+  }
+  
+}
+
+#' Title
+#'
+#' @param assembled_module_info output of assemble_module_info()-functions (module information list)
+#' @param test_overlap if set to TRUE stops execution if var names are not uniquely
+#' assigned
+#'
+#' @return Extracts information about the name of variables carried by the example file from
+#' the module information list in form of a character vector. Checks for duplicated 
+#' variable name assignemnt 
+#'
+used_variable_names_shiny <- function(assembled_module_info, test_overlap = FALSE){
+  
+  if("variables" %in% base::names(assembled_module_info)){
+    
+    used_names_list <- 
+      purrr::map(
+        .x = assembled_module_info$variables,
+        .f = ~ .x$name_in_example # 'nameS_in_example' in case of general variable information
+      ) 
+    
+    used_names_vec <- 
+      purrr::flatten(used_names_list) %>% 
+      purrr::flatten_chr()
+    
+  } else {
+    
+    used_names_list <- 
+      purrr::map(assembled_module_info, .f = function(analysis_module){
+        
+        purrr::map(.x = analysis_module$variables, .f = ~ .x$name_in_example)
+        
+      }) %>% 
+      purrr::flatten()
+    
+    used_names_vec <- 
+      purrr::flatten_chr(used_names_list)
+    
+  }
+  
+  used_names_vec <- used_names_vec[!used_names_vec %in% c("", "not selected")]
+  
+  if(base::isTRUE(test_overlap)){
+    
+    if(base::is.null(assembled_module_info$name)){
+      
+      step <- "Step 3: Denote module specific variables"
+      
+    } else if(stringr::str_detect(assembled_module_info$name, "^identification_")){
+      
+      step <- "Step 2: Denote identifier variables"
+      
+    } else if(assembled_module_info$name == "additional_data_variables"){
+      
+      step <- "Step 4: Denote additional variables of interest"
+      
+    } 
+    
+    if(base::length(used_names_vec) == 0){
+      
+      shiny_fdb(
+        ui = glue::glue("Proceeding without saving any denoted variables in '{step}'."),
+        duration = 10
+      )
+      
+    } else {
+      
+      used_names_count <- 
+        base::table(used_names_vec) %>% 
+        base::as.data.frame() 
+      
+      overlapping_names <- 
+        magrittr::set_colnames(used_names_count, value = c("name", "count")) %>% 
+        dplyr::mutate(name = base::as.character(name)) %>% 
+        dplyr::mutate(name = glue::glue("{name} ({count}x)")) %>% 
+        dplyr::filter(count > 1) %>% 
+        dplyr::pull(name)
+      
+      if(base::length(overlapping_names) >= 1){
+        
+        ovlp <- confuns::scollapse(overlapping_names)
+        
+        msg <-
+          glue::glue(
+            "Duplicated variable assignment is not allowed. ",
+            "In '{step}' the following {ref} {ref2} been denoted several times: ",
+            "'{ovlp}'",
+            ref = confuns::adapt_reference(overlapping_names, "variable", "variables"),
+            ref2 = confuns::adapt_reference(overlapping_names, "has", "have")
+          )
+        
+        shiny_fdb(in_shiny = TRUE, ui = msg, type = "error", duration = 20)
+        
+        shiny::req(FALSE)
+        
+      }
+      
+    }
+    
+  }
+  
+  unique_used_names <- base::unique(used_names_vec)
+  
+  return(unique_used_names)
+  
+}
+
+
+
+#' Title
+#' @description makes sure that the denoted identifier variables are valid. 
+#' to be used in observeEvent() of pdl_step4 action button 'Save & Proceed'
+#' 
+#' @param example_df the example file loaded in prepare data loading
+#' @param assembled_module_info the respective output of assemble_module_info*()
+#'  functions (module information list)
+#' @param mitosis_module_used logical, skip if lineages have to be reconstructed
+#' @param object 
+#'
+#' @return Variables (list of variables if time lapse), converted if necessary. If 
+#' conversion not possible or variable missing the error message of the thrown
+#' error.
+#'
+validate_identifier_variables_shiny <- function(df,
+                                                assembled_module_info,
+                                                mitosis_module_used,
+                                                object,
+                                                in_shiny){
+  
+  am_info <- assembled_module_info
+  cell_id_name <- am_info$variables$cell_id$name_in_example
+  
+  if(isTimeLapseExp(object)){
+    
+    frame_num_name <- am_info$variables$frame_num$name_in_example
+    
+    if(base::isTRUE(mitosis_module_used)){
+      
+      # postpone check to after lineages and ids have been reconstructed
+      res <- 
+        dplyr::select(df, dplyr::any_of(c(cell_id_name, frame_num_name))) %>% 
+        base::as.list()
+      
+    } else {
+      
+      res <- 
+        check_and_convert_vars_frame_num_and_cell_id(
+          var_frame_num = df[[frame_num_name]],
+          ref_frame_num = frame_num_name,
+          var_cell_id = df[[cell_id_name]],
+          ref_cell_id = cell_id_name,
+          in_shiny = in_shiny
+        )
+      
+    }
+    
+  } else {
+    
+    check_content_fun <- am_info$variables$cell_id$check_content
+    
+    res <- 
+      rlang::invoke(
+        .fn = check_content_fun,
+        .args = list(
+          var = df[[cell_id_name]],
+          ref = cell_id_name,
+          in_shiny = in_shiny
+        )
+      )
+    
+  }
+  
+  return(res)
+  
+}
+
+
+
+#' Title
+#' @description makes sure that the denoted identifier variables are valid. 
+#' to be used in observeEvent() of pdl_step4 action button 'Save & Proceed'
+#' 
+#' @param example_df the example file loaded in prepare data loading
+#' @param assembled_module_info the respective output of assemble_module_info*()
+#'  functions (module information list)
+#' @param mitosis_module_used logical, skip if lineages have to be reconstructed
+#' @param object 
+#'
+#' @return List of variables, converted if necessary, named according to the variable. If 
+#' conversion was not possible or the variable was missing the respective slot 
+#' contains the error message of the thrown error instead.
+#'
+validate_analysis_module_variables_shiny <- function(assembled_module_info,
+                                                     df,
+                                                     mitosis_module_used,
+                                                     object){
+  
+  all_check_results <- 
+    purrr::map(.x = assembled_module_info, .f = function(analysis_module){
+      
+      names_in_example <- 
+        purrr::map_chr(.x = analysis_module$variables, .f = ~ .x$name_in_example)
+      
+      module_check_results <- 
+        purrr::map(.x = analysis_module$variables, .f = function(variable_info){
+          
+          name_in_example <- variable_info$name_in_example
+          
+          # not selected (computable) variables do not have to be in the 
+          # data frame and are computed later on 
+          if(name_in_example == "not selected"){
+            
+            check_res <- NULL
+            
+          } else {
+            
+            check_res <- 
+              base::tryCatch({
+                
+                base::suppressWarnings({
+                  
+                  rlang::invoke(
+                    .fn = variable_info$check_content,
+                    .args = list(
+                      var = df[[name_in_example]],
+                      ref = name_in_example,
+                      in_shiny = FALSE
+                    )
+                  )
+                  
+                })
+                
+              }, error = function(error){
+                
+                return(stringr::str_c(" - ", error$message))
+                
+              })
+            
+          }
+          
+          return(check_res)
+          
+        }) %>% 
+        purrr::set_names(nm = names_in_example) %>% 
+        # discard not selected not needed vars
+        purrr::discard(.p = base::is.null) %>%  
+        # discard variable missing indicating messages (reported prev. to this function)
+        purrr::discard(.p = hlpr_discard_messages_missing) 
+      
+      return(module_check_results)
+      
+    }) %>% 
+    # flatten from list of analysis modules (list of variables) to list of all variables 
+    purrr::flatten() 
+  
+  return(all_check_results)
+  
+}
+
+#' Title
+#' @description makes sure that the denoted identifier variables are valid. 
+#' to be used in observeEvent() of pdl_step4 action button 'Save & Proceed'
+#' 
+#' @param example_df the example file loaded in prepare data loading
+#' @param assembled_module_info the respective output of assemble_module_info*()
+#'  functions (module information list)
+#' @param mitosis_module_used logical, skip if lineages have to be reconstructed
+#' @param object 
+#'
+#' @return List of variables, converted if necessary, named according to the variable. If 
+#' conversion was not possible or the variable was missing the respective slot 
+#' contains the error message of the thrown error instead.
+#'
+validate_additional_variables_shiny <- function(assembled_module_info, 
+                                                df, 
+                                                object){
+  
+  # check for grouping variables
+  grouping_var_info <-
+    assembled_module_info$variables$grouping_variable_info
+  
+  grouping_var_names <- grouping_var_info$name_in_example
+  grouping_var_check_fun <- grouping_var_info$check_content
+  
+  grouping_check_results <- 
+    purrr::map(.x = grouping_var_names, .f = function(name_in_example){
+      
+      check_res <- 
+        base::tryCatch({
+          
+          base::suppressWarnings({
+            
+            rlang::invoke(
+              .fn = grouping_var_check_fun,
+              .args = list(
+                var = df[[name_in_example]],
+                ref = name_in_example,
+                in_shiny = FALSE
+              )
+            )
+            
+          })
+          
+        }, error = function(error){
+          
+          return(stringr::str_c(" - ", error$message))
+          
+        })
+      
+      return(check_res)
+      
+      
+      
+    }) %>% 
+    purrr::set_names(nm = grouping_var_names) %>% 
+    # discard variable missing indicating messages (reported prev. to this function)
+    purrr::discard(.p = hlpr_discard_messages_missing) 
+  
+  # check for numeric variables
+  numeric_var_info <- 
+    assembled_module_info$variables$numeric_variable_info
+  
+  numeric_var_names <- numeric_var_info$name_in_example
+  numeric_var_check_fun <- numeric_var_info$check_content
+  
+  numeric_check_results <- 
+    purrr::map(.x = numeric_var_names, .f = function(name_in_example){
+      
+      check_res <- 
+        base::tryCatch({
+          
+          base::suppressWarnings({
+            
+            rlang::invoke(
+              .fn = numeric_var_check_fun,
+              .args = list(
+                var = df[[name_in_example]],
+                ref = name_in_example,
+                in_shiny = FALSE
+              )
+            )
+            
+          })
+          
+        }, error = function(error){
+          
+          return(stringr::str_c(" - ", error$message))
+          
+        })
+      
+      return(check_res)
+      
+    }) %>% 
+    purrr::set_names(nm = numeric_var_names) %>% 
+    # discard variable missing indicating messages (reported prev. to this function)
+    purrr::discard(.p = hlpr_discard_messages_missing) 
+  
+  all_results <- c(grouping_check_results, numeric_check_results)
+  
+  return(all_results)
   
 }

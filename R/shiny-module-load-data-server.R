@@ -19,12 +19,35 @@ moduleLoadDataServer <- function(id, object){
       
       # Reactive values ---------------------------------------------------------
       
+      pdl_step_2_info_assembled <- shiny::reactiveVal(value = list())
+      pdl_step_3_info_assembled <- shiny::reactiveVal(value = list())
+      pdl_step_4_info_assembled <- shiny::reactiveVal(value = list())
+      
+      used_identifier_names <- shiny::reactiveVal(value = NULL)
+      used_analysis_module_names <- shiny::reactiveVal(value = NULL)
+      used_additional_names <- shiny::reactiveVal(value = NULL)
+      
+      used_names_all <- shiny::reactiveVal(value = NULL)
+      
+      html_and_css <- shiny::reactiveValues(
+        
+        identifier_variables = NULL,
+        analysis_module_variables = NULL, 
+        additional_variables = NULL
+        
+      )
+      
+      final_df <- shiny::reactiveVal(value = data.frame())
+      
+      pdl_step_2_complete <- shiny::reactiveVal(value = FALSE)
+      pdl_step_3_complete <- shiny::reactiveVal(value = FALSE)
+      pdl_step_4_complete <- shiny::reactiveVal(value = FALSE)
+      
       well_plate_list <- shiny::reactiveVal(value = object@well_plates)
       well_plate_names <- shiny::reactiveVal(value = base::names(object@well_plates))
       
       read_in_data <- shiny::reactiveVal(value = list())
       
-      # list containing all the information regarding the experiment's design
       # - the return value of this module
       ld_output <- shiny::reactiveValues(
         
@@ -37,6 +60,165 @@ moduleLoadDataServer <- function(id, object){
       # -----
       
       # Render UIs --------------------------------------------------------------
+      
+      # prepare data loading ---
+      output$identifier_variables <- shiny::renderUI({
+        
+        shiny::req(html_and_css$identifier_variables)
+        
+        ns <- session$ns 
+        
+        if(shiny::isTruthy(example_df())){
+          
+          status <- "success"
+          
+        } else {
+          
+          status <- "warning"
+          
+        }
+        
+        shinydashboard::box(
+          html_and_css$identifier_variables,
+          solidHeader = TRUE,
+          width = 12,
+          status = status, 
+          title = "Step 2: Denote identifier variables"
+          )
+        
+      })
+      
+      output$module_variables <- shiny::renderUI({
+        
+        shiny::req(html_and_css$analysis_module_variables)
+        
+        ns <- session$ns
+        
+        if(base::is.character(used_identifier_names()) &
+           base::isTRUE(pdl_step_2_complete())){
+          
+          status <- "success"
+          
+        } else {
+          
+          status <- "warning"
+          
+        }
+        
+        shinydashboard::box(
+          html_and_css$analysis_module_variables,
+          solidHeader = TRUE,
+          width = 12,
+          status = status,
+          title = "Step 3: Denote module specific variables"
+        )
+        
+      })
+      
+      output$additional_variables <- shiny::renderUI({
+        
+        shiny::req(html_and_css$additional_variables)
+        
+        ns <- session$ns
+        
+        if(base::is.character(used_analysis_module_names()) &
+           base::isTRUE(pdl_step_3_complete())){
+          
+          status <- "success"
+          
+        } else {
+          
+          status <- "warning"
+          
+        }
+        
+        shinydashboard::box(
+          html_and_css$additional_variables,
+          solidHeader = TRUE,
+          width = 12,
+          status = status,
+          title = "Step 4: Denote additional data variables"
+        )
+        
+      })
+      
+      # ---
+      
+      # load data ---
+      
+      output$ld_well_plate_box <- shiny::renderUI({
+        
+        ns <- session$ns
+        
+        if(base::isTRUE(pdl_step_4_complete())){
+          
+          status <- "success"
+          
+        } else {
+          
+          status <- "warning"
+          
+        }
+        
+        shinydashboard::box(
+          shiny::fluidRow(
+            shiny::column(
+              shiny::fluidRow(
+                shiny::column(
+                  shiny::helpText("Assign folders to well plates and check file availability.") %>% 
+                    add_helper(content = helper_content$assign_folder),
+                  width = 12, 
+                )
+              ), 
+              shiny::fluidRow(
+                shiny::column(
+                  shiny::plotOutput(outputId = ns("ld_well_plate_plot")),
+                  shiny::textOutput(outputId = ns("ld_chosen_dir")),
+                  width = 12, 
+                ),
+              ), 
+              shiny::fluidRow(
+                hs(4, 
+                   shiny::h5(shiny::strong("Choose Well Plate:")),
+                   shiny::uiOutput(outputId = ns("ld_added_well_plates"))
+                ),
+                hs(4, 
+                   shiny::h5(shiny::strong("If ambiguous:")),
+                   shiny::selectInput(
+                     inputId = ns("ld_keep_filetype"), 
+                     label = NULL, 
+                     choices = c( "keep .csv - files" = "csv$",
+                                  "keep .xls - files" = "xls$",
+                                  "keep .xlsx - files" = "xlsx$"), 
+                     selected = "csv$")
+                ),
+                hs(2, 
+                   shiny::h5(shiny::strong("Include Subfolders")),
+                   shinyWidgets::materialSwitch(
+                     inputId = ns("ld_recursive"), 
+                     label = NULL, 
+                     value = TRUE,
+                     status = "success")
+                ),
+                hs(2, 
+                   shiny::h5(shiny::strong("Assign Folder:")),
+                   shinyFiles::shinyDirButton(
+                     id = ns("ld_well_plate_dir"), 
+                     label = "Browse", 
+                     title = NULL)
+                )
+              ),
+              width = 12,
+            )
+          ),
+          solidHeader = TRUE,
+          status = status,
+          title = "Assign Folder to Well Plate", 
+          width = 12
+        )
+        
+      })
+      
       
       output$ld_added_well_plates <- shiny::renderUI({
         
@@ -104,20 +286,28 @@ moduleLoadDataServer <- function(id, object){
           
         }
         
-        shinydashboard::box(title = "Well Plate Status", status = status, width = 12, 
-                            solidHeader = TRUE,
-                            shiny::fluidRow(
-                              shiny::column(width = 12, 
-                                            DT::dataTableOutput(outputId = ns("ld_loading_status"))
-                              )
-                            ),
-                            shiny::HTML("<br><br>"), 
-                            shiny::fluidRow(width = 12, 
-                                            hs(12, align = "center",
-                                               shiny::actionButton(inputId = ns("ld_load_data"), label = "Load Data")
-                                            )
-                            )
-        ) %>% add_helper(content = helper_content$well_plate_status)
+        shinydashboard::box(
+          shiny::helpText("Check the progress you have made assigning folders to well plates.") %>%
+            add_helper(content = helper_content$well_plate_status),
+          shiny::fluidRow(
+            shiny::column(
+              DT::dataTableOutput(outputId = ns("ld_loading_status")),
+              width = 12, 
+            )
+          ),
+          shiny::HTML("<br><br>"), 
+          shiny::fluidRow(
+            shiny::column(
+               shiny::actionButton(inputId = ns("ld_load_data"), label = "Load Data"),
+               align = "center",
+               width = 12
+            )
+          ),
+          solidHeader = TRUE,
+          status = status,
+          title = "Well Plate Status",
+          width = 12
+        ) 
         
       })
       
@@ -137,30 +327,281 @@ moduleLoadDataServer <- function(id, object){
         }
         
         
-        shinydashboard::box(title = "Load Files & Proceed", status = status, width = 12, 
-                            solidHeader = TRUE, collapsible = FALSE, 
-                            shiny::uiOutput(outputId = ns("ld_well_plate_errors")),
-                            shiny::uiOutput(outputId = ns("ld_well_image_errors")),
-                            shiny::textOutput(outputId = ns("ld_error_message")),
-                            shiny::HTML("<br>"),
-                            shiny::column(width = 12, align = "center",
-                                          shiny::splitLayout(
-                                            cellWidths = c("50%", "50%"),
-                                            shiny::actionButton(inputId = ns("ld_save_and_proceed"), label = "Save & Proceed")
-                                          )
-                            )
-        )  %>% add_helper(content = helper_content$load_files_and_proceed)
+        shinydashboard::box(
+          shiny::helpText("Check for errors during the loading process.") %>%
+            add_helper(content = helper_content$load_files_and_proceed),
+          shiny::uiOutput(outputId = ns("ld_well_plate_errors")),
+          shiny::uiOutput(outputId = ns("ld_well_image_errors")),
+          shiny::textOutput(outputId = ns("ld_error_message")),
+          shiny::HTML("<br>"),
+          shiny::column(width = 12, align = "center",
+                        shiny::splitLayout(
+                          cellWidths = c("50%", "50%"),
+                          shiny::actionButton(inputId = ns("ld_save_and_proceed"), label = "Save & Proceed")
+                        )
+          ),
+          solidHeader = TRUE,
+          status = status, 
+          title = "Load Files & Proceed",
+          width = 12
+        )  
         
       })
+      
+      # ---
       
       
       # -----
       
       # Observe events ----------------------------------------------------------
 
+      # events that change html
+      
+      oe <- shiny::observeEvent(example_df(), {
+        
+        ns <- session$ns
+        
+        html_and_css$identifier_variables <- 
+          pdl_step_2_identifier_variables_html(
+            object = object, 
+            example_df = example_df(),
+            ns = ns
+          )
+        
+      })
+      
+      oe <- shiny::observeEvent(c(example_df(), used_identifier_names()), {
+        
+        ns <- session$ns
+        
+        html_and_css$analysis_module_variables <- 
+          pdl_step_3_module_variables_html(
+            object = object, 
+            example_df = example_df(), 
+            ns = ns,
+            exclude_from_choices = used_identifier_names()
+          )
+        
+      })
+      
+      oe <- shiny::observeEvent(c(example_df(), used_analysis_module_names()), {
+        
+        ns <- session$ns
+        
+        exclude_from_choices <- 
+          c(used_identifier_names(), used_analysis_module_names())
+        
+        html_and_css$additional_variables <- 
+          pdl_step_4_additional_variables_html(
+            object = object, 
+            example_df = example_df(),
+            ns = ns,
+            exclude_from_choices = exclude_from_choices
+          )
+        
+      })
+      
+      # assemble module and variable assignment information
+
+      oe <- shiny::observeEvent(input$pdl_id_vars_save, {
+        
+        checkpoint(
+          evaluate = shiny::isTruthy(example_df()), 
+          case_false = "no_example_df"
+        )
+        
+        res_info <- 
+          assemble_id_module_info_shiny(
+            input_list = shiny::reactiveValuesToList(input), 
+            object = object
+          )
+        
+        used_id_names <- 
+          used_variable_names_shiny(
+            assembled_module_info = res_info,
+            test_overlap = TRUE
+          )
+        
+        assign("ai_step2", value = res_info, envir = .GlobalEnv)
+        assign("used_id_names", value = used_id_names, envir = .GlobalEnv)
+        
+        if(base::length(used_id_names) >= 1){
+        
+          shiny_fdb(ui = "Identification variables saved.")  
+          
+        }
+        
+        pdl_step_2_info_assembled(res_info)
+        used_identifier_names(used_id_names)
+        
+        # reset 
+        used_analysis_module_names(NULL)
+        used_additional_names(NULL)
+        
+        pdl_step_2_complete(TRUE)
+        pdl_step_3_complete(FALSE)
+        pdl_step_4_complete(FALSE)
+        
+      })
+      
+      oe <- shiny::observeEvent(input$pdl_module_vars_save, {
+        
+        checkpoint(
+          evaluate = shiny::isTruthy(used_identifier_names()), 
+          case_false = "no_id_vars"
+        )
+        
+        res_info <- 
+          assemble_analysis_module_info_shiny(
+            input_list = shiny::reactiveValuesToList(input), 
+            object = object
+          )
+        
+        assign("ai_step3", value = res_info, envir = .GlobalEnv)
+        
+        used_mod_names <- 
+          used_variable_names_shiny(
+            assembled_module_info = res_info, 
+            test_overlap = TRUE
+          )
+        
+        assign("used_analysis_module_names", value = used_mod_names, envir = .GlobalEnv)
+        
+        if(base::length(used_mod_names) >= 1){
+          
+          shiny_fdb(TRUE, ui = "Module variables saved.")
+          
+        }
+        
+        pdl_step_3_info_assembled(res_info)
+        used_analysis_module_names(used_mod_names)
+        
+        # reset
+        used_additional_names(NULL)
+        
+        pdl_step_2_complete(TRUE)
+        pdl_step_3_complete(TRUE)
+        pdl_step_4_complete(FALSE)
+        
+      })
+      
+      oe <- shiny::observeEvent(input$pdl_add_vars_save, {
+        
+        ns <- session$ns
+        
+        checkpoint(
+          evaluate = base::is.character(used_analysis_module_names()), # can be character(0) -> no modules used
+          case_false = "no_module_vars"
+        )
+        
+        res_info <- 
+          assemble_additional_data_variables_module_info_shiny(
+            input_list = shiny::reactiveValuesToList(input), 
+            object = object
+          )
+        
+        used_add_names <-
+          used_variable_names_shiny(
+            assembled_module_info = res_info, 
+            test_overlap = TRUE
+          )
+        
+        assign("ai_step4", value = res_info, envir = .GlobalEnv)
+        assign("used_add_names", value = used_add_names, envir = .GlobalEnv)
+        
+        if(base::length(used_add_names) >= 1){
+        
+          shiny_fdb(TRUE, ui = "Additional variables saved.")  
+          
+        }
+        
+        pdl_step_4_info_assembled(res_info)
+        used_additional_names(used_add_names)
+        
+        all_denoted_names <- 
+          c(used_identifier_names(),
+            used_analysis_module_names(),
+            used_additional_names()
+            )
+        
+        # set value for reactive used_names_all()
+        used_names_all(all_denoted_names)
+        
+        # set value for reactive final_df()
+        final_df(dplyr::select(example_df(), dplyr::all_of(all_denoted_names)))
+        
+        # shiny helper 
+        shiny::showModal(
+          ui = shiny::modalDialog(
+            shiny::tagList(
+              shiny::fluidRow(
+                shiny::column(
+                  shiny::h4(shiny::strong("Final data output")), 
+                  shiny::helpText("Cypro expects all files to contain these data variables."),
+                  DT::dataTableOutput(outputId = ns("pdl_final_df")),
+                  width = 12
+                )
+              )
+            )
+          ,
+          footer = shiny::tagList(
+              shiny::fluidRow(
+                hs(width = 4, shiny::actionButton(inputId = ns("pdl_save_and_proceed"), label = "Proceed with data loading")), 
+                hs(width = 4, shiny::actionButton(inputId = ns("pdl_change_vardenotation"), label = "Change variable denotation"))
+              )
+            ), 
+            size = "l", 
+            easyClose = FALSE
+          )
+        )
+        
+      })
+      
+      
+      oe <- shiny::observeEvent(input$pdl_save_and_proceed, {
+        
+        shiny::removeModal()
+        
+        pdl_step_2_complete(TRUE)
+        pdl_step_3_complete(TRUE)
+        pdl_step_4_complete(TRUE)
+        
+        shiny_fdb(
+          ui = "Preparation for data loading completed. Proceed by assigning each well plate its data folder.",
+          duration = 15
+        )
+        
+      })
+      
+      oe <- shiny::observeEvent(input$pdl_change_vardenotation, {
+        
+        shiny::removeModal()
+        
+        pdl_step_2_complete(TRUE)
+        pdl_step_3_complete(TRUE)
+        pdl_step_4_complete(FALSE)
+        
+        shiny_fdb(
+          ui = "If you are done denoting data variables. Click again on 'Save and Proceed' of Step 4.",
+          duration = 15
+        )
+        
+      })
+      
+      # development 
+      oe <- shiny::observeEvent(input$print_input_names, {
+        
+        print(names(input))
+        
+        assign(x = "input_list", value = shiny::reactiveValuesToList(input), envir = .GlobalEnv)
+        
+      })
       
       # add new directory to well plate
-      oe <- shiny::observeEvent(dir_string(), {
+      oe <- shiny::observeEvent(well_plate_dir_string(), {
+        
+        checkpoint(evaluate = base::isTRUE(pdl_step_4_complete()),
+                   case_false = "incomplete_vardenotation")
         
         # actual code !!!
         checkpoint(evaluate = !base::is.null(well_plate_list()),
@@ -169,7 +610,7 @@ moduleLoadDataServer <- function(id, object){
         well_plate_list_new <- well_plate_list()
         wp_name <- input$ld_added_well_plates
         
-        well_plate_list_new[[wp_name]][["directory"]] <- dir_string()
+        well_plate_list_new[[wp_name]][["directory"]] <- well_plate_dir_string()
         
         well_plate_list_new[[wp_name]] <-
           evaluate_file_availability_shiny(
@@ -210,11 +651,14 @@ moduleLoadDataServer <- function(id, object){
           purrr::map2(.x = well_plate_list(),
                       .y = well_plate_names(),
                       .f = load_data_files_shiny, 
+                      assembled_module_info_lists = amils(),
+                      used_variable_names = used_names_all(),
+                      mitosis_module_used = FALSE, # !!!
                       object = object, 
                       session = session)
         
         shiny::showNotification(ui = "Reading done.", type = "message")
-        
+        assign(x = "read_in_data", value= data_list, envir = .GlobalEnv)
         # update read_in_data
         read_in_data(data_list)
         
@@ -231,14 +675,24 @@ moduleLoadDataServer <- function(id, object){
         
         object@well_plates <- well_plate_list()
         
-        object@cdata$stats <- stat_list()
         object@cdata$tracks <- track_list()
         
+        object@information$all_cell_ids <- 
+          purrr::map(.x = track_list(), .f = ~ dplyr::pull(.x, var = "cell_id")) %>% 
+          purrr::flatten_chr() %>% 
+          base::unique()
+        
         ld_output$proceed <- input$ld_save_and_proceed
+        
+        object <-
+          add_vardenotation_to_cypro_object_shiny(
+            object = object, 
+            amils = amils()
+          )
+        
         ld_output$object <- object
         
         shiny_fdb(in_shiny = TRUE, ui = "Results have been saved. Click on 'Return Cypro Object' and proceed with checkDataQuality().")
-        
         
       })
       
@@ -266,12 +720,24 @@ moduleLoadDataServer <- function(id, object){
       if(sysname == "Windows"){
         
         shinyFiles::shinyDirChoose(input = input, 
+                                   id = "pdl_example_dir", 
+                                   session = session, 
+                                   roots = dir_roots()
+        )
+        
+        shinyFiles::shinyDirChoose(input = input, 
                                    id = "ld_well_plate_dir", 
                                    session = session, 
                                    roots = dir_roots()
         )
         
       } else {
+        
+        shinyFiles::shinyDirChoose(input = input, 
+                                   id = "pdl_example_dir", 
+                                   session = session, 
+                                   roots = dir_roots()
+        )
         
         shinyFiles::shinyDirChoose(input = input, 
                                    id = "ld_well_plate_dir", 
@@ -282,10 +748,8 @@ moduleLoadDataServer <- function(id, object){
         
       }
       
-
-      
       # assembled directory 
-      dir_string <- shiny::reactive({ 
+      well_plate_dir_string <- shiny::reactive({ 
         
         shiny::validate(
           shiny::need(expr = base::is.list(x = input$ld_well_plate_dir), 
@@ -301,6 +765,33 @@ moduleLoadDataServer <- function(id, object){
           shinyFiles::parseDirPath(roots = c(wd = "~"), input$ld_well_plate_dir)
           
         }
+        
+      })
+      
+      # ---
+      
+      # --- prepare data loading 
+      
+      # example data.frame 
+      example_df <- shiny::reactive({
+        
+        shiny::req(input$pdl_example_dir)
+        
+        input_file <- input$pdl_example_dir
+        directory <- input_file$datapath
+        
+        read_example_file_shiny(directory = directory)
+        
+      })
+      
+      # assembled module information lists (amils)
+      amils <- shiny::reactive({
+        
+        list(
+          identifier = pdl_step_2_info_assembled(),
+          analysis_modules = pdl_step_3_info_assembled(),
+          additional = pdl_step_4_info_assembled()
+        )
         
       })
       
@@ -366,9 +857,7 @@ moduleLoadDataServer <- function(id, object){
         
         shiny::req(read_in_data())
         
-        purrr::map(.x = read_in_data(), "failed") %>% 
-          purrr::discard(.p = base::is.null) %>% 
-          purrr::map(.f =  ~ purrr::map(.x = .x, "error"))
+        purrr::map(.x = read_in_data(), .f = ~ .x$failed)
         
       })
       
@@ -408,36 +897,25 @@ moduleLoadDataServer <- function(id, object){
       
       # assemble results lists depending on data input type
       
-      stat_list <- shiny::reactive({
-        
-        if(!isTimeLapseExp(object)){
-          
-          stat_list <- assemble_stat_list_shiny(stat_data_list = read_in_data(), 
-                                                well_plate_list = well_plate_list(), 
-                                                object = object)
-          
-        } else {
-          
-          stat_list <- list()
-          
-        }
-        
-        base::return(stat_list)
-        
-        
-      })
-      
       track_list <- shiny::reactive({
         
         if(isTimeLapseExp(object)){
           
-          track_list <- assemble_track_list_shiny(track_data_list = read_in_data(),
-                                                  well_plate_list = well_plate_list(), 
-                                                  object = object)
+          track_list <-
+            assemble_tracks_time_lapse_shiny(
+              track_data_list = read_in_data(),
+              well_plate_list = well_plate_list(),
+              object = object
+              )
           
         } else {
           
-          track_list <- list()
+          track_list <-
+            assemble_tracks_one_time_imaging_shiny(
+              stat_data_list = read_in_data(),
+              well_plate_list = well_plate_list(),
+              object = object
+            )
           
         }
         
@@ -501,6 +979,28 @@ moduleLoadDataServer <- function(id, object){
       
       
       # Table outputs -----------------------------------------------------------
+      
+      output$pdl_example_table <- DT::renderDataTable({
+        
+        shiny::validate(
+          shiny::need(
+            expr = example_df(), 
+            message = "No example data has been loaded yet."
+          )
+        )
+        
+        utils::head(example_df())
+        
+      }, options = list(scrollX = TRUE))
+      
+      
+      output$pdl_final_df <- DT::renderDataTable({
+        
+        shiny::req(final_df())
+        
+        utils::head(final_df())
+        
+      }, options = list(scrollX = TRUE))
       
       
       output$ld_ambiguous_directories <- DT::renderDataTable({

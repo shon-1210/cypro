@@ -43,7 +43,12 @@ getHclustConv <- function(object, variable_set, phase = NULL, with_data = TRUE){
   )
   
   cluster_object <- 
-    hlpr_add_data_to_cluster_object(object, cluster_object, with_data = with_data, phase = phase)
+    hlpr_add_data_to_cluster_object(
+      object = object,
+      cluster_object,
+      with_data = with_data,
+      phase = phase
+      )
   
   base::return(cluster_object)
   
@@ -80,7 +85,12 @@ getKmeansConv <- function(object, variable_set, phase = NULL, with_data = TRUE){
   )
   
   cluster_object <- 
-    hlpr_add_data_to_cluster_object(object, cluster_object, with_data = with_data, phase = phase)
+    hlpr_add_data_to_cluster_object(
+      object = object,
+      cluster_object,
+      with_data = with_data,
+      phase = phase
+      )
   
   base::return(cluster_object)
   
@@ -117,7 +127,12 @@ getPamConv <- function(object, variable_set, phase = NULL, with_data = TRUE){
   )
   
   cluster_object <- 
-    hlpr_add_data_to_cluster_object(object, cluster_object, with_data = with_data, phase = phase)
+    hlpr_add_data_to_cluster_object(
+      object = object,
+      cluster_object,
+      with_data = with_data,
+      phase = phase
+      )
   
   base::return(cluster_object)
   
@@ -166,12 +181,13 @@ getCorrConv <- function(object, variable_set, phase = NULL){
       by = c("key" = "cell_id"))
   
   corr_object@data <- 
-    getStatsDf(object, phase = phase, verbose = FALSE) %>% 
+    getStatsOrTracksDf(object = object, phase = phase) %>% 
     tibble::column_to_rownames(var = "cell_id") %>% 
     dplyr::select(dplyr::all_of(corr_object@variables_num)) %>% 
     base::as.matrix()
   
-  corr_object@variables_discrete <- getGroupingVariableNames(object, phase = phase, verbose = FALSE)
+  corr_object@variables_discrete <-
+    getGroupingVariableNames(object, phase = phase, verbose = FALSE)
   
   base::return(corr_object)
   
@@ -342,46 +358,32 @@ getOutlierWells <- function(object, threshold = 0.75, verbose = NULL){
 
 #' @title Get cell ids
 #' 
-#' @description Allows to filter cell ids according to a variety of aspects.
+#' @description Using the ... options the stats data can be 
+#' subsetted in the style of \code{dplyr::filter()}.
 #'
 #' @inherit argument_dummy params 
-#' @param na_max Numeric value. Sets the threshold of the maximum number of missing values 
-#' a cell can have across all variables. Ignored if set to NULL or if the experiment 
-#' is not of type \emph{timelapse}.
+#' @inherit dplyr::filter params
 #'
 #' @return Character vector of cell ids.
 #' @export
 #'
 
-getCellIds <- function(object, ...,  na_max = Inf, phase = NULL){
+getCellIds <- function(object, ..., phase = NULL){
   
   filtering <- rlang::enquos(...)
   
   check_object(object)
   assign_default(object)
   
-  prel_cell_ids <- 
-    getStatsDf(object, with_grouping = TRUE, verbose = FALSE) %>% 
-    dplyr::pull(cell_id)
-  
-  if(isTimeLapseExp(object) & base::is.numeric(na_max)){
-    
-    confuns::is_value(na_max, mode = "numeric")
-    
-    prel_cell_ids <-
-      getMissingValuesMax(object) %>% 
-      dplyr::filter(max_nas <= {{na_max}}) %>% 
-      dplyr::pull(cell_id)
-    
-  }
+  phase <- check_phase(object, phase = phase, max_phases = 1)
   
   cell_ids <- 
-    getStatsDf(object, phase = phase) %>% 
-    dplyr::filter(cell_id %in% {{prel_cell_ids}}) %>% 
+    getStatsOrTracksDf(object = object, phase = phase) %>% 
     dplyr::filter(!!!filtering) %>% 
-    dplyr::pull(cell_id)
+    dplyr::pull(cell_id) %>% 
+    base::unique()
   
-  base::return(cell_ids)
+  return(cell_ids)
   
 }
 
@@ -426,12 +428,16 @@ getGroupingDf <- function(object, phase = NULL, verbose = NULL){
   assign_default(object)
   
   grouping_df <- 
-    dplyr::left_join(x = getMetaDf(object, phase = phase),
-                     y = getClusterDf(object, phase = phase, verbose = verbose), 
-                     by = "cell_id") %>% 
-    dplyr::left_join(x = .,
-                     y = getWellPlateDf(object), 
-                     by = "cell_id")
+    dplyr::left_join(
+      x = getMetaDf(object, phase = phase),
+      y = getClusterDf(object, phase = phase, verbose = verbose), 
+      by = "cell_id"
+      ) %>% 
+    dplyr::left_join(
+      x = .,
+      y = getWellPlateDf(object), 
+      by = "cell_id"
+      )
   
   base::return(grouping_df)
   
@@ -541,18 +547,22 @@ getStatsDf <- function(object,
     
   }
   
+  phase <- check_phase(object, phase, max_phases = 1)
+  
   if(multiplePhases(object)){
-    
-    phase <- check_phase(object, phase, max_phases = 1)
     
     stat_df <- object@cdata$stats[[phase]]
     
-  } else {
+  } else if(isTimeLapseExp(object)){
     
     stat_df <- object@cdata$stats
     
+  } else {
+    
+    # use the only data.frame available in case of one time imaging
+    stat_df <- object@cdata$tracks
+    
   }
-
   
   # add cluster
   if(base::isTRUE(with_cluster) | base::isTRUE(with_grouping)){
@@ -816,23 +826,6 @@ getMissingValuesDf <- function(object){
 }
 
 
-#' @title Obtain missing value counts
-#' 
-#' @description This function returns the maximum number of missing values 
-#' every cell has across all variables. 
-#'
-#' @inherit argument_dummy params
-#'
-#' @return A data.frame.
-#' @export
-#'
-getMissingValuesMax <- function(object){
-  
-  check_object(object, exp_type_req = "time_lapse")
-  
-  df <- hlpr_max_track_na_count(object)
-  
-}
 
 
 # -----
@@ -1224,7 +1217,13 @@ getStatVariableNames <- function(object, ..., phase = NULL){
   phase <- check_phase(object, phase = phase, max_phases = 1)
   
   stat_df <-
-    getStatsDf(object, with_meta = FALSE, with_cluster = FALSE, with_well_plate = FALSE) %>% 
+    getStatsDf(
+      object = object,
+      with_meta = FALSE,
+      with_cluster = FALSE,
+      with_well_plate = FALSE,
+      phase = phase
+      ) %>% 
     dplyr::select(-cell_id)
   
   selected_df <- dplyr::select(stat_df, ...)
@@ -1276,7 +1275,7 @@ getTrackVariableNames <- function(object, ..., phase = NULL){
   phase <- check_phase(object, phase = phase, max_phases = 1)
   
   track_df <-
-    getTracksDf(object, with_meta = FALSE, with_cluster = FALSE, with_well_plate = FALSE) %>% 
+    getTracksDf(object, with_grouping = FALSE) %>% 
     dplyr::select(-cell_id, -dplyr::all_of(x = non_data_track_variables))
   
   selected_df <- dplyr::select(track_df, ...)
@@ -1309,11 +1308,10 @@ getTrackVariableNames <- function(object, ..., phase = NULL){
     
   }
   
-  
-  stat_variable_names <- 
+  track_variable_names <- 
     base::colnames(selected_df)
   
-  base::return(stat_variable_names)
+  base::return(track_variable_names)
   
   
 }
@@ -1478,5 +1476,21 @@ getPhases <- function(object){
   
 }
 
-
+getStatsOrTracksDf <- function(object, phase){
+  
+  warning("rewrite to getStatsDf()")
+  
+  if(!isTimeLapseExp(object)){
+    
+    df <- getTracksDf(object, phase = phase)
+    
+  } else {
+    
+    df <- getStatsDf(object, phase = phase)
+    
+  }
+  
+  return(df)
+  
+}
 

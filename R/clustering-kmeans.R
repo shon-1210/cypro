@@ -37,7 +37,8 @@ computeKmeansCluster <- function(object,
   
   phase <- check_phase(object, phase, max_phases = 1)
   
-  cluster_object <- getKmeansConv(object, variable_set = variable_set, phase = phase)
+  cluster_object <-
+    getKmeansConv(object, variable_set = variable_set, phase = phase)
   
   cluster_object <- 
     confuns::perform_kmeans_clustering(
@@ -48,11 +49,14 @@ computeKmeansCluster <- function(object,
       verbose.pb = verbose
     )
   
-  object <- setClusterConv(object = object, 
-                           cluster_object = cluster_object, 
-                           method = "kmeans", 
-                           phase = phase, 
-                           variable_set = variable_set)
+  object <- 
+    setClusterConv(
+      object = object, 
+      cluster_object = cluster_object, 
+      method = "kmeans", 
+      phase = phase, 
+      variable_set = variable_set
+      )
   
   base::return(object)
   

@@ -4,13 +4,7 @@
 \alias{addVariableSet}
 \title{Add predefined set of variables}
 \usage{
-addVariableSet(
-  object,
-  variable_names,
-  set_name,
-  overwrite = FALSE,
-  phase = NULL
-)
+addVariableSet(object, variable_names, set_name, overwrite = FALSE)
 }
 \arguments{
 \item{object}{A valid cypro object.}
@@ -25,11 +19,6 @@ variable names.
 
 (Note that overwriting stat variables leads to all analysis progress of affected
 variable sets being discarded.)}
-
-\item{phase}{Character value. The ordinal value referring to the phase of interest (e.g. \emph{'first'}, \emph{'second'} etc.).
-referring to the phase of interest. If set to NULL takes the phase denoted as default with \code{adjustDefault()}.
-
-Ignored if the experiment design contains only one phase.}
 }
 \value{
 An updated version of the input \code{cypro}-object.

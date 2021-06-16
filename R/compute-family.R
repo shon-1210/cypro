@@ -172,13 +172,13 @@ compute_distances_from_last_point <- function(x_coords, y_coords){
 #'
 #' @param x_coords Numeric vector. Refers to x-coordinates of object. 
 #' @param y_coords Numeric vector. Refers to y-coordinates of object.
-#' @param actual_distance Numeric vector/value. Refers to the total distance 
+#' @param total_dist Numeric vector/value. Refers to the total distance 
 #' the object of interested has traveled. 
 #'
 #' @return A numeric value assessing how efficient the object of interested has
 #' migrated. 
 
-compute_migration_efficiency <- function(x_coords, y_coords, actual_distance){
+compute_migration_efficiency <- function(x_coords, y_coords, total_dist){
   
   # compute direction vector between first and final position
   starting_pos <- c(x_coords[1], y_coords[1])
@@ -189,14 +189,225 @@ compute_migration_efficiency <- function(x_coords, y_coords, actual_distance){
   effective_distance <- base::sqrt(drvc[1]^2 + drvc[2]^2)
   
   # make sure that length == 1 if calculated inside dplyr::mutate()
-  actual_distance <- base::unique(actual_distance)
+  total_dist <- base::unique(total_dist)
   
   # divide effective distance by actual distance
-  migration_efficiency <- actual_distance/(actual_distance/effective_distance)
+  migration_efficiency <- total_dist/(total_dist/effective_distance)
   
   return(migration_efficiency)
   
 }
+
+
+#' @title Compute n missing values
+#'
+#' @description Counts the number of missing values a cell id has for all 
+#' track variables. 
+compute_n_missing_values <- function(object, phase = NULL, verbose = NULL){
+  
+  check_object(object)
+  assign_default(object)
+  
+  phase <- check_phase(object, phase = phase)
+  
+  msg <- 
+    glue::glue(
+      "Counting NAs by cell id in track data{ref_phase}.",
+      ref_phase = hlpr_glue_phase(object, phase, FALSE, "of")
+      )
+  
+  confuns::give_feedback(msg = msg, verbose = verbose)
+  
+  variable_names <- getTrackVariableNames(object)
+  
+  if(multiplePhases(object)){
+    
+    df <- purrr::map_df(object@cdata$tracks[phase], .f = ~ .x)
+    
+  } else {
+    
+    df <- object@cdata$tracks
+    
+  }
+  
+  # summarise how many missing values every cell id has across all variables
+  na_df <- 
+    dplyr::select(df, cell_id, frame_num, dplyr::all_of(variable_names)) %>% 
+    dplyr::group_by(cell_id) %>% 
+    dplyr::summarise_all(.funs = function(var){ base::is.na(var) %>% base::sum()}) %>% 
+    dplyr::select(-frame_num)
+  
+  return(na_df)
+  
+}
+
+
+
+
+# module variables --------------------------------------------------------
+
+# to call within complete_stats()
+compute_module_variables <- function(track_df, object, verbose){
+  
+  used_modules <- get_used_module_names(object)
+  
+  track_df <- dplyr::group_by(track_df, cell_id)
+  
+  for(i in base::seq_along(used_modules)){
+    
+    used_module <- used_modules[i]
+    
+    module_info <- 
+      stringr::str_c("module", used_module, sep = "_") %>% 
+      base::parse(text = .) %>% 
+      base::eval()
+    
+    computable_vars <-
+      get_computable_variable_names(object, module = used_module)
+    
+    vars_to_compute <- 
+      get_variable_names_to_be_computed(object, module = used_module)
+    
+    if(base::length(vars_to_compute) >= 1){
+      
+      confuns::give_feedback(
+        msg = glue::glue("Module: '{module_info$pretty_name}'"),
+        verbose = verbose
+      )
+      
+      for(var_to_compute in module_info$computation_order){
+        
+        if(var_to_compute %in% vars_to_compute){
+          
+          variable_info <- module_info$variables[[var_to_compute]]
+          
+          var_name_in_app <- variable_info$name_in_app
+          
+          confuns::give_feedback(
+            msg = glue::glue("Variable: '{var_name_in_app}' ('{var_to_compute}')"), 
+            verbose = verbose
+          )
+          
+          fn <- variable_info$compute_with
+          
+          args <- list(track_df = track_df, object = object)
+          
+          args <- c(args, variable_info$compute_with_args)
+          
+          track_df <- rlang::invoke(.fn = fn, .args = args)
+          
+        }
+        
+      }
+      
+      replace_val <- module_info$replace_na_first_frame
+      
+      if(!base::is.null(replace_val)){
+        
+        for(cvar in computable_vars){
+          
+          track_df <- 
+            dplyr::mutate(
+              .data = track_df, 
+              {{cvar}} := dplyr::case_when(
+                frame_num == 1 & base::is.na(!!rlang::sym(cvar)) ~ {{replace_val}}, 
+                TRUE ~ !!rlang::sym(cvar)
+              )
+            )
+          
+        }
+        
+      }
+
+      
+    }
+    
+  }
+  
+  return(track_df)
+  
+}
+
+
+
+
+
+
+
+# 'computable'
+
+compute_var_afo <- function(track_df, object){
+  
+  return(track_df)
+  
+}
+
+compute_var_aflp <- function(track_df, object){
+  
+  return(track_df)
+  
+}
+
+
+compute_var_dflp <- function(track_df, object){
+  
+  track_df <- 
+    dplyr::group_by(track_df, cell_id) %>% 
+    dplyr::mutate(dflp = compute_distances_from_last_point(x_coords, y_coords))
+  
+  return(track_df)
+  
+}
+
+compute_var_dfo <- function(track_df, object){
+  
+  track_df <- 
+    dplyr::group_by(track_df, cell_id) %>% 
+    dplyr::mutate(dfo = compute_distances_from_origin(x_coords, y_coords))
+  
+  return(track_df)
+  
+}
+
+compute_var_speed <- function(track_df, object){
+  
+  track_df <-
+    dplyr::group_by(track_df, cell_id) %>% 
+    dplyr::mutate(speed = dflp / object@set_up$itvl)
+  
+  return(track_df)
+  
+}
+
+
+# 'summarizable'
+compute_var_mgr_eff <- function(track_df, stat_df, ...){
+  
+  smrd_df <- 
+    dplyr::left_join(
+      x = track_df, 
+      y = stat_df[,c("cell_id", "total_dist")],
+      by = "cell_id"
+    ) %>% 
+    dplyr::group_by(cell_id) %>% 
+    dplyr::summarize(
+      mgr_eff = compute_migration_efficiency(x_coords, y_coords, total_dist)
+    )
+  
+  return(smrd_df)
+  
+}
+
+compute_var_total_dist <- function(track_df, ...){
+  
+  smrd_df <-
+    dplyr::group_by(track_df, cell_id) %>% 
+    dplyr::summarize(total_dist = base::sum(dflp))
+  
+  return(smrd_df)
+  
+}
+
 
 
 

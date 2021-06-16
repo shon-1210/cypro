@@ -7,62 +7,59 @@ moduleLoadDataUI <- function(id){
   
   shiny::tagList(
     shiny::fluidRow(
-      blue_box(title = "Load Data", width = 12, 
-               shiny::fluidRow(width = 12, 
-                               shiny::column(width = 6, align = "left",
-                                             shiny::wellPanel(
-                                               shiny::fluidRow(width = 12, 
-                                                               shiny::column(width = 12, 
-                                                                             shiny::fluidRow(width = 12,
-                                                                                             shiny::column(width = 12, 
-                                                                                                           shiny::h4(shiny::strong("Assign Folder to Well Plate")) %>% 
-                                                                                                             add_helper(content = helper_content$assign_folder)
-                                                                                             )
-                                                                             ), 
-                                                                             shiny::fluidRow(width = 12,
-                                                                                             shiny::column(width = 12, 
-                                                                                                           shiny::plotOutput(outputId = ns("ld_well_plate_plot")),
-                                                                                                           shiny::textOutput(outputId = ns("ld_chosen_dir"))
-                                                                                             ),
-                                                                             ), 
-                                                                             shiny::fluidRow(width = 12, 
-                                                                                             hs(4, shiny::h5(shiny::strong("Choose Well Plate:")),
-                                                                                                   shiny::uiOutput(outputId = ns("ld_added_well_plates"))
-                                                                                                ),
-                                                                                             hs(4, shiny::h5(shiny::strong("If ambiguous:")),
-                                                                                                   shiny::selectInput(inputId = ns("ld_keep_filetype"), 
-                                                                                                                label = NULL, 
-                                                                                                                choices = c( "keep .csv - files" = "csv$",
-                                                                                                                             "keep .xls - files" = "xls$",
-                                                                                                                             "keep .xlsx - files" = "xlsx$"), 
-                                                                                                                selected = "csv$")
-                                                                                                ),
-                                                                                             hs(2, shiny::h5(shiny::strong("Include Subfolders")),
-                                                                                                   shinyWidgets::materialSwitch(inputId = ns("ld_recursive"), 
-                                                                                                                          label = NULL, 
-                                                                                                                          value = TRUE,
-                                                                                                                          status = "success")
-                                                                                                ),
-                                                                                             hs(2, shiny::h5(shiny::strong("Assign Folder:")),
-                                                                                                   shinyFiles::shinyDirButton(id = ns("ld_well_plate_dir"), 
-                                                                                                                        label = "Browse", 
-                                                                                                                        title = NULL)
-                                                                                                )
-                                                                             )
-                                                               )
-                                               )
-                                             )
-                               ), 
-                               shiny::column(width = 6,
-                                             shiny::fluidRow(
-                                               hs(1), hs(10, shiny::uiOutput(outputId = ns("ld_loading_box")), hs(1))
-                                             ), 
-                                             shiny::fluidRow(
-                                               hs(1), hs(10,shiny::uiOutput(outputId = ns("ld_save_and_proceed_box"))), hs(1)
-                                             )
-                                             
-                                )
-               )
+      blue_box(
+        title = "Prepare Data Loading", width = 12, 
+        shiny::fluidRow(
+          shiny::column(
+            shinydashboard::box(
+              shiny::helpText(
+                "Choose a template file (.csv,.xls or .xlsx) ",
+                "that serves as a template to check files you are going to read in. ",
+                "(Only the first 6 rows will be displayed.)"
+              ),
+              shiny::fileInput(
+                inputId = ns("pdl_example_dir"),
+                label = "Choose",
+                accept = c(".xls", ".xlsx", ".csv"),
+                width = "33%"
+              ),
+              DT::dataTableOutput(outputId = ns("pdl_example_table")),
+              solidHeader = TRUE,
+              status = "success",
+              title = "Step 1: Load template file",
+              width = 12
+            ),
+            shiny::HTML("<br><br>"),
+            shiny::uiOutput(outputId = ns("identifier_variables")),
+            shiny::HTML("<br><br>"),
+            shiny::uiOutput(outputId = ns("module_variables")),
+            shiny::HTML("<br><br>"),
+            shiny::uiOutput(ns("additional_variables")),
+            shiny::actionButton(inputId = ns("print_input_names"), label = "Print Input"),
+            width = 12
+          )
+        )
+      )
+    ),
+    shiny::fluidRow(
+      blue_box(
+        title = "Load Data", width = 12, 
+        shiny::fluidRow(
+          shiny::column(
+            align = "left",
+            shiny::uiOutput(outputId = ns("ld_well_plate_box")),
+            width = 6
+          ), 
+          shiny::column(
+            shiny::fluidRow(
+              hs(12, shiny::uiOutput(outputId = ns("ld_loading_box")))
+            ), 
+            shiny::fluidRow(
+              hs(12,shiny::uiOutput(outputId = ns("ld_save_and_proceed_box")))
+            ),
+            width = 6
+          )
+        )
       )
     )
   )

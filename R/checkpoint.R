@@ -20,8 +20,8 @@ checkpoint <- function(evaluate = TRUE,
                        error_notifications = list(
                          
                          # miscellaneous
-                         "incomplete_cto" = "The cypro object has not been initiated yet.",
-                         "incomplete_cto2" = "The results have not been saved yet. Click on 'Save & Proceed' first.",
+                         "incomplete_cypro" = "The cypro object has not been initiated yet.",
+                         "incomplete_cypro" = "The results have not been saved yet. Click on 'Save & Proceed' first.",
                          
                          # experiment set up
                          "cell_line_condition_overlap" = "Could not save well information. Cell line name and condition name must not overlap.", 
@@ -41,7 +41,14 @@ checkpoint <- function(evaluate = TRUE,
                          "no_well_plate_chosen" = "Please choose a well plate first.",
                          "no_wells_chosen" = "Could not save well information. Please select at least one well.",
                          
+                         # prepare data loading
+                         "no_example_df" = "No example file has been loaded yet.",
+                         "no_id_vars" = "No identifier variables have been denoted yet.",
+                         "no_module_vars" = "No module variables have been denoted yet.",
+                         "no_add_vars" = "No additional variables haven been denoted yet.",
+                         
                          # load data
+                         "incomplete_vardenotation" = "You need to complete the variable denotation first.",
                          "no_set_up_saved" = "No experiment set up has been saved yet.",
                          "well_plates_not_ready" = "There are still well plates left that do not match the requirements to be loaded.",
                          "no_data_read_in" = "No files have been loaded yet.",

@@ -35,7 +35,8 @@ computePamCluster <- function(object,
   
   phase <- check_phase(object, phase = phase, max_phases = 1)
   
-  cluster_object <- getPamConv(object, variable_set = variable_set, phase = phase)
+  cluster_object <-
+    getPamConv(object, variable_set = variable_set, phase = phase)
   
   cluster_object <- 
     confuns::perform_pam_clustering(
@@ -47,11 +48,14 @@ computePamCluster <- function(object,
       ...
     )
   
-  object <- setClusterConv(object = object, 
-                           cluster_object = cluster_object, 
-                           method = "pam", 
-                           phase = phase, 
-                           variable_set = variable_set)
+  object <- 
+    setClusterConv(
+      object = object, 
+      cluster_object = cluster_object, 
+      method = "pam", 
+      phase = phase, 
+      variable_set = variable_set
+    )
   
   base::return(object)
   
@@ -103,7 +107,13 @@ plotAvgSilhouetteWidths <- function(object,
   
   confuns::is_vec(k, mode = "numeric", min.length = 2)
   
-  cluster_object <- getPamConv(object, variable_set = variable_set, phase = phase, with_data = FALSE)
+  cluster_object <-
+    getPamConv(
+      object = object,
+      variable_set = variable_set,
+      phase = phase,
+      with_data = FALSE
+      )
   
   confuns::plot_avg_silhouette_widths(
     pam.obj = cluster_object, 
@@ -135,7 +145,13 @@ plotSilhouetteWidths <- function(object,
   
   confuns::is_vec(k, mode = "numeric")
   
-  cluster_object <- getPamConv(object, variable_set = variable_set, phase = phase, with_data = FALSE)
+  cluster_object <-
+    getPamConv(
+      object = object,
+      variable_set = variable_set,
+      phase = phase,
+      with_data = FALSE
+    )
   
   confuns::plot_silhouette_widths(
     pam.obj = cluster_object, 
@@ -179,7 +195,13 @@ plotPamMedoids <- function(object,
   
   confuns::is_value(k, mode = "numeric")
   
-  cluster_object <- getPamConv(object, variable_set = variable_set, phase = phase, with_data = FALSE)
+  cluster_object <-
+    getPamConv(
+      object = object,
+      variable_set = variable_set,
+      phase = phase,
+      with_data = FALSE
+    )
   
   confuns::plot_medoid_barchart(
     pam.obj = cluster_object, 

@@ -237,6 +237,21 @@ storage_slots <- c("directory", "valid_directories", "missing_files")
 
 testable_plottypes <- c("boxplot", "violinplot")
 
+
+variable_relevance_descr <- 
+  list(
+    "needed" = glue::glue(
+      "This variable has to be provided by the input data ",
+      "if you want to use the modules it is part of."
+      ),
+    "computable" = glue::glue(
+      "This variable does not have to be part of the input data. ",
+      "If it is not, cypro computes it based an the variables ",
+      "needed by this module."
+      )
+  )
+
+
 well_plate_vars <- c("well_plate_name", "well_plate_index", "well",  "well_image")
 
 

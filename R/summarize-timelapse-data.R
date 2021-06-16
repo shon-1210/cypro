@@ -11,6 +11,9 @@
 #' @param ... Name-value pairs according to the syntax of \code{dplyr::summarize()}. 
 #' This can be single or several expressions as well as usage of \code{dplyr::across()} if several 
 #' variables are supposed to be affected. See details for output requirements.
+#' @param discard_variables If character, denotes variables that are discarded 
+#' prior to the call to \code{dplyr::summarize()}. Might be useful in case of 
+#' more complex input for argument \code{...}.
 #' 
 #' @details Prior to summarizing the tracks data.frame is grouped by \emph{cell_id}
 #' via \code{dplyr::group_by()}. All data variables of the output data.frame of
@@ -18,17 +21,21 @@
 #' \code{addStatVariables()}.
 #'
 #' @inherit update_object return
-#' @export
 #'
-summarizeTrackVariables <- function(object, ..., overwrite = FALSE, phase = NULL, verbose = NULL){
+summarizeTrackVariables <- function(object,
+                                    ...,
+                                    discard_variables = NULL,
+                                    overwrite = FALSE,
+                                    phase = NULL,
+                                    verbose = NULL){
   
   check_object(object)
   
   assign_default(object)
   
-  phase <- check_phase(object, phase = phase)
+  phases <- check_phase(object, phase = phase)
   
-  enquos_input <- rlang::enquos(...)
+  enquos_input <- rlang::enquo(...)
   
   if(multiplePhases(object)){
     
@@ -37,8 +44,9 @@ summarizeTrackVariables <- function(object, ..., overwrite = FALSE, phase = NULL
       object <-
         summarize_track_df(
           object = object, 
-          enquos_input = enquos_input, 
-          phase = phase, 
+          enquos_input = enquos_input,
+          discard_variables = discard_variables,
+          phase = p, 
           overwrite = overwrite, 
           verbose = verbose
         )
@@ -51,6 +59,7 @@ summarizeTrackVariables <- function(object, ..., overwrite = FALSE, phase = NULL
       summarize_track_df(
         object = object,
         enquos_input = enquos_input,
+        discard_variables = discard_variables,
         overwrite = overwrite,
         verbose = verbose
         )
@@ -65,16 +74,29 @@ summarizeTrackVariables <- function(object, ..., overwrite = FALSE, phase = NULL
 
 # helper ------------------------------------------------------------------
 
-summarize_track_df <- function(object, enquos_input, phase = NULL, overwrite = FALSE, verbose = TRUE){
+summarize_track_df <- function(object,
+                               enquos_input,
+                               discard_variables = FALSE,
+                               phase = NULL,
+                               overwrite = FALSE,
+                               verbose = TRUE){
   
   df <- 
-    getTracksDf(object, phase = phase, with_grouping = FALSE, verbose = FALSE) 
+    getTracksDf(object, phase = phase, with_grouping = FALSE, verbose = FALSE)
+  
+  if(base::is.character(discard_variables)){
+    
+    df <- dplyr::select(df, -dplyr::any_of(x = discard_variables))
+    
+  }
   
   confuns::give_feedback(msg = "Summarizing track data by cell id.", verbose = verbose)
   
+  print(enquos_input)
+  
   smrd_df <- 
     dplyr::group_by(df, cell_id) %>% 
-    dplyr::summarise(!!!enquos_input)
+    dplyr::summarize(!!!enquos_input)
   
   confuns::give_feedback(msg = "Done.", verbose = verbose)
   
@@ -111,7 +133,8 @@ summarize_track_df <- function(object, enquos_input, phase = NULL, overwrite = F
     }
     
   }
-  
+  print(head(smrd_df))
+  assign(x = phase, value = smrd_df, envir = .GlobalEnv)
   object <-
     addStatVariables(
       object = object,
