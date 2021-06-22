@@ -199,14 +199,18 @@ discardStatVariables <- function(object, stat_variables, verbose = NULL){
     
   }
   
-  object@vdata$summary <- 
-    object@vdata$summary%>% dplyr::filter(!variable %in% {{stat_variables}})
-  
   if(multiplePhases(object)){
     
     object@vdata$summary <- 
-      purrr::map(.x = object@vdata$by_phase, 
-                 .f = ~ dplyr::filter(.x, !variable %in% {{stat_variables}}))
+      purrr::map(
+        .x = object@vdata$summary,
+        .f = ~ dplyr::filter(.x, !variable %in% {{stat_variables}})
+        )
+    
+  } else {
+    
+    object@vdata$summary <- 
+      object@vdata$summary %>% dplyr::filter(!variable %in% {{stat_variables}})
     
   }
   

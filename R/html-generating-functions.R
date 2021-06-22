@@ -461,15 +461,24 @@ pdl_step_4_additional_variables_html <- function(object,
         "Choose the variables that contain the information you want to analyze later on. "
       )
   
-  grouping_picker <-
-    variable_picker(
-      variable_info = general_grouping_variable_info,
-      example_df = example_df, 
-      ns = ns, 
-      width = 3, 
-      multiple = TRUE, 
-      exclude_from_choices = exclude_from_choices
-    )
+  if(!isTimeLapseExp(object)){
+    
+    grouping_picker <-
+      variable_picker(
+        variable_info = general_grouping_variable_info,
+        example_df = example_df, 
+        ns = ns, 
+        width = 3, 
+        multiple = TRUE, 
+        exclude_from_choices = exclude_from_choices
+      )
+    
+  } else {
+    
+    grouping_picker <- NULL
+    
+  }
+
   
   numeric_picker <- 
     variable_picker(

@@ -43,7 +43,7 @@ addVariableSet <- function(object, variable_names, set_name, overwrite = FALSE){
     
   }
   
-  if(isTimeLapseExp(object)){
+  if(!isTimeLapseExp(object)){
     
     valid_variables <- 
       getTrackVariableNames(object)

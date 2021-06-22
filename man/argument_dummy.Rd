@@ -105,7 +105,7 @@ of interest (e.g. \emph{'euclidean'} or \emph{'manhattan'}).
 
 Use \code{validDistanceMethods()} to obtain all valid input options.}
 
-\item{method_kmeans}{Character vector (or value see details for more.) Denotes the algorithm of interest defaults
+\item{method_kmeans}{Character vector (or value see details for more.) Denotes the algorithms of interest. Defaults
 to \emph{'Hartigan-Wong'}.
 
 Use \code{validKmeansMethods()} to obtain all valid input options.}

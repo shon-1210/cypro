@@ -5,9 +5,9 @@
 \alias{renameClusterDfWith}
 \title{Rename cluster variables}
 \usage{
-renameClusterDf(object, ..., phase = NULL)
+renameClusterDf(object, phase = NULL, ...)
 
-renameClusterDfWith(object, ..., phase = NULL)
+renameClusterDfWith(object, phase = NULL, ...)
 }
 \arguments{
 \item{object}{A valid cypro object.}
@@ -16,6 +16,9 @@ renameClusterDfWith(object, ..., phase = NULL)
 referring to the phase of interest. If set to NULL takes the phase denoted as default with \code{adjustDefault()}.
 
 Ignored if the experiment design contains only one phase.}
+
+\item{...}{Input for function \code{dplyr::rename_with()}. This includes the arguments
+\code{.fn} and \code{.cols}.}
 }
 \value{
 An updated version of the input \code{cypro}-object.
@@ -25,17 +28,18 @@ Implementations of the functions \code{dplyr::rename()} and
 \code{dplyr::rename_with()} that can be used to rename the variables of the cell cluster
 data.frame.
 
-\code{renameClusterDf()} changes the names of individual variables using \emph{new_name} = \emph{old_name}
-syntax. \code{renameClusterDfWith()} renames variables with a function specified in argument \code{.fn}.
+\code{rename*Df()} changes the names of individual variables using \emph{new_name} = \emph{old_name}
+syntax. \code{rename*DfWith()} renames variables with a function specified in argument \code{.fn}.
 }
 \details{
-The variables \emph{cell_id, cell_line} and \emph{condition} are removed
-prior to the renaming as they are protected. The renaming process must not
-result in columns that carry one of these names nor in the names \emph{well_plate_name,
-well_index, well_image} or \emph{well}.
-
 Use \code{getGroupingVariableNames()} to check if renaming resulted in
 the desired output.
+}
+\note{
+Make sure not to rename protected variables. Use the function \code{protectedVariables()}
+to obtain variable names that must not be changed and must not be added. Doing
+so will result in erroneous analysis results as many functions rely on these
+variables to carry specific meaning.
 }
 \seealso{
 \code{dplyr::rename()}, \code{dplyr::rename_with()}

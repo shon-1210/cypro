@@ -352,7 +352,7 @@ getOutlierWells <- function(object, threshold = 0.75, verbose = NULL){
   
 }
 
-
+# -----
 
 # Cell Ids ----------------------------------------------------------------
 
@@ -391,7 +391,7 @@ getCellIds <- function(object, ..., phase = NULL){
 # Data extraction ---------------------------------------------------------
 
 
-getCellDf <- function(object, slot, phase = NULL){
+getCellDf <- function(object, slot = "tracks", phase = NULL){
   
   check_object(object)
   assign_default(object)
@@ -400,13 +400,25 @@ getCellDf <- function(object, slot, phase = NULL){
     
     phase <- check_phase(object, phase = phase, max_phases = 1)
     
-    object@cdata[[slot]][[phase]]
+    if(slot == "well_plate"){
+      
+      df <- object@cdata$well_plate
+      
+    } else {
+    
+      df <- object@cdata[[slot]][[phase]]  
+      
+    }
+    
+    
     
   } else {
     
-    object@cdata[[slot]]
+    df <- object@cdata[[slot]]
     
   }
+  
+  return(df)
   
 }
 
@@ -534,6 +546,7 @@ getStatsDf <- function(object,
                        with_cluster = NULL,
                        with_meta = NULL,
                        with_well_plate = NULL, 
+                       drop_na = TRUE, 
                        verbose = NULL){
   
   check_object(object)
@@ -569,8 +582,7 @@ getStatsDf <- function(object,
     
     cluster_df <- getClusterDf(object, phase = phase, verbose = FALSE)  
     
-    stat_df <- 
-      dplyr::left_join(x = stat_df, y = cluster_df, by = "cell_id")
+    stat_df <- dplyr::left_join(x = stat_df, y = cluster_df, by = "cell_id")
     
   }
   
@@ -589,6 +601,12 @@ getStatsDf <- function(object,
     wp_df <- getWellPlateDf(object)
     
     stat_df <- dplyr::left_join(x = stat_df, y = wp_df, by = "cell_id")
+    
+  }
+  
+  if(base::isTRUE(drop_na)){
+    
+    stat_df <- tidyr::drop_na(stat_df)
     
   }
   
@@ -613,6 +631,7 @@ getTracksDf <- function(object,
                         with_cluster = NULL,
                         with_meta = NULL,
                         with_well_plate = NULL,
+                        drop_na = NULL, 
                         verbose = NULL){
   
   check_object(object)
@@ -623,6 +642,12 @@ getTracksDf <- function(object,
     with_cluster <- FALSE
     with_meta <- FALSE
     with_well_plate <- FALSE
+    
+  }
+  
+  if(isTimeLapseExp(object) & base::is.null(drop_na)){
+    
+    drop_na <- FALSE
     
   }
   
@@ -675,6 +700,12 @@ getTracksDf <- function(object,
   if(base::isTRUE(with_well_plate) | base::isTRUE(with_grouping)){
     
     track_df_final <- dplyr::left_join(x = track_df_final, y = getWellPlateDf(object), by = "cell_id")
+    
+  }
+  
+  if(base::isTRUE(drop_na)){
+    
+    track_df_final <- tidyr::drop_na(track_df_final)
     
   }
   
@@ -803,6 +834,20 @@ getVariableSetNames <- function(object){
 
 
 
+
+
+# Miscellaneous -----------------------------------------------------------
+
+
+getDefaultInstructions <- function(object){
+  
+  check_object(object)
+  
+  object@default
+  
+}
+
+
 # Missing values ----------------------------------------------------------
 
 
@@ -817,12 +862,24 @@ getVariableSetNames <- function(object){
 #' @return A data.frame.
 #' @export
 #'
-getMissingValuesDf <- function(object){
+getMissingValuesDf <- function(object, phase = NULL){
   
   check_object(object, exp_type_req = "timelapse")
   
-  object@information$track_na_count
+  assign_default(object)
   
+  if(multiplePhases(object)){
+    
+    df <- object@qcheck$na_count[[phase]]
+    
+  } else {
+    
+    df <- object@qcheck$na_count
+    
+  }
+  
+  return(df)
+    
 }
 
 
@@ -990,6 +1047,8 @@ getGroupNames <- function(object, grouping_variable, ..., phase = NULL){
 #' \code{grouping_variable}.
 #'
 #' @inherit argument_dummy params
+#' @param named Logial value. If set to TRUE the grouping variables are named 
+#' according to their grouping type (cluster, meta or well_plate).
 #' @param ... Additional selection helpers from the \code{tidyselect} package that match 
 #' variable names according to a given pattern. 
 #' 
@@ -1209,21 +1268,14 @@ getWellPlateVariableNames <- function(object, ...){
 #' @export
 #' 
 
-getStatVariableNames <- function(object, ..., phase = NULL){
+getStatVariableNames <- function(object, ...){
   
   check_object(object)
   assign_default(object)
   
-  phase <- check_phase(object, phase = phase, max_phases = 1)
   
   stat_df <-
-    getStatsDf(
-      object = object,
-      with_meta = FALSE,
-      with_cluster = FALSE,
-      with_well_plate = FALSE,
-      phase = phase
-      ) %>% 
+    getStatsDf(object = object, with_grouping = FALSE) %>% 
     dplyr::select(-cell_id)
   
   selected_df <- dplyr::select(stat_df, ...)
@@ -1267,16 +1319,14 @@ getStatVariableNames <- function(object, ..., phase = NULL){
 
 #' @rdname getStatVariableNames
 #' @export
-getTrackVariableNames <- function(object, ..., phase = NULL){
+getTrackVariableNames <- function(object, ...){
   
   check_object(object)
   assign_default(object)
   
-  phase <- check_phase(object, phase = phase, max_phases = 1)
-  
   track_df <-
     getTracksDf(object, with_grouping = FALSE) %>% 
-    dplyr::select(-cell_id, -dplyr::all_of(x = non_data_track_variables))
+    dplyr::select(-cell_id, -dplyr::any_of(x = non_data_track_variables))
   
   selected_df <- dplyr::select(track_df, ...)
   

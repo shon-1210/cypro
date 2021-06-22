@@ -17,9 +17,11 @@ moduleQualityCheckServer <- function(id, object){
 
 # Reactive values ---------------------------------------------------------
       
+      
       phase_max_frames <- shiny::reactiveVal(value = purrr::map(.x = object@cdata$tracks, .f = ~ base::max(.x[["frame"]])))
       
-      track_df <- shiny::reactiveVal(value = purrr::map_df(.x = object@cdata$tracks, .f = ~ .x) %>% dplyr::ungroup())
+      track_df <- 
+        shiny::reactiveVal(value = getTracksDf(object, phase = "all", with_meta = TRUE))
       
       filter <- shiny::reactiveValues(
         
@@ -51,7 +53,7 @@ moduleQualityCheckServer <- function(id, object){
         shiny::validate(
           shiny::need(
             expr = base::length(filter_skipped_meas()) != 0, 
-            message = "Include values interactive."
+            message = "Keep values interactive."
           )
         )
         
@@ -60,7 +62,7 @@ moduleQualityCheckServer <- function(id, object){
         shinyWidgets::prettyRadioButtons(
           inputId = ns("skipped_meas_opt"),
           label = NULL,
-          choices = c("Include brushed area" = "include", "Exclude brushed area" = "exclude"),
+          choices = c("Keep brushed area" = "Keep", "Discard brushed area" = "Discard"),
           inline = TRUE
           )
         
@@ -71,7 +73,7 @@ moduleQualityCheckServer <- function(id, object){
         shiny::validate(
           shiny::need(
             expr = base::length(filter_first_meas()) != 0, 
-            message = "Include values interactive."
+            message = "Keep values interactive."
           )
         )
         
@@ -80,7 +82,7 @@ moduleQualityCheckServer <- function(id, object){
         shinyWidgets::prettyRadioButtons(
           inputId = ns("first_meas_opt"),
           label = NULL,
-          choices = c("Include brushed area" = "include", "Exclude brushed area" = "exclude"),
+          choices = c("Keep brushed area" = "Keep", "Discard brushed area" = "Discard"),
           inline = TRUE
         )
         
@@ -91,7 +93,7 @@ moduleQualityCheckServer <- function(id, object){
         shiny::validate(
           shiny::need(
             expr = base::length(filter_last_meas()) != 0, 
-            message = "Include values interactive."
+            message = "Keep values interactive."
           )
         )
         
@@ -100,7 +102,7 @@ moduleQualityCheckServer <- function(id, object){
         shinyWidgets::prettyRadioButtons(
           inputId = ns("last_meas_opt"),
           label = NULL,
-          choices = c("Include brushed area" = "include", "Exclude brushed area" = "exclude"),
+          choices = c("Keep brushed area" = "Keep", "Discard brushed area" = "Discard"),
           inline = TRUE
         )
         
@@ -111,7 +113,7 @@ moduleQualityCheckServer <- function(id, object){
         shiny::validate(
           shiny::need(
             expr = base::length(filter_total_meas()) != 0, 
-            message = "Include values interactive."
+            message = "Keep values interactive."
           )
         )
         
@@ -120,7 +122,7 @@ moduleQualityCheckServer <- function(id, object){
         shinyWidgets::prettyRadioButtons(
           inputId = ns("total_meas_opt"),
           label = NULL,
-          choices = c("Include brushed area" = "include", "Exclude brushed area" = "exclude"),
+          choices = c("Keep brushed area" = "Keep", "Discard brushed area" = "Discard"),
           inline = TRUE
         )
         
@@ -143,15 +145,25 @@ moduleQualityCheckServer <- function(id, object){
           case_false = "no_cells_remaining"
         )
         
-        object@cdata$tracks <- 
-          purrr::map(.x = base::names(object@set_up$phases), .f = ~ dplyr::filter(remaining_cells_df(), phase == {{.x}})) %>% 
-          purrr::set_names(nm = base::names(object@set_up$phases))
+        if(FALSE){
+          
+          object@cdata$tracks <- 
+            purrr::map(
+              .x = base::names(object@set_up$phases),
+              .f = ~ dplyr::filter(remaining_cells_df(), phase == {{.x}})
+              ) %>% 
+            purrr::set_names(nm = base::names(object@set_up$phases))
+          
+        }
         
         qc_list$object <- object
         
+        qc_list$reasoning <- shiny::reactiveValuesToList(x = filter)
+        qc_list$remaining_ids <- remaining_cell_ids()
+        
         qc_list$proceed <- input$qc_save_and_proceed
         
-        shiny_fdb(in_shiny = TRUE, ui = glue::glue("Results have been saved.  Click on 'Return Cypro Object' and proceed with processData()."))
+        shiny_fdb(in_shiny = TRUE, ui = glue::glue("Results have been saved.  Click on 'Return Cypro Object'."))
         
       })
       
@@ -228,43 +240,50 @@ moduleQualityCheckServer <- function(id, object){
           
           criterion <- imp_filter_criteria[i]
           
-          filter_results <- shiny::brushedPoints(df = track_summary_df(),
-                                                 brush = input[[stringr::str_c("brush_", criterion)]],
-                                                 xvar = criterion)
+          filter_results <-
+            shiny::brushedPoints(
+              df = track_summary_df(),
+              brush = input[[stringr::str_c("brush_", criterion)]],
+              xvar = criterion
+              )
           
           ##-- 2.2 make sure the respective filter criterion was applied 
           if(!base::is.null(input[[stringr::str_c(criterion,"_opt")]]) & base::nrow(filter_results) != 0){
             
             ##-- 2.1) call the respective reactive {filter} expression and obtain the data frame
-            #- check how to apply the filter (include cell ids vs exclude cell ids)
-            if(input[[stringr::str_c(criterion,"_opt")]] == "include"){
+            #- check how to apply the filter (Keep cell ids vs Discard cell ids)
+            if(input[[stringr::str_c(criterion,"_opt")]] == "Keep"){
               
               df <- dplyr::filter(.data = df, cell_id %in% filter_results$cell_id)
               
               #- store the values the filter allowed
-              filter[[stringr::str_c(criterion, "_opt")]] <- "(Included)"
+              filter[[stringr::str_c(criterion, "_opt")]] <- "Keep"
               
               res <- filter_results[,criterion] %>% base::range() %>% base::unique()
               
               filter[[stringr::str_c(criterion, "_values")]]  <-
-                base::ifelse(test = base::length(res) == 1,
-                             yes = base::as.character(res),
-                             no = stringr::str_c(res[1], res[2], sep = " to "))
+                base::ifelse(
+                  test = base::length(res) == 1,
+                  yes = base::as.character(res),
+                  no = stringr::str_c(res[1], res[2], sep = " to ")
+                  )
               
               
-            } else if(input[[stringr::str_c(criterion,"_opt")]] == "exclude"){
+            } else if(input[[stringr::str_c(criterion,"_opt")]] == "Discard"){
               
               df <- dplyr::filter(.data = df, !cell_id %in% filter_results$cell_id)
               
               #- store the values the filter allowed
-              filter[[stringr::str_c(criterion, "_opt")]] <- "(Excluded)"
+              filter[[stringr::str_c(criterion, "_opt")]] <- "Discard"
               
               res <- filter_results[,criterion] %>% base::range() %>% base::unique()
               
               filter[[stringr::str_c(criterion, "_values")]]  <-
-                base::ifelse(test = base::length(res) == 1,
-                             yes = base::as.character(res),
-                             no = stringr::str_c(res[1], res[2], sep = " to ")) 
+                base::ifelse(
+                  test = base::length(res) == 1,
+                  yes = base::as.character(res),
+                  no = stringr::str_c(res[1], res[2], sep = " to ")
+                  ) 
               
             }
             

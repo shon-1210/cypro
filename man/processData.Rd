@@ -2,7 +2,7 @@
 % Please edit documentation in R/object-initiation.R
 \name{processData}
 \alias{processData}
-\title{Object initiation: Step 4}
+\title{Object initiation: Step 3}
 \usage{
 processData(
   object,

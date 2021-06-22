@@ -86,20 +86,20 @@ renameGroups <- function(object, grouping_variable = NULL, ..., phase = NULL){
 #' \code{dplyr::rename_with()} that can be used to rename the variables of the cell meta 
 #' data.frame. 
 #' 
-#' \code{renameMetaDf()} changes the names of individual variables using \emph{new_name} = \emph{old_name}
-#' syntax. \code{renameMetaDfWith()} renames variables with a function specified in argument \code{.fn}.
+#' \code{rename*Df()} changes the names of individual variables using \emph{new_name} = \emph{old_name}
+#' syntax. \code{rename*DfWith()} renames variables with a function specified in argument \code{.fn}.
 #'
 #' @inherit argument_dummy params
-#' @param .fn A function used to transform the variable names. Should return a character vector of the same
-#' length as the input. Can be specified with formula syntax. 
+#' @param ... Input for function \code{dplyr::rename_with()}. This includes the arguments
+#' \code{.fn} and \code{.cols}.
 #'
-#' @details The variables \emph{cell_id, cell_line} and \emph{condition} are removed 
-#' prior to the renaming as they are protected. The renaming process must not
-#' result in columns that carry one of these names nor in the names \emph{well_plate_name,
-#' well_index, well_image} or \emph{well}. 
-#' 
-#' Use \code{getGroupingVariableNames()} to check if renaming resulted in 
+#' @details  Use \code{getGroupingVariableNames()} to check if renaming resulted in 
 #' the desired output.
+#' 
+#' @note Make sure not to rename protected variables. Use the function \code{protectedVariables()}
+#' to obtain variable names that must not be changed and must not be added. Doing 
+#' so will result in erroneous analysis results as many functions rely on these 
+#' variables to carry specific meaning.
 #' 
 #' @seealso \code{dplyr::rename()}, \code{dplyr::rename_with()}
 #' 
@@ -165,17 +165,22 @@ renameMetaDfWith <- function(object, ..., phase = NULL){
 #' \code{dplyr::rename_with()} that can be used to rename the variables of the cell cluster 
 #' data.frame. 
 #' 
-#' \code{renameClusterDf()} changes the names of individual variables using \emph{new_name} = \emph{old_name}
-#' syntax. \code{renameClusterDfWith()} renames variables with a function specified in argument \code{.fn}.
+#' \code{rename*Df()} changes the names of individual variables using \emph{new_name} = \emph{old_name}
+#' syntax. \code{rename*DfWith()} renames variables with a function specified in argument \code{.fn}.
 #'
 #' @inherit renameMetaDf params details return
+#' 
+#' @note Make sure not to rename protected variables. Use the function \code{protectedVariables()}
+#' to obtain variable names that must not be changed and must not be added. Doing 
+#' so will result in erroneous analysis results as many functions rely on these 
+#' variables to carry specific meaning.
 #' 
 #' @seealso \code{dplyr::rename()}, \code{dplyr::rename_with()}
 #' 
 #' @export
 #'
 
-renameClusterDf <- function(object, ..., phase = NULL){
+renameClusterDf <- function(object, phase = NULL, ...){
   
   check_object(object)
   assign_default(object)
@@ -201,7 +206,7 @@ renameClusterDf <- function(object, ..., phase = NULL){
 
 #' @rdname renameClusterDf
 #' @export
-renameClusterDfWith <- function(object, ..., phase = NULL){
+renameClusterDfWith <- function(object, phase = NULL, ...){
   
   check_object(object)
   assign_default(object)
@@ -234,34 +239,34 @@ renameClusterDfWith <- function(object, ..., phase = NULL){
 #' \code{dplyr::rename_with()} that can be used to rename the variables of the cell statistic 
 #' data.frame. 
 #' 
-#' \code{renameClusterDf()} changes the names of individual variables using \emph{new_name} = \emph{old_name}
-#' syntax. \code{renameClusterDfWith()} renames variables with a function specified in argument \code{.fn}.
+#' \code{rename*Df()} changes the names of individual variables using \emph{new_name} = \emph{old_name}
+#' syntax. \code{rename*DfWith()} renames variables with a function specified in argument \code{.fn}.
 #' 
-#' @inherit renameMetaDf params return
+#' @inherit renameMetaDf params return 
 #' 
-#' @details The variable \emph{cell_id} is removed prior to the renaming as it is protected. The renaming process must not
-#' result in columns that carry either name of \emph{cell_id, condition, cell_line, well_plate_name,
-#' well_index, well_image} or \emph{well}.
-#' 
-#' Renaming the statistic data.frame affects all slots of the cypro object that refer to 
+#' @details Renaming the statistic data.frame affects all slots of the cypro object that refer to 
 #' statistic variables (correlation analysis, variable sets etc.). All are renamed according to 
 #' the input. 
 #' 
 #' Use \code{getStatVariableNames()} to check if renaming resulted in 
 #' the desired output.
+#' 
+#' @note Make sure not to rename protected variables. Use the function \code{protectedVariables()}
+#' to obtain variable names that must not be changed and must not be added. Doing 
+#' so will result in erroneous analysis results as many functions rely on these 
+#' variables to carry specific meaning.
 #'
 #' @export
-#'
+
 renameStatsDf <- function(object, ...){
   
-  check_object(object)
-  
+  check_object(object, exp_type_req = "time_lapse")
+    
   # rename stat_df 
   if(multiplePhases(object)){
     
     object@cdata$stats <- 
-      purrr::map(.x  = object@cdata$stats,
-                 .f = function(stat_df){
+      purrr::map(.x  = object@cdata$stats, .f = function(stat_df){
                    
                    cell_id_var <- stat_df$cell_id
                    
@@ -271,14 +276,13 @@ renameStatsDf <- function(object, ...){
                      dplyr::mutate(cell_id = {{cell_id_var}}) %>% 
                      dplyr::select(cell_id, dplyr::everything())
                    
-                   base::return(cell_id_var)
+                   base::return(renamed_df)
                    
                  })
     
   } else {
     
-    stat_df <-
-      getStatsDf(object, with_cluster = FALSE, with_meta = FALSE, with_well_plate = FALSE)
+    stat_df <- getStatsDf(object, with_grouping = FALSE)
     
     cell_id_var <- stat_df$cell_id
     
@@ -295,8 +299,7 @@ renameStatsDf <- function(object, ...){
   
   # rename variable sets 
   object@variable_sets <- 
-    purrr::map(.x = object@variable_sets,
-               .f = function(vset){
+    purrr::map(.x = object@variable_sets, .f = function(vset){
                  
                  renamed_vset <- base::tryCatch({
                    
@@ -340,6 +343,298 @@ renameStatsDf <- function(object, ...){
       confuns::vrename(input = object@vdata$summary$variable, ...)
     
   }
+  
+  object <- rename_analysis_slots(object, ...)
+  
+  base::return(object)
+  
+}
+
+
+#' @rdname renameStatsDf
+#' @export
+renameStatsDfWith <- function(object, ...){
+  
+  check_object(object, exp_type_req = "time_lapse")
+  
+  # rename stat_df 
+  if(multiplePhases(object)){
+    
+    object@cdata$stats <- 
+      purrr::map(.x  = object@cdata$stats,
+                 .f = function(stat_df){
+                   
+                   cell_id_var <- stat_df$cell_id
+                   
+                   renamed_df <- 
+                     dplyr::select(stat_df, -cell_id) %>% 
+                     dplyr::rename_with(...) %>% 
+                     dplyr::mutate(cell_id = {{cell_id_var}}) %>% 
+                     dplyr::select(cell_id, dplyr::everything())
+                   
+                   base::return(cell_id_var)
+                   
+                 })
+    
+  } else {
+    
+    stat_df <-
+      getStatsDf(object, phase = phase, with_cluster = F, with_meta = F, with_well_plate = F)
+    
+    cell_id_var <- stat_df$cell_id
+    
+    renamed_df <- 
+      dplyr::select(stat_df, -cell_id) %>% 
+      dplyr::rename_with(...) %>% 
+      dplyr::mutate(cell_id = {{cell_id_var}}) %>% 
+      dplyr::select(cell_id, dplyr::everything())
+    
+    object@cdata$stats <- renamed_df
+    
+  }
+  
+  # rename variable sets 
+  object@variable_sets <- 
+    purrr::map(.x = object@variable_sets,
+               .f = function(vset){
+                 
+                 confuns::vrename_with(input = vset, ...)
+                 
+               })
+  
+  # rename variables 
+  if(multiplePhases(object)){
+    
+    object@vdata$summary <- 
+      purrr::map(.x = object@vdata$summary, 
+                 .f = function(summary_df){
+                   
+                   summary_df$variable <- 
+                     confuns::vrename_with(input = summary_df$variable, ...)
+                   
+                   base::return(summary_df)
+                   
+                 })
+    
+  } else {
+    
+    object@vdata$summary$variable <- 
+      confuns::vrename_with(input = object@vdata$summary$variable, ...)
+    
+  }
+  
+  object <- rename_analysis_slots_with(object = object, ...)
+  
+  base::return(object)
+  
+}
+
+
+#' @title Rename track variables 
+#' 
+#' @description Implementations of the functions \code{dplyr::rename()} and 
+#' \code{dplyr::rename_with()} that can be used to rename the variables of the cell track 
+#' data.frame. 
+#' 
+#' \code{rename*Df()} changes the names of individual variables using \emph{new_name} = \emph{old_name}
+#' syntax. \code{rename*DfWith()} renames variables with a function specified in argument \code{.fn}.
+#' 
+#' @inherit renameMetaDf params return 
+#' 
+#' @details Renaming the tracks data.frame affects all slots of the cypro object that refer to 
+#' track variables (correlation analysis, variable sets etc.). All are renamed according to 
+#' the input. 
+#' 
+#' Use \code{getTrackVariableNames()} to check if renaming resulted in 
+#' the desired output.
+#' 
+#' @note Make sure not to rename protected variables. Use the function \code{protectedVariables()}
+#' to obtain variable names that must not be changed and must not be added. Doing 
+#' so will result in erroneous analysis results as many functions rely on these 
+#' variables to carry specific meaning.
+#'
+#' @export
+renameTracksDf <- function(object, ...){
+  
+  check_object(object)
+  
+  # rename stat_df 
+  if(multiplePhases(object)){
+    
+    object@cdata$tracks <- 
+      purrr::map(.x  = object@cdata$tracks, .f = function(stat_df){
+        
+        cell_id_var <- stat_df$cell_id
+        
+        renamed_df <- 
+          dplyr::select(stat_df, -cell_id) %>% 
+          dplyr::rename(...) %>% 
+          dplyr::mutate(cell_id = {{cell_id_var}}) %>% 
+          dplyr::select(cell_id, dplyr::everything())
+        
+        base::return(renamed_df)
+        
+      })
+    
+  } else {
+    
+    track_df <- 
+      getTracksDf(
+        object = object, 
+        with_grouping = FALSE
+      )
+    
+    cell_id_var <- track_df$cell_id
+    
+    renamed_df <- 
+      dplyr::select(track_df, -cell_id) %>% 
+      dplyr::rename(...) %>% 
+      dplyr::mutate(cell_id = {{cell_id_var}}) %>% 
+      dplyr::select(cell_id, dplyr::everything())
+    
+    object@cdata$tracks <- renamed_df
+    
+  }
+  
+  
+  # rename variable sets 
+  object@variable_sets <- 
+    purrr::map(.x = object@variable_sets, .f = function(vset){
+      
+      renamed_vset <- base::tryCatch({
+        
+        confuns::vrename(input = vset, ...)
+        
+      }, error = function(error){
+        
+        NA
+        
+      })
+      
+      if(!base::is.character(renamed_vset)){
+        
+        base::return(vset)
+        
+      } else {
+        
+        base::return(renamed_vset)
+        
+      }
+      
+    })
+  
+  # rename variables 
+  if(multiplePhases(object)){
+    
+    object@vdata$summary <- 
+      purrr::map(.x = object@vdata$summary, .f = function(summary_df){
+                   
+                   summary_df$variable <- 
+                     confuns::vrename(input = summary_df$variable, ...)
+                   
+                   base::return(summary_df)
+                   
+                 })
+    
+  } else {
+    
+    object@vdata$summary$variable <- 
+      confuns::vrename(input = object@vdata$summary$variable, ...)
+    
+  }
+  
+  object <- rename_analysis_slots(object)
+  
+  return(object)
+  
+}
+
+
+#' @rdname renameTracksDf
+#' @export
+renameTracksDfWith <- function(object, ...){
+  
+  check_object(object)
+  
+  # rename stat_df 
+  if(multiplePhases(object)){
+    
+    object@cdata$tracks <- 
+      purrr::map(.x  = object@cdata$tracks, .f = function(track_df){
+                   
+                   cell_id_var <- track_df$cell_id
+                   
+                   renamed_df <- 
+                     dplyr::select(track_df, -cell_id) %>% 
+                     dplyr::rename_with(...) %>% 
+                     dplyr::mutate(cell_id = {{cell_id_var}}) %>% 
+                     dplyr::select(cell_id, dplyr::everything())
+                   
+                   base::return(cell_id_var)
+                   
+                 })
+    
+  } else {
+    
+    track_df <-
+      getTracksDf(
+        object = object,
+        with_grouping = FALSE
+        )
+    
+    cell_id_var <- track_df$cell_id
+    
+    renamed_df <- 
+      dplyr::select(track_df, -cell_id) %>% 
+      dplyr::rename_with(...) %>% 
+      dplyr::mutate(cell_id = {{cell_id_var}}) %>% 
+      dplyr::select(cell_id, dplyr::everything())
+    
+    object@cdata$tracks <- renamed_df
+    
+  }
+  
+  # rename variable sets 
+  object@variable_sets <- 
+    purrr::map(.x = object@variable_sets, .f = function(vset){
+                 
+                 confuns::vrename_with(input = vset, ...)
+                 
+               })
+  
+  # rename variables 
+  if(multiplePhases(object)){
+    
+    object@vdata$summary <- 
+      purrr::map(.x = object@vdata$summary, .f = function(summary_df){
+                   
+                   summary_df$variable <- 
+                     confuns::vrename_with(input = summary_df$variable, ...)
+                   
+                   base::return(summary_df)
+                   
+                 })
+    
+  } else {
+    
+    object@vdata$summary$variable <- 
+      confuns::vrename_with(input = object@vdata$summary$variable, ...)
+    
+  }
+  
+  
+  object <- rename_analysis_slots_with(object = object, ...)
+  
+  base::return(object)
+  
+  
+}
+
+
+
+# NOT EXPORTED ------------------------------------------------------------
+
+rename_analysis_slots <- function(object, ...){
   
   # rename correlation
   if(multiplePhases(object)){
@@ -477,84 +772,11 @@ renameStatsDf <- function(object, ...){
     
   }
   
-  
-  base::return(object)
-  
+  return(object)
   
 }
 
-
-#' @rdname renameStatsDf
-#' @export
-renameStatsDfWith <- function(object, ..., phase = NULL){
-  
-  check_object(object)
-  
-  # rename stat_df 
-  if(multiplePhases(object)){
-    
-    object@cdata$stats <- 
-      purrr::map(.x  = object@cdata$stats,
-                 .f = function(stat_df){
-                   
-                   cell_id_var <- stat_df$cell_id
-                   
-                   renamed_df <- 
-                     dplyr::select(stat_df, -cell_id) %>% 
-                     dplyr::rename_with(...) %>% 
-                     dplyr::mutate(cell_id = {{cell_id_var}}) %>% 
-                     dplyr::select(cell_id, dplyr::everything())
-                   
-                   base::return(cell_id_var)
-                   
-                 })
-    
-  } else {
-    
-    stat_df <-
-      getStatsDf(object, phase = phase, with_cluster = F, with_meta = F, with_well_plate = F)
-    
-    cell_id_var <- stat_df$cell_id
-    
-    renamed_df <- 
-      dplyr::select(stat_df, -cell_id) %>% 
-      dplyr::rename_with(...) %>% 
-      dplyr::mutate(cell_id = {{cell_id_var}}) %>% 
-      dplyr::select(cell_id, dplyr::everything())
-    
-    object@cdata$stats <- renamed_df
-    
-  }
-  
-  # rename variable sets 
-  object@variable_sets <- 
-    purrr::map(.x = object@variable_sets,
-               .f = function(vset){
-                 
-                 confuns::vrename_with(input = vset, ...)
-                 
-               })
-  
-  # rename variables 
-  if(multiplePhases(object)){
-    
-    object@vdata$summary <- 
-      purrr::map(.x = object@vdata$summary, 
-                 .f = function(summary_df){
-                   
-                   summary_df$variable <- 
-                     confuns::vrename_with(input = summary_df$variable, ...)
-                   
-                   base::return(summary_df)
-                   
-                 })
-    
-  } else {
-    
-    object@vdata$summary$variable <- 
-      confuns::vrename_with(input = object@vdata$summary$variable, ...)
-    
-  }
+rename_analysis_slots_with <- function(object, ...){
   
   # rename correlation
   if(multiplePhases(object)){
@@ -700,13 +922,7 @@ renameStatsDfWith <- function(object, ..., phase = NULL){
     
   }
   
-  
-  base::return(object)
+  return(object)
   
 }
-
-
-
-
-
 

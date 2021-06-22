@@ -35,7 +35,6 @@ moduleLoadDataUI <- function(id){
             shiny::uiOutput(outputId = ns("module_variables")),
             shiny::HTML("<br><br>"),
             shiny::uiOutput(ns("additional_variables")),
-            shiny::actionButton(inputId = ns("print_input_names"), label = "Print Input"),
             width = 12
           )
         )

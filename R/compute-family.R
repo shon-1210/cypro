@@ -110,11 +110,25 @@ compute_distance <- function(starting_pos, final_pos){
 #' the first position. 
 #' 
 
-compute_distances_from_origin <- function(x_coords, y_coords){
+compute_distances_from_origin <- function(x_coords, y_coords, phase = NULL, object){
   
   n_coords <- base::length(x_coords)
   
-  origin <- c(x_coords[1], y_coords[1])
+  # in case of multiple phases the last position of the 
+  # previous frame is added to the track data.frame 
+  # for function compute_distances_from_last_point()
+  # ensures that:
+  # origin is the first position of the respective 
+  # phase and not the last position of the previous phase
+  if(multiplePhases(object) && phase != "first"){
+  
+    origin <- c(x_coords[2], y_coords[2])  
+    
+  } else {
+    
+    origin <- c(x_coords[1], y_coords[1])
+    
+  }
   
   subsequent_positions <- 
     purrr::map2(
@@ -246,8 +260,24 @@ compute_n_missing_values <- function(object, phase = NULL, verbose = NULL){
 
 # module variables --------------------------------------------------------
 
-# to call within complete_stats()
-compute_module_variables <- function(track_df, object, verbose){
+#' @title Compute module based variables 
+#' 
+#' @description To be used within complete_tracks() and complete_stats() again 
+#' within processData(). Checks which modules are used and which variables 
+#' needs to be computed for the tracks data and summarized for the stats 
+#' data. They iteratively join the computed variables to the respective 
+#' data.frame. As the for loops rely on seq_along() these functions 
+#' return the input data.frame if nothing needs to be computed/summarized. 
+#'
+#' @inherit argument_dummy params
+#' @param track_df The already completed track data.frame complete_tracks() is 
+#' currently working with. 
+#' @param stat_df The already summarized stats data.frame complete_stats() is 
+#' currently working with. 
+#'
+#' @return
+#'
+compute_module_variables <- function(track_df, object, verbose, phase){
   
   used_modules <- get_used_module_names(object)
   
@@ -275,7 +305,9 @@ compute_module_variables <- function(track_df, object, verbose){
         verbose = verbose
       )
       
-      for(var_to_compute in module_info$computation_order){
+      for(i in base::seq_along(module_info$computation_order)){
+        
+        var_to_compute <- module_info$computation_order[i]
         
         if(var_to_compute %in% vars_to_compute){
           
@@ -292,7 +324,11 @@ compute_module_variables <- function(track_df, object, verbose){
           
           args <- list(track_df = track_df, object = object)
           
-          args <- c(args, variable_info$compute_with_args)
+          args <- 
+            hlpr_add_variable_specific_args(
+              variable_info = variable_info,
+              args = args
+              )
           
           track_df <- rlang::invoke(.fn = fn, .args = args)
           
@@ -300,25 +336,60 @@ compute_module_variables <- function(track_df, object, verbose){
         
       }
       
-      replace_val <- module_info$replace_na_first_frame
+    }
+    
+
+    # special module specific if else conditions ------------------------------
+
+    
+    # module migration 
+    
+    # make sure that distance from origin is always computed in multiple phases
+    if(used_module == "migration" && multiplePhases(object) && !"dfo" %in% vars_to_compute){
       
-      if(!base::is.null(replace_val)){
+      variable_info <- module_info$variables[["dfo"]]
+      
+      var_name_in_app <- variable_info$name_in_app
+      
+      confuns::give_feedback(
+        msg = glue::glue("Variable: '{var_name_in_app}' ('dfo')"), 
+        verbose = verbose
+      )
+      
+      fn <- variable_info$compute_with
+      
+      args <- list(track_df = track_df, object = object)
+      
+      args <- 
+        hlpr_add_variable_specific_args(
+          variable_info = variable_info,
+          args = args
+        )
+      
+      track_df <- rlang::invoke(.fn = fn, .args = args)
+      
+    }
+    
+    
+    # -----
+    
+    
+    replace_val <- module_info$replace_na_first_frame
+    
+    if(!base::is.null(replace_val)){
+      
+      for(cvar in computable_vars){
         
-        for(cvar in computable_vars){
-          
-          track_df <- 
-            dplyr::mutate(
-              .data = track_df, 
-              {{cvar}} := dplyr::case_when(
-                frame_num == 1 & base::is.na(!!rlang::sym(cvar)) ~ {{replace_val}}, 
-                TRUE ~ !!rlang::sym(cvar)
-              )
+        track_df <- 
+          dplyr::mutate(
+            .data = track_df, 
+            {{cvar}} := dplyr::case_when(
+              frame_num == 1 & base::is.na(!!rlang::sym(cvar)) ~ {{replace_val}}, 
+              TRUE ~ !!rlang::sym(cvar)
             )
-          
-        }
+          )
         
       }
-
       
     }
     
@@ -328,28 +399,82 @@ compute_module_variables <- function(track_df, object, verbose){
   
 }
 
+#' @rdname compute_module_variables
+#' @export
+summarize_module_variables <- function(stat_df, track_df, object, verbose){
+  
+  used_modules <- get_used_module_names(object)
+  
+  track_df <- dplyr::group_by(track_df, cell_id)
+  
+  for(i in base::seq_along(used_modules)){
+    
+    used_module <- used_modules[i]
+    
+    module_info <- 
+      stringr::str_c("module", used_module, sep = "_") %>% 
+      base::parse(text = .) %>% 
+      base::eval()
+    
+    if(!base::is.null(module_info$summary_order)){
+      
+      confuns::give_feedback(
+        msg = glue::glue("Module: '{module_info$pretty_name}'"),
+        verbose = verbose
+      )
+      
+      for(i in base::seq_along(module_info$summary_order)){
+        
+        var_to_summarize <- module_info$summary_order[i]
+        
+        variable_info <- module_info$variables_to_summarize[[var_to_summarize]]
+        
+        var_name_in_app <- variable_info$name_in_app
+        
+        confuns::give_feedback(
+          msg = glue::glue("Variable: '{var_name_in_app}' ('{var_to_summarize}')"), 
+          verbose = verbose
+        )
+        
+        fn <- variable_info$summarize_with
+        
+        args <- list(track_df = track_df, stat_df = stat_df, object = object)
+        
+        summarized_df <- rlang::invoke(.fn = fn, .args = args)
+        
+        stat_df <- dplyr::left_join(x = stat_df, y = summarized_df, by = "cell_id")
+        
+      }
+      
+    }
+    
+  }
+  
+  return(stat_df)
+  
+}
 
 
 
 
+# functions to compute variables within compute_module_variables()
+# must take track_df, object and ... as arguments. 
+# must return the track data.frame with the new variable as output
 
-
-# 'computable'
-
-compute_var_afo <- function(track_df, object){
+compute_var_afo <- function(track_df, object, ...){
   
   return(track_df)
   
 }
 
-compute_var_aflp <- function(track_df, object){
+compute_var_aflp <- function(track_df, object, ...){
   
   return(track_df)
   
 }
 
 
-compute_var_dflp <- function(track_df, object){
+compute_var_dflp <- function(track_df, object, ...){
   
   track_df <- 
     dplyr::group_by(track_df, cell_id) %>% 
@@ -359,17 +484,24 @@ compute_var_dflp <- function(track_df, object){
   
 }
 
-compute_var_dfo <- function(track_df, object){
+compute_var_dfo <- function(track_df, object, phase, ...){
   
   track_df <- 
     dplyr::group_by(track_df, cell_id) %>% 
-    dplyr::mutate(dfo = compute_distances_from_origin(x_coords, y_coords))
+    dplyr::mutate(
+      dfo = compute_distances_from_origin(
+        x_coords = x_coords,
+        y_coords = y_coords, 
+        object = object, 
+        phase = phase
+        )
+      )
   
   return(track_df)
   
 }
 
-compute_var_speed <- function(track_df, object){
+compute_var_speed <- function(track_df, object, ...){
   
   track_df <-
     dplyr::group_by(track_df, cell_id) %>% 
@@ -380,8 +512,10 @@ compute_var_speed <- function(track_df, object){
 }
 
 
-# 'summarizable'
-compute_var_mgr_eff <- function(track_df, stat_df, ...){
+# functions to summarize variables within summarize_module_variables()
+# must take track_df, stat_df and ... as arguments. 
+# must return the track data.frame with the new variable as output
+compute_var_mgr_eff <- function(track_df, stat_df, object, ...){
   
   smrd_df <- 
     dplyr::left_join(
@@ -398,7 +532,7 @@ compute_var_mgr_eff <- function(track_df, stat_df, ...){
   
 }
 
-compute_var_total_dist <- function(track_df, ...){
+compute_var_total_dist <- function(track_df, stat_df, object, ...){
   
   smrd_df <-
     dplyr::group_by(track_df, cell_id) %>% 

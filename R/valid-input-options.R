@@ -26,7 +26,7 @@ adjustableDefaultInstructions <- function(){
 #' 
 protectedVariables <- function(){
   
-  protected_vars  
+  protected_vars_all  
   
 }
   

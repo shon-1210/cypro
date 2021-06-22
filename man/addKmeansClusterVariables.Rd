@@ -26,7 +26,7 @@ referring to the phase of interest. If set to NULL takes the phase denoted as de
 
 Ignored if the experiment design contains only one phase.}
 
-\item{method_kmeans}{Character vector (or value see details for more.) Denotes the algorithm of interest defaults
+\item{method_kmeans}{Character vector (or value see details for more.) Denotes the algorithms of interest. Defaults
 to \emph{'Hartigan-Wong'}.
 
 Use \code{validKmeansMethods()} to obtain all valid input options.}

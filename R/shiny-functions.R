@@ -875,9 +875,10 @@ plot_qc_barplot_shiny <- function(df, aes_x, aes_fill, bar_position){
 quality_check_summary_shiny <- function(track_df){
   
   dplyr::group_by(.data = track_df, cell_id) %>% 
+    dplyr::filter(!frame_added) %>% 
     dplyr::summarise(
-      last_meas = base::max(frame), 
-      first_meas = base::min(frame), 
+      last_meas = base::max(frame_num), 
+      first_meas = base::min(frame_num), 
       total_meas = dplyr::n(), 
       skipped_meas = base::length(first_meas:last_meas) - total_meas
     )
@@ -1049,7 +1050,6 @@ read_data_files_shiny <- function(directory,
         
       }
       
-      
       # 2. Are there any variables present that are of invalid type among...
       # ... identifier variables? 
       identifier_results <- 
@@ -1083,7 +1083,7 @@ read_data_files_shiny <- function(directory,
       }
       
       # ... analysis module variables? 
-      analyis_module_results <- 
+      analysis_module_results <- 
         validate_analysis_module_variables_shiny(
           assembled_module_info = amils$analysis_modules,
           df = df, 
@@ -1093,7 +1093,7 @@ read_data_files_shiny <- function(directory,
       
       # if so, add to feedback 
       messages <- 
-        purrr::keep(analyis_module_results, .p = hlpr_keep_messages)
+        purrr::keep(analysis_module_results, .p = hlpr_keep_messages)
       
       if(base::length(messages) >= 1){
         
@@ -1118,7 +1118,6 @@ read_data_files_shiny <- function(directory,
         
       }
       
-      
       # if feedback_messages contains any messages something went wrong
       if(base::is.character(feedback_messages) &&
          base::length(feedback_messages) >= 1){
@@ -1140,13 +1139,13 @@ read_data_files_shiny <- function(directory,
         # assemble to list
         data_list <- 
           c(identifier_results, 
-            analyis_module_results,
+            analysis_module_results,
             additional_variables_results)
         
         # assemble to data.frame
         final_df <-
-          purrr::map_df(data_list, .f = function(var){ return(var) }) %>% 
-          dplyr::mutate(df, well_image = {{well_image}}) %>% 
+          purrr::map_df(data_list, .f = ~ .x) %>% 
+          dplyr::mutate(well_image = {{well_image}}) %>% 
           dplyr::rename(!!!id_name_pairs) %>% 
           dplyr::rename(!!!analysis_module_name_pairs)
         

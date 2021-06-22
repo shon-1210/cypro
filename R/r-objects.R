@@ -112,75 +112,110 @@ filetypes <- c("csv$", "xls$", "xlsx$")
 helper_content <- list(
   
   # designExperiment()
-  overall_information = "Provide basic information such as the software the files derived from as well as the kind of files cypro is supposed to load.
-  The combination of experiment name and storage directory will result in the default directory under which the cypro object is going to be stored. (You
-  can change the directory afterwards at any time.)", 
   
-  imaging_set_up = "Provide information about the imaging process that generated the images from which Cell Tracker or Cell Profiler again generated the data 
-  tables you are about to analyze. 'Total Number of Images' refers to the number of times the imaging device made a picture (Cell Tracker refers to that as 'Frame Number'). 
-  'Interval' and 'Interval Unit' refer to the timelapse between these images beeing made. If the track files you read in contain data that exceed the number of images specified 
-  here the files will be filtered accordingly such that only data up to the 'Total Number of Images' is included.",
+  total_number_of_images = c(
+    "'Total Number of Images' refers to the number of times the imaging device
+    made a picture (Cell Tracker refers to that as 'Frame Number'",
+    "", 
+    "For instance, if you denote the 25 as the total number of images cypro 
+    assumes that each file contains 25 rows of data for each cell id. Additional
+    rows will be discarded. Missing rows will be imputed."),
   
-  experiment_phases = "If you have split your experiment in several phases (e.g. you started imaging with no treatment and after 24 hours you changed the condition of some wells and
-  24 hours later you changed the conditions again - while maintaining the imaging process) you can specify the number of phases as well as their respective 
-  starting point here. This will affect the way you can design the well plates (Step 4) which is why this step has to be done previously to that. Changing
-  the experiment phases set up will result in all well plates saved up to that point beeing lost.", 
+  interval = c("'Interval' refers to the time that has passed between each image."),
   
-  well_plate_set_up = "This step is of great importance as it provides the information about how your data files will be read in as well as how the cell information
-  of these files will be assigned to the different conditions and experiment phases. Clicking on 'New Well Plate' will create an empty well plate visualized on the right.
-  'Covered Areas per Well' refers to the number of images made per well per imaging interval. The area's number is denoted as the last number of the respective file name
-  (e.g. ~/A1_1.csv, ~/A1_2.csv, ~/A1_3.csv would require you to set 'Covered Areas per Well' to 3).
-  Once the well plate is visualized you can interactively select wells which highlights them in dark red. Continue with specifiying their cell line and their conditions via the respective text inputs.
-  After clicking on 'Add Info' you will see a small info box in the right lower corner telling you whether saving the information was successfull or not. If successfull click on the well plate plot again 
-  and you should see that the color of the wells have changed. 
+  interval_unit = c("'Interval Unit' specifies the unit of the numeric input of 'Interval'."),
   
-  Before continuing with the next well plate make sure to add the well plate via 'Add Well Plate'. Not doing that before continuing with 'New Well Plate' results in all specifications beeing lost. Info boxes
-  as well as the table in the box 'Save Experiment Design & Proceed' will tell you whether your well plate set up has been saved successfully.",
+  number_of_phases = c(
+    "If the experiment is split into several phases you can specify the number of phases here.",
+    "",
+    "For instance:",
+    "", 
+    "If treatment started right from the beginning there is only one phase and thus no need to further specify anything.",
+    "",
+    "If cells have been imaged for twelve hours every hour then the oxygen 
+    supply was decreased for the next twelve hours. There are two phases. In case
+    of more than one phase you can denote the starting point of subsequent phases 
+    below."
+  ),
   
-  example = c(
-  "Choose an example file from those that you want to read in with cypro later on. As Cell Profiler & Co let you name the columns yourself cypro needs to know which 
-  columns refer to what exactly which is why it needs an example file. The modal you open by clicking on 'Example Data: Browse' lets you assign the columns of the example file you have loaded.",
-  
-  "   ",
-  
-  "Track files (as part of the cypro terminology) refer to tables in which each row/observation represents a cell at a given moment (image taken) and in which each column/variable provides information about these cells (such 
-  as current x- and y-coordinate, shape diameter, illuminance intensitry etc.). Each row must be uniquely identified by a column providing the cell's ID and a column providing the image number the row bases on.
-  These two columns have to be specified. If you want cypro to analyze migration data you have to denote the columns refering to the cell's x- and y-coordinates as well. If your files do not contain these columns you can
-  leave them out which will result in a cypro object that is incompatible with cypro functions dealing with migration data.",
-  
-  "   ",
-  
-  "On top of the columns mentioned previously you can choose the columns that you want to be part of downstream analysis steps. If denoted in Step 2 cypro will take the x- and y-coordinates and will calculate migration data.
-  This includes the 'Distance from last point (dflp)', 'Distance from origin (dfo)' and the 'Speed (speed)'. As cypro automatically calculates these three variables there is no need to make cypro keep them additionally if your 
-  example file already contains them. If your example files  contains columns referring to the cells morphology at a given image like 'Cell Diameter', 'Number of Connections' etc. you can denote them here. Eventually,
-  while loading all files your experiment contains via loadData() cypro will read in all files and keep the columns you've denoted in Step 2 and 3. The function processData() will summarize the tracking data columns via statistical
-  measures like minimum, maximum, mean, median which you can compare later on across cell lines, conditions, clustering results etc. (e.g. 'Cell Diameter' of the track files will be summarized to 'mean_cell_diameter', 'min_cell_diamter' etc. 
-  of the stat files.") ,
+  images_per_well = 
+    c("E.g. if your data contains the files A1_1.csv, A1_2.csv and A1_3.csv
+       there are 3 images/image stacks per well.",
+      "",
+      "Denoting the correct number is important in so far as it limits the number 
+      of files that is looked for later on."
+      ),
+
   
   
   # loadData()
-  assign_folder = "In the left lower corner you see a select option that contains the names of the well plates you have set up in the module opened via 'designExperiment()'. 
-  In order for cypro to read in the data every well plate needs to be assigned to a directory in which cypro finds the files to read in. Clicking on 'Assign Folder: Browse'
-  opens a window that gives you access to the folders of your device. Select the one that contains the files of the respective well plate or that again contains (sub-)folders in which the files are stored.
-  (If you want cypro to look in subfolders, too, make sure that 'Include Subfolders' is enabled.) After you have assigned the folder by closing the window you will see a well plate plot appear right above the 
-  button 'Assign Folder: Browse'. The wells will be colored according to the number of files that have been found in the folder you specified. Green/Complete means that all files have been found. 
-  Yellow/Incomplete means that some files of the well have been found. (e.g. you set 'Covered Areas per Well' to 3 which made cypro expect files 'A1_1.csv', 'A1_2.csv' and 'A1_3.csv'.
-  However only 'A1_1.csv' and 'A1_3.csv' have been found). Missing/Red means that no files of that well have been found at all. Blue/Ambiguous might appear if you stored the files in 
-  subfolders of the assigned folder and some folders contain files with equal names due to typos while naming the files. (e.g. ~/Ctrl/A1_1.csv, ~/Treatment/A1_1.csv) If you realized that you assigned the wrong folder 
-  or that some files have been named incorrect you can fix what needs to be fixed and assign the directory again by clicking on 'Assign Folder: Browse'.", 
+  assign_folder = c(
+  "In the left lower corner you see a select option that contains the names of the
+  well plates you have set up in the module opened via 'designExperiment()'. 
+  In order for cypro to read in the data every well plate needs to be assigned to
+  a directory in which cypro finds the files to read in.",
+  "",
+  "Clicking on 'Assign Folder: Browse' opens a window that gives you access to the
+  folders of your device. Select the one that contains the files of the respective
+  well plate or that again contains (sub-)folders in which the files are stored.
+  (If you want cypro to look in subfolders, too, make sure that 'Include Subfolders' is enabled.)",
+  "",
+  "After you have assigned the folder by closing the window you will see a well
+  plate plot appear right above the button 'Assign Folder: Browse'. The wells will
+  be colored according to the number of files that have been found in the folder you
+  specified.",
+  "",
+  "Green/Complete means that all files have been found.",
+  "",
+  "Yellow/Incomplete means that only some files of the well have been found.
+  (e.g. you set 'Images per Well' to 3 which made cypro expect files
+  'A1_1.csv', 'A1_2.csv' and 'A1_3.csv'. However only 'A1_1.csv' and 'A1_3.csv'
+  have been found).",
+  "",
+  "Missing/Red means that no files of that well have been found at all.",
+  "",
+  "Blue/Ambiguous might appear if you stored the files in subfolders of the
+  assigned folder and some folders contain files with equal names due to typos
+  while naming the files. (e.g. ~/Ctrl/A1_1.csv, ~/Treatment/A1_1.csv)",
+  "",
+  "If you realized that you assigned the wrong folde or that some files were
+  named incorrectly you can fix what needs to be fixed and assign the directory
+  again by clicking on 'Assign Folder: Browse'."), 
   
-  well_plate_status = "This table provides summary information about the file availability for all well plates. It updates every time you assign a folder to a well plate. 'Number of Files' sums up the number of files found
-  and 'Expected Number of Files' sets that in relation to the number of files expected according to number of covered areas per well and the number of wells for which you specified cell line and conditions. Missing or incomplete
-  wells do not prevent you from reading in all other files found - no need to design the experiment again if you realize that some files are missing. Just click on 'Load Data' and the missing files will be ignored. In case of ambiguous
-  wells you need to rename or delete the files that are doubled before loading the data.",
+  well_plate_status = c(
+  "This table provides summary information about the file availability for all well
+  plates. It updates every time you assign a folder to a well plate. 'Number of
+  Files' sums up the number of files found and 'Expected Number of Files' sets that
+  in relation to the number of files expected according to number of covered areas
+  per well and the number of wells for which you specified cell line and conditions.",
+  "", 
+  "Missing or incomplete wells do not prevent you from reading in all other files found -
+  no need to design the experiment again if you realize that some files are missing.
+  Just click on 'Load Data' and the missing files will be ignored. In case of ambiguous
+  wells you need to rename or delete the files that are doubled before loading the data."),
   
-  load_files_and_proceed = "After clicking on 'Load Data' you should see a progress bar for every well plate giving information about the reading progress. Once all files are read in you obtain information about any errors that occured while 
-  reading the files. In case of no errors you can simply click on 'Save & Proceed' and afterwards on 'Return cypro Object'. If the box hints at errors occured you can try and fix the cause for these errors and then click on 'Load Data' again
-  which will repeat the reading process. On the other hand you can ignore the errors and click on 'Save & Proceed' anyway which makes cypro ignore the files that were not suffessfully read in and continue with the rest."
+  load_files_and_proceed = c(
+  "After clicking on 'Load Data' you should see a progress bar for every well plate
+  giving information about the reading progress. Once all files are read in you obtain
+  information about any errors that occured while reading the files.",
+  "",
+  "In case of no errors you can simply click on 'Save & Proceed' and afterwards on
+  'Return Cypro Object'. If the box hints at errors occured you can try and fix the
+  cause for these errors and then click on 'Load Data' again which will repeat the
+  reading process. On the other hand you can ignore the errors and click on
+  'Save & Proceed' anyway which makes cypro ignore the files that were not suffessfully
+  read in and continue with the rest."
+  )
   
   
   
 )
+
+image_processing_softwares <- 
+  c("Cell Profiler" = "cell_profiler", 
+    "Cell Tracker" = "cell_tracker", 
+    "ImageJ" = "imagej"
+    )
 
 imp_filter_criteria <- c("total_meas", "skipped_meas", "first_meas", "last_meas")
 
@@ -207,7 +242,27 @@ base::attr(object_class, which = "package") <- "cypro"
 
 protected_vars <- c("cell_id", "cell_line", "condition",
                     "well_plate_name", "well_plate_index", "well",  "well_image", 
-                    "x_coords", "y_coords")
+                    "x_coords", "y_coords", 
+                    "frame_itvl", "frame_num", "frame_time", 
+                    "imputed")
+
+protected_vars_modules <- 
+  purrr::map(.x = cypro_modules, .f = function(module){
+    
+    var_names <- 
+      c(base::names(module$variables),
+        base::names(module$variables_to_summarize)
+      )
+    
+    return(var_names)
+    
+  }) %>% 
+  purrr::flatten_chr() %>% 
+  base::unique()
+
+protected_vars_all <- 
+  base::unique(c(protected_vars, protected_vars_modules))
+
 
 set_up_funs <- list(experiment_design = "designExperiment()", 
                     load_data = "loadData()", 

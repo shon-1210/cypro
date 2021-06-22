@@ -60,7 +60,7 @@ initiateHierarchicalClustering <- function(object,
   if(base::class(cluster_object) != "hclust_conv" | base::isTRUE(force)){
     
     df <-
-      getStatsOrTracksDf(object = object, phase = phase) %>% 
+      getStatsDf(object = object, phase = phase) %>% 
       dplyr::select(cell_id, dplyr::all_of(variables))
     
     cell_ids <- df$cell_id
@@ -134,7 +134,7 @@ initiateKmeansClustering <- function(object,
   if(base::class(cluster_object) != "kmeans_conv" | base::isTRUE(force)){
     
     df <- 
-      getStatsOrTracksDf(object = object, phase = phase) %>% 
+      getStatsDf(object = object, phase = phase) %>% 
       dplyr::select(cell_id, dplyr::all_of(x = variables))
     
     cell_ids <- df$cell_id
@@ -212,7 +212,7 @@ initiatePamClustering <- function(object,
   if(base::class(cluster_object) != "pam_conv" | base::isTRUE(force)){
     
     df <- 
-      getStatsOrTracksDf(object = object, phase = phase) %>% 
+      getStatsDf(object = object, phase = phase) %>% 
       dplyr::select(cell_id, dplyr::all_of(variables))
     
     cell_ids <- df$cell_id

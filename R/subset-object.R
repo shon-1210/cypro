@@ -282,12 +282,13 @@ subsetByCellLine <- function(object, new_name, cell_lines, verbose = NULL){
   
   # subset object
   object_new <-
-    subsetByCellId(object,
-                   cell_ids = cell_ids,
-                   new_name = new_name,
-                   verbose = FALSE,
-                   subset_by = list(by = "cell_lines", cell_lines = cell_lines)
-                   )
+    subsetByCellId(
+      object = object,
+      cell_ids = cell_ids,
+      new_name = new_name,
+      verbose = FALSE,
+      subset_by = list(by = "cell_lines", cell_lines = cell_lines)
+    )
   
   confuns::give_feedback(msg = "Done.", verbose = verbose)
   
@@ -372,12 +373,13 @@ subsetByCluster <- function(object,
   
   # subset object
   object_new <-
-    subsetByCellId(object,
-                   cell_ids = cell_ids,
-                   phase = phase,
-                   new_name = new_name,
-                   verbose = FALSE,
-                   subset_by = list(by = "cluster", cluster_variable = cluster_variable, cluster = cluster)
+    subsetByCellId(
+      object = object,
+      cell_ids = cell_ids,
+      phase = phase,
+      new_name = new_name,
+      verbose = FALSE,
+      subset_by = list(by = "cluster", cluster_variable = cluster_variable, cluster = cluster)
     )
   
   confuns::give_feedback(msg = "Done.", verbose = verbose)
@@ -442,12 +444,13 @@ subsetByGroup <- function(object,
   
   # subset object
   object_new <-
-    subsetByCellId(object,
-                   cell_ids = cell_ids,
-                   phase = phase,
-                   new_name = new_name,
-                   verbose = FALSE,
-                   subset_by = list(by = "group", grouping_variable = grouping_variable, groups = groups)
+    subsetByCellId(
+      object = object,
+      cell_ids = cell_ids,
+      phase = phase,
+      new_name = new_name,
+      verbose = FALSE,
+      subset_by = list(by = "group", grouping_variable = grouping_variable, groups = groups)
     )
   
   confuns::give_feedback(msg = "Done.", verbose = verbose)
@@ -504,7 +507,7 @@ subsetByCondition <- function(object, new_name, conditions, phase = NULL, verbos
   
   # subset object
   object_new <-
-    subsetByCellId(object,
+    subsetByCellId(object = object,
                    cell_ids = cell_ids,
                    phase = phase,
                    new_name = new_name,
@@ -577,21 +580,20 @@ subsetByFilter <- function(object, new_name, ..., phase = NULL, verbose = NULL){
       object = object,
       phase = phase,
       verbose = FALSE,
-      with_cluster = FALSE,
-      with_meta = FALSE,
-      with_well_plate = FALSE
+      with_grouping = TRUE
     ) %>% 
     dplyr::filter(...) %>% 
     dplyr::pull(cell_id)
   
   # subset object
   object_new <-
-    subsetByCellId(object,
-                   cell_ids = cell_ids,
-                   phase = phase,
-                   verbose = FALSE,
-                   new_name = new_name,
-                   subset_by = list(by = "filter", requirements = requirements)
+    subsetByCellId(
+      object = object,
+      cell_ids = cell_ids,
+      phase = phase,
+      verbose = FALSE,
+      new_name = new_name,
+      subset_by = list(by = "filter", requirements = requirements)
     )
   
   confuns::give_feedback(msg = "Done.", verbose = verbose)
@@ -783,12 +785,13 @@ subsetByNumber <- function(object,
   
   # subset object
   object_new <-
-    subsetByCellId(object,
-                   cell_ids = cell_ids,
-                   phase = phase,
-                   verbose = FALSE,
-                   new_name = new_name,
-                   subset_by = list(by = "number", across = across, n_type = ref_arg, n_val = n_by_group, weighted = weighted)
+    subsetByCellId(
+      object = object,
+      cell_ids = cell_ids,
+      phase = phase,
+      verbose = FALSE,
+      new_name = new_name,
+      subset_by = list(by = "number", across = across, n_type = ref_arg, n_val = n_by_group, weighted = weighted)
     )
   
   confuns::give_feedback(msg = "Done.", verbose = verbose)
@@ -799,11 +802,215 @@ subsetByNumber <- function(object,
 }
 
 
-
+#' @title Create data subset according to coverage quality
+#' 
+#' @description Subset functions allow to conveniently split your data. \code{subsetByQualiteCheck()}
+#' opens a shiny application in which histograms of aspects are displayed that summarise
+#' the quality of a cells coverage. 
+#' 
+#' See details for more information.
+#'
+#' @inherit argument_dummy params 
+#'
+#' @details Creating subsets of your data affects analysis results such as clustering and correlation which 
+#' is why these results are reset in the subsetted object and must be computed again. To prevent inadvertent overwriting 
+#' the default directory is reset as well. Make sure to set a new one via \code{setDefaultDirectory()}. 
+#' 
+#' The mechanism with which you create the subset is stored in the output object. Use \code{printSubsetHistory()}
+#' to reconstruct the way from the original object to the current one. 
+#' 
+#' The histograms you see in the application provide insights into the distribution 
+#' of coverage quality assessments. (e.g. the  distribution of numbers of frames that 
+#' have been skipped by cells or the first frame the cells appeared in.) You can 
+#' select the columns that contain the cells that match the quality requirements 
+#' of your choice. Eventually cells that match all the requirements you specified 
+#' are selected and the object is subsetted by \code{subsetByCellId()}. 
+#' 
+#' Use \code{printSubsetHistory()} to have the requirements you set up printed 
+#' in the R-console.  
+#'
+#' @inherit updated_object return
+#' @export
+#'
+subsetByQualityCheck <- function(object, new_name = NULL, verbose = NULL){
+  
+  check_object(object, set_up_req = "load_data", exp_type_req = "time_lapse")
+  
+  assign_default(object)
+  
+  qc_list <- 
+    shiny::runApp(
+      shiny::shinyApp(
+        ui = function(){
+          shinydashboard::dashboardPage(
+            
+            header = shinydashboard::dashboardHeader(title = app_title), 
+            
+            sidebar = shinydashboard::dashboardSidebar(
+              collapsed = TRUE, 
+              shinydashboard::sidebarMenu(
+                shinydashboard::menuItem(
+                  text = "New Session", 
+                  tabName = "new_session", 
+                  selected = TRUE
+                )
+              )
+            ), 
+            
+            body = shinydashboard::dashboardBody(
+              
+              shinydashboard::tabItems(
+                shinydashboard::tabItem(
+                  tabName = "new_session",
+                  
+                  moduleQualityCheckUI(id = "qc"), 
+                  shiny::fluidRow(
+                    shiny::column(width = 12, align = "center", 
+                                  
+                                  shiny::uiOutput(outputId = "return_cypro")
+                                  
+                    )
+                  )
+                )
+              )
+            )
+            
+          )
+        }, 
+        server = function(input, output, session){
+          
+          # shiny helper 
+          shinyhelper::observe_helpers()
+          
+          qc_results <-
+            moduleQualityCheckServer(id = "qc", object = object)
+          
+          output$return_cypro <- shiny::renderUI({
+            
+            qc_list <- shiny::reactiveValuesToList(qc_results)
+            
+            if(shiny::isTruthy(qc_list$proceed)){
+              
+              color <- "success"
+              
+            } else {
+              
+              color <- "warning"
+              
+            }
+            
+            shinyWidgets::actionBttn(
+              inputId = "return_cypro",
+              label = "Return Cypro Object", 
+              color = color, 
+              style = "gradient"
+              )
+            
+          })
+          
+          oe <- shiny::observeEvent(input$return_cypro, {
+            
+            qc_list <- shiny::reactiveValuesToList(qc_results)
+            
+            check <- base::tryCatch({
+              
+              base::class(qc_list$object) == "cypro"
+              
+            }, error = function(error){
+              
+              FALSE
+              
+            })
+            
+            checkpoint(evaluate = check, case_false = "incomplete_cypro2")
+            
+            cypro_object <- qc_list$object
+            
+            cypro_object@set_up$progress$quality_check <- TRUE
+            
+            shiny::stopApp(returnValue = qc_list)
+            
+          })
+          
+        }
+      )
+    )
+  
+  object <- 
+    subsetByCellId(
+      object = object, 
+      new_name = new_name, 
+      verbose = verbose, 
+      cell_ids = qc_list$remaining_ids,
+      reasoning = make_data_quality_reasoning(qc_list$reasoning),
+      subset_by = list(by = "quality_check")
+    )
+  
+  return(object)
+  
+}
 
 
 
 # -----
 
-
+make_data_quality_reasoning <- function(reasoning){
+  
+  qc_subset_opts <-
+    c("skipped_meas" = "cells with 'value' skipped measurement(s).",
+      "total_meas" = "cells with a total of 'value' measurement(s).",
+      "first_meas" = "cells whose first measurement took place in frame(s) 'value'.",
+      "last_meas" = "cells whose last measurement took place in frame(s) 'value'."
+    )
+  
+  reasoning_list <- 
+    purrr::map(.x = base::names(qc_subset_opts), .f = function(qc_subset_opt){
+      
+      res <- confuns::lselect(lst = reasoning, contains(qc_subset_opt))
+      
+      if(res[[1]] == "Not applied"){
+        
+        return(NULL)
+        
+      } else {
+        
+        return(res)
+        
+      }
+      
+    }) %>% 
+    purrr::set_names(nm = base::names(qc_subset_opts)) %>% 
+    purrr::discard(.p = base::is.null) %>% 
+    purrr::map(.x = ., .f = function(lst){
+      
+      confuns::lrename_with(
+        lst = lst,
+        .fn = ~ stringr::str_remove(.x, pattern = ".+(?=values|opt)")
+      )
+      
+    })
+  
+  res <- purrr::imap(.x = reasoning_list, .f = function(info, prefix){
+    
+    start <- info$opt
+    
+    main <-
+      stringr::str_replace(
+        string = qc_subset_opts[[prefix]],
+        pattern = "'value'",
+        replacement = base::as.character(info$values)
+      )
+    
+    final <- 
+      stringr::str_c("\n", start, main, sep = " ")
+    
+    return(final)
+    
+  }) %>% 
+    purrr::flatten_chr() %>% 
+    stringr::str_c(collapse = "")
+  
+  return(res)
+  
+}
 

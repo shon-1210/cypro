@@ -303,7 +303,7 @@ plotBarchart <- function(object,
 #' @export
 #'
 
-plotStatisticsInteractive <- function(object, phase = NULL){
+plotStatisticsInteractive <- function(object, phase = NULL, drop_na = TRUE){
   
   check_object(object)
   assign_default(object)
@@ -311,7 +311,7 @@ plotStatisticsInteractive <- function(object, phase = NULL){
   phase <- check_phase(object, phase = phase, max_phases = 1)
   
   stats_df <-
-    getStatsDf(object, phase = phase, verbose = FALSE) %>% 
+    getStatsDf(object, phase = phase, verbose = FALSE, drop_na = drop_na) %>% 
     dplyr::select(-cell_id)
   
   

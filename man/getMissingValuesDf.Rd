@@ -4,10 +4,15 @@
 \alias{getMissingValuesDf}
 \title{Obtain missing value counts}
 \usage{
-getMissingValuesDf(object)
+getMissingValuesDf(object, phase = NULL)
 }
 \arguments{
 \item{object}{A valid cypro object.}
+
+\item{phase}{Character value. The ordinal value referring to the phase of interest (e.g. \emph{'first'}, \emph{'second'} etc.).
+referring to the phase of interest. If set to NULL takes the phase denoted as default with \code{adjustDefault()}.
+
+Ignored if the experiment design contains only one phase.}
 }
 \value{
 A data.frame.

@@ -4,7 +4,7 @@
 \alias{plotStatisticsInteractive}
 \title{Plot statistics related plots interactively}
 \usage{
-plotStatisticsInteractive(object, phase = NULL)
+plotStatisticsInteractive(object, phase = NULL, drop_na = TRUE)
 }
 \arguments{
 \item{object}{A valid cypro object.}

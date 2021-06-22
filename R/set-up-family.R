@@ -4,9 +4,6 @@
 
 set_up_cdata_meta <- function(object, verbose = TRUE){
   
-  grouping_variables <- 
-    object@information$variable_denotation$additional$grouping_variables
-  
   if(multiplePhases(object)){
     
     all_phases <- getPhases(object)
@@ -17,8 +14,7 @@ set_up_cdata_meta <- function(object, verbose = TRUE){
                    
                    object@cdata[["tracks"]][[phase]] %>% 
                      dplyr::select(
-                       cell_id, cell_line, condition,
-                       dplyr::any_of(grouping_variables)
+                       cell_id, cell_line, condition
                        ) %>% 
                      dplyr::distinct() %>% 
                      dplyr::mutate(
@@ -30,6 +26,17 @@ set_up_cdata_meta <- function(object, verbose = TRUE){
       purrr::set_names(nm = all_phases)
     
   } else {
+    
+    if(!isTimeLapseExp(object)){
+      
+      grouping_variables <- 
+        object@information$variable_denotation$additional$grouping_variables
+      
+    } else {
+      
+      grouping_variables <- character(0)
+      
+    }
     
     object@cdata$meta <-
       object@cdata[["tracks"]][[1]] %>% 
@@ -109,10 +116,30 @@ set_up_cdata_tracks <- function(object, verbose = TRUE){
       
     }
     
+  } else {
+    
+    object@cdata$tracks <- 
+      object@cdata$tracks$only %>% 
+      dplyr::select(cell_id, where(base::is.numeric))
+    
+    confuns::give_feedback(
+      msg = "----- Computing analysis module related variables.",
+      verbose = verbose
+    )
+    
+    object@cdata$tracks <-
+      compute_module_variables(
+        track_df = object@cdata$tracks,
+        object = object,
+        verbose = verbose
+      ) %>% 
+      dplyr::ungroup()
+    
   }
   
   return(object)
 }
+
 
 set_up_cdata_stats <- function(object, summarize_with, verbose = TRUE){
   
@@ -307,8 +334,8 @@ set_up_vdata <- function(object, verbose = TRUE){
                    confuns::give_feedback(msg = msg, verbose = verbose)
                    
                    stats_mtr <- 
-                    getStatsDf(object, phase = p) %>% 
-                     dplyr::select_if(base::is.numeric) %>% 
+                    getStatsDf(object, phase = p, with_grouping = FALSE) %>% 
+                     dplyr::select(where(base::is.numeric)) %>% 
                      base::as.matrix()
                    
                    vdf <- 
@@ -340,7 +367,7 @@ set_up_vdata <- function(object, verbose = TRUE){
     confuns::give_feedback(msg = msg, verbose = verbose)
     
     stats_mtr <- 
-      getStatsOrTracksDf(object, phase = NULL) %>% 
+      getStatsDf(object, phase = NULL, with_grouping = FALSE) %>% 
       dplyr::select_if(.predicate = base::is.numeric) %>% 
       base::as.matrix() 
     
@@ -358,7 +385,7 @@ set_up_vdata <- function(object, verbose = TRUE){
     confuns::give_feedback(msg = "Counting NAs by variable.", verbose = verbose)
     
     vdata$summary$count_na <- 
-      getStatsDf(object, phase = p) %>% 
+      getStatsDf(object, with_grouping = FALSE) %>% 
       dplyr::select_if(base::is.numeric) %>% 
       purrr::map_int(.f = ~ base::is.na(.x) %>% base::sum())
     

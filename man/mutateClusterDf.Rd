@@ -10,7 +10,7 @@ mutateClusterDf(object, ..., group_by = NULL, phase = NULL)
 
 mutateMetaDf(object, ..., group_by = NULL, phase = NULL)
 
-mutateStatsDf(object, ..., group_by = NULL, phase = NULL)
+mutateStatsDf(object, ..., group_by = NULL)
 }
 \arguments{
 \item{object}{A valid cypro object.}

@@ -3,68 +3,36 @@
 
 #' @title Summarize time lapse data variables 
 #' 
-#' @description This function allows to summarize time lapse data variables 
-#' stored in slot @@tracks and to add the summarized variables to the 
-#' data.frame in slot @@stats.
+#' @description Sets up the stat data.frame based on the data variables 
+#' of slot @@tracks. This includes summary via the denoted functions 
+#' in argument \code{summarize_with} as well as all module based 
+#' variables. 
 #' 
 #' @inherit argument_dummy params
-#' @param ... Name-value pairs according to the syntax of \code{dplyr::summarize()}. 
-#' This can be single or several expressions as well as usage of \code{dplyr::across()} if several 
-#' variables are supposed to be affected. See details for output requirements.
-#' @param discard_variables If character, denotes variables that are discarded 
-#' prior to the call to \code{dplyr::summarize()}. Might be useful in case of 
-#' more complex input for argument \code{...}.
 #' 
-#' @details Prior to summarizing the tracks data.frame is grouped by \emph{cell_id}
-#' via \code{dplyr::group_by()}. All data variables of the output data.frame of
-#' \code{dplyr::summarize(...)} is joined to the stats data.frame via 
-#' \code{addStatVariables()}.
+#' @note As this function affects and changes the whole stat data.frame all analysis 
+#' results are discarded.
 #'
 #' @inherit update_object return
 #'
-summarizeTrackVariables <- function(object,
-                                    ...,
-                                    discard_variables = NULL,
-                                    overwrite = FALSE,
-                                    phase = NULL,
-                                    verbose = NULL){
+summarizeTrackDfWith <- function(object,
+                                 summarize_with = c("max", "mean", "median", "min"),
+                                 verbose = NULL){
   
-  check_object(object)
-  
+  check_object(object, exp_type_req = "time_lapse")
   assign_default(object)
   
-  phases <- check_phase(object, phase = phase)
+  object <-
+    set_up_cdata_stats(
+      object = object, 
+      summarize_with = summarize_with, 
+      verbose = verbose
+    )
   
-  enquos_input <- rlang::enquo(...)
+  object <- 
+    set_up_vdata(object = object, verbose = verbose)
   
-  if(multiplePhases(object)){
-    
-    for(p in phases){
-      
-      object <-
-        summarize_track_df(
-          object = object, 
-          enquos_input = enquos_input,
-          discard_variables = discard_variables,
-          phase = p, 
-          overwrite = overwrite, 
-          verbose = verbose
-        )
-      
-    }
-    
-  } else {
-    
-    object <-
-      summarize_track_df(
-        object = object,
-        enquos_input = enquos_input,
-        discard_variables = discard_variables,
-        overwrite = overwrite,
-        verbose = verbose
-        )
-    
-  }
+  object@analysis <- list()
   
   base::return(object)
   

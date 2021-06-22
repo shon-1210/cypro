@@ -164,24 +164,6 @@ subset_history_cell_lines <- function(info, slot_name, object){
   
 }
 
-subset_history_conditions <- function(info, slot_name, object){
-  
-  header <- make_header(info, slot_name)
-  
-  footer <- make_footer(info, slot_name)
-  
-  phase <- make_phase(object, info)
-  
-  conditions <-
-    stringr::str_c("Kept: '", glue::glue_collapse(info$conditions, sep = "', '", last = "' and '"), "'") 
-  
-  text <- 
-    stringr::str_c(header, phase, conditions,footer, sep = "\n")
-  
-  base::return(text)
-  
-}
-
 subset_history_cluster <- function(info, slot_name, object){
   
   header <- make_header(info, slot_name)
@@ -198,6 +180,24 @@ subset_history_cluster <- function(info, slot_name, object){
   
   text <- 
     stringr::str_c(header, phase, cluster_var, cluster, footer, sep = "\n")
+  
+  base::return(text)
+  
+}
+
+subset_history_conditions <- function(info, slot_name, object){
+  
+  header <- make_header(info, slot_name)
+  
+  footer <- make_footer(info, slot_name)
+  
+  phase <- make_phase(object, info)
+  
+  conditions <-
+    stringr::str_c("Kept: '", glue::glue_collapse(info$conditions, sep = "', '", last = "' and '"), "'") 
+  
+  text <- 
+    stringr::str_c(header, phase, conditions,footer, sep = "\n")
   
   base::return(text)
   
@@ -278,6 +278,31 @@ subset_history_number <- function(info, slot_name, object){
   
   base::return(text)
   
+  
+}
+
+
+subset_history_quality_check <- function(info, slot_name, object){
+  
+  header <- make_header(info, slot_name)
+  
+  footer <- make_footer(info, slot_name)
+  
+  if(base::is.character(info$reasoning)){
+    
+    reason <- info$reasoning
+    
+  } else {
+    
+    reason <- "none provided"
+    
+  }
+  
+  reasoning <- stringr::str_c("Reasoning: ", reason, sep = "")
+  
+  text <- stringr::str_c(header, reasoning, footer, sep = "\n")
+  
+  base::return(text)
   
 }
 

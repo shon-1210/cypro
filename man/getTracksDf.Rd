@@ -11,6 +11,7 @@ getTracksDf(
   with_cluster = NULL,
   with_meta = NULL,
   with_well_plate = NULL,
+  drop_na = NULL,
   verbose = NULL
 )
 }

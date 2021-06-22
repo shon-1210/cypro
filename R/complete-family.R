@@ -40,7 +40,8 @@ complete_tracks <- function(df, phase, object, verbose){
     dplyr::select(df, cell_id, dplyr::starts_with("well"), where(base::is.factor))
   
   numeric_df <-
-    dplyr::select(df, cell_id, where(base::is.numeric))
+    dplyr::select(df, cell_id, where(base::is.numeric)) %>% 
+    dplyr::mutate(frame_added = FALSE)
   
   complete_num_df <- 
     tidyr::expand_grid(cell_id = {{all_cell_ids}}, frame_num = {{all_frames}}) %>% 
@@ -50,8 +51,11 @@ complete_tracks <- function(df, phase, object, verbose){
     dplyr::left_join(x = complete_num_df, y = group_df, by = "cell_id") %>% 
     dplyr::distinct() %>% # temporary solution to weird multiplying of observations
     dplyr::arrange(cell_id) %>% 
-    dplyr::select(cell_id, where(base::is.numeric)) # discard non numeric variables
-  
+    dplyr::select(cell_id, frame_added, where(base::is.numeric)) %>%  # discard non numeric variables
+    dplyr::mutate(
+      frame_added = tidyr::replace_na(frame_added, replace = TRUE)
+    )
+    
   # allow computation of later phases to refer to the last position of the previous phase
   # ignored if only one phase exist as phase in this case can only be "first"
   if(phase != "first"){
@@ -92,7 +96,8 @@ complete_tracks <- function(df, phase, object, verbose){
     compute_module_variables(
       track_df = track_df,
       object = object,
-      verbose = verbose
+      verbose = verbose, 
+      phase = phase
     )
   
   # delete the added frame row
@@ -159,56 +164,6 @@ complete_stats <- function(track_df, phase, object, summarize_with, verbose){
 
 
 
-summarize_module_variables <- function(stat_df, track_df, object, verbose){
-  
-  used_modules <- get_used_module_names(object)
-  
-  track_df <- dplyr::group_by(track_df, cell_id)
-  
-  for(i in base::seq_along(used_modules)){
-    
-    used_module <- used_modules[i]
-    
-    module_info <- 
-      stringr::str_c("module", used_module, sep = "_") %>% 
-      base::parse(text = .) %>% 
-      base::eval()
-    
-    if(!base::is.null(module_info$summary_order)){
-      
-      confuns::give_feedback(
-        msg = glue::glue("Module: '{module_info$pretty_name}'"),
-        verbose = verbose
-      )
-      
-      for(var_to_summarize in module_info$summary_order){
-        
-        variable_info <- module_info$variables_to_summarize[[var_to_summarize]]
-        
-        var_name_in_app <- variable_info$name_in_app
-        
-        confuns::give_feedback(
-          msg = glue::glue("Variable: '{var_name_in_app}' ('{var_to_summarize}')"), 
-          verbose = verbose
-        )
-        
-        fn <- variable_info$summarize_with
-        
-        args <- list(track_df = track_df, stat_df = stat_df, object = object)
-        
-        summarized_df <- rlang::invoke(.fn = fn, .args = args)
-        
-        stat_df <- dplyr::left_join(x = stat_df, y = summarized_df, by = "cell_id")
-        
-      }
-      
-    }
-    
-  }
-  
-  return(stat_df)
-  
-}
 
 
 

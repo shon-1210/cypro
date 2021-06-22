@@ -47,16 +47,18 @@ designExperiment <- function(){
           body = shinydashboard::dashboardBody(
             
             shinydashboard::tabItems(
-              shinydashboard::tabItem(tabName = "new_session",
-                                      
-                                      moduleExperimentDesignUI(id = "ed"), 
-                                      shiny::fluidRow(
-                                        shiny::column(width = 12, align = "center", 
-                                                      
-                                                      shiny::uiOutput(outputId = "return_cypro")
-                                                      
-                                        )
-                                      )
+              shinydashboard::tabItem(
+                tabName = "new_session",
+                
+                moduleExperimentDesignUI(id = "ed"), 
+                shiny::fluidRow(
+                  shiny::column(
+                    width = 12,
+                    align = "center",
+                    shiny::uiOutput(outputId = "return_cypro")
+                  )
+                )
+                
               )
             )
             
@@ -72,7 +74,6 @@ designExperiment <- function(){
         ed_results <-
           moduleExperimentDesignServer(id = "ed", usage = "in_function")
         
-        
         output$return_cypro <- shiny::renderUI({
           
           ed_list <- shiny::reactiveValuesToList(ed_results)
@@ -87,10 +88,12 @@ designExperiment <- function(){
             
           }
           
-          shinyWidgets::actionBttn(inputId = "return_cypro",
-                                   label = "Return Cypro Object", 
-                                   color = color, 
-                                   style = "gradient")
+          shinyWidgets::actionBttn(
+            inputId = "return_cypro",
+            label = "Return Cypro Object", 
+            color = color, 
+            style = "gradient"
+          )
           
         })
         
@@ -108,7 +111,7 @@ designExperiment <- function(){
             
           })
           
-          checkpoint(evaluate = check, case_false = "incomplete_cto")
+          checkpoint(evaluate = check, case_false = "incomplete_cypro")
           
           cypro_object <- ed_list$object
           
@@ -200,10 +203,12 @@ loadData <- function(object){
             
           }
           
-          shinyWidgets::actionBttn(inputId = "return_cypro",
-                                   label = "Return Cypro Object", 
-                                   color = color, 
-                                   style = "gradient")
+          shinyWidgets::actionBttn(
+            inputId = "return_cypro",
+            label = "Return Cypro Object", 
+            color = color, 
+            style = "gradient"
+          )
           
         })
         
@@ -246,129 +251,6 @@ loadData <- function(object){
 
 
 #' @title Object initiation: Step 3
-#' 
-#' @description Opens an interactive application in which the quality of the data can be assessed and 
-#' where the data set can be filtered accordingly. 
-#'
-#' @inherit argument_dummy params 
-#'
-#' @inherit updated_object return
-#' @export
-#'
-checkDataQuality <- function(object){
-  
-  check_object(object, set_up_req = "load_data")
-  
-  if(!isTimeLapseExp(object)){
-    
-    base::stop("Provided object does not contain time lapse information. Proceed with function 'processData()'.")
-    
-  }
-  
-  shiny::runApp(
-    shiny::shinyApp(
-      ui = function(){
-        shinydashboard::dashboardPage(
-          
-          header = shinydashboard::dashboardHeader(title = app_title), 
-          
-          sidebar = shinydashboard::dashboardSidebar(
-            collapsed = TRUE, 
-            shinydashboard::sidebarMenu(
-              shinydashboard::menuItem(
-                text = "New Session", 
-                tabName = "new_session", 
-                selected = TRUE
-              )
-            )
-          ), 
-          
-          body = shinydashboard::dashboardBody(
-            
-            shinydashboard::tabItems(
-              shinydashboard::tabItem(tabName = "new_session",
-                                      
-                                      moduleQualityCheckUI(id = "qc"), 
-                                      shiny::fluidRow(
-                                        shiny::column(width = 12, align = "center", 
-                                                      
-                                                      shiny::uiOutput(outputId = "return_cypro")
-                                                      
-                                        )
-                                      )
-              )
-            )
-            
-          )
-          
-        )
-      }, 
-      server = function(input, output, session){
-        
-        # shiny helper 
-        shinyhelper::observe_helpers()
-        
-        qc_results <-
-          moduleQualityCheckServer(id = "qc", object = object)
-        
-        output$return_cypro <- shiny::renderUI({
-          
-          qc_list <- shiny::reactiveValuesToList(qc_results)
-          
-          if(shiny::isTruthy(qc_list$proceed)){
-            
-            color <- "success"
-            
-          } else {
-            
-            color <- "warning"
-            
-          }
-          
-          shinyWidgets::actionBttn(inputId = "return_cypro",
-                                   label = "Return Cypro Object", 
-                                   color = color, 
-                                   style = "gradient")
-          
-        })
-        
-        oe <- shiny::observeEvent(input$return_cypro, {
-          
-          qc_list <- shiny::reactiveValuesToList(qc_results)
-          
-          check <- base::tryCatch({
-            
-            base::class(qc_list$object) == "cypro"
-            
-          }, error = function(error){
-            
-            FALSE
-            
-          })
-          
-          checkpoint(evaluate = check, case_false = "incomplete_cypro2")
-          
-          cypro_object <- qc_list$object
-          
-          cypro_object@set_up$progress$quality_check <- TRUE
-          
-          shiny::stopApp(returnValue = cypro_object)
-          
-        })
-        
-      }
-    )
-  )
-  
-  
-  
-  
-}
-
-
-
-
-#' @title Object initiation: Step 4
 #' 
 #' @description Processes the data and constructs all needed slots. Afterwards the 
 #' cypro object is set for all subsequent analysis and visualization steps. 
@@ -433,7 +315,6 @@ processData <- function(object,
   object <- set_up_vdata(object, verbose = verbose)
   
   # miscellaneous -----------------------------------------------------------
-  
   
   if(multiplePhases(object)){
     

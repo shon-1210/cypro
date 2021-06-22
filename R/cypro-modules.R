@@ -280,7 +280,9 @@ var_cell_id <-
             in_shiny = in_shiny
             )
         
-        return(var)
+        res <- list(var) %>% purrr::set_names(nm = ref)
+        
+        return(res)
         
       }
       
@@ -460,7 +462,8 @@ var_dflp <-
 
 var_dfo <- 
   list(
-    descr = "The distance a cell has travelled from first frame to current one.", 
+    descr = "The distance a cell has travelled from first frame to current one. In case of multi-phase experiment design 
+    this variable is always computed from x- and y-coordinates.", 
     requirements = req_numeric_var, 
     name_in_app = "Distance from origin",
     name_in_cypro = "dfo", 
@@ -469,7 +472,7 @@ var_dfo <-
     check_candidate = is_numeric_candidate,
     check_content = check_and_convert_numeric_var,
     compute_with = compute_var_dfo,
-    compute_with_args = NULL
+    compute_with_args = c("phase")
   )
 
 var_speed <- 
@@ -523,17 +526,30 @@ var_total_dist <-
 
 empty_analysis_module <- 
   list(
-    exp_type = character(1),
+    exp_type = character(1), 
     helper_text = character(1),
     name = character(1),
     pretty_name = character(1),
     variables = list(), 
     variables_to_summarize = list(),
     computation_order = character(0),
-    summary_order = character(0)
+    summary_order = character(0),
+    replace_na_first_frame = numeric(1)
   )
 
 # one_time_imaging
+
+module_localisation <- 
+  list(
+    exp_type = "one_time_imaging",
+    helper_text = "Uses x- and y-coordinates for cell localisation.",
+    name = "localisation",
+    pretty_name = "Localisation",
+    variables = list(
+      x_coords = var_x_coords, 
+      y_coords = var_y_coords
+    )
+  )
 
 
 # time_lapse 
@@ -623,10 +639,10 @@ module_identification_time_lapse <-
 
 cypro_modules <- 
   list(
+    localisation = module_localisation,
     migration = module_migration,
     mitosis = module_mitosis
   )
-
 
 all_module_names <- base::names(cypro_modules)
 

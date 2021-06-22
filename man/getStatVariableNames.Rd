@@ -5,20 +5,15 @@
 \alias{getTrackVariableNames}
 \title{Obtain numeric variables of cell data}
 \usage{
-getStatVariableNames(object, ..., phase = NULL)
+getStatVariableNames(object, ...)
 
-getTrackVariableNames(object, ..., phase = NULL)
+getTrackVariableNames(object, ...)
 }
 \arguments{
 \item{object}{A valid cypro object.}
 
 \item{...}{Additional selection helpers from the \code{tidyselect} package that match
 variable names according to a given pattern.}
-
-\item{phase}{Character value. The ordinal value referring to the phase of interest (e.g. \emph{'first'}, \emph{'second'} etc.).
-referring to the phase of interest. If set to NULL takes the phase denoted as default with \code{adjustDefault()}.
-
-Ignored if the experiment design contains only one phase.}
 }
 \value{
 A character vector.

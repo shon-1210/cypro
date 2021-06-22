@@ -4,7 +4,7 @@
 \alias{mutateTracksDf}
 \title{Create and modify data variables}
 \usage{
-mutateTracksDf(object, ..., group_by = NULL, phase = NULL)
+mutateTracksDf(object, ..., group_by = NULL)
 }
 \arguments{
 \item{object}{A valid cypro object.}
@@ -16,11 +16,6 @@ variables are supposed to be affected. See details for output requirements.}
 \item{group_by}{Character vector or NULL. If character, denotes the grouping variables
 according to which the cell data.frame is grouped via \code{dplyr::group_by()}
 prior to the call to \code{dplyr::mutate()}.}
-
-\item{phase}{Character value. The ordinal value referring to the phase of interest (e.g. \emph{'first'}, \emph{'second'} etc.).
-referring to the phase of interest. If set to NULL takes the phase denoted as default with \code{adjustDefault()}.
-
-Ignored if the experiment design contains only one phase.}
 }
 \value{
 An updated version of the input \code{cypro}-object.

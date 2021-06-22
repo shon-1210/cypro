@@ -27,6 +27,9 @@ getWellPlateVariableNames(object, ...)
 \item{...}{Additional selection helpers from the \code{tidyselect} package that match
 variable names according to a given pattern.}
 
+\item{named}{Logial value. If set to TRUE the grouping variables are named
+according to their grouping type (cluster, meta or well_plate).}
+
 \item{phase}{Character value. The ordinal value referring to the phase of interest (e.g. \emph{'first'}, \emph{'second'} etc.).
 referring to the phase of interest. If set to NULL takes the phase denoted as default with \code{adjustDefault()}.
 

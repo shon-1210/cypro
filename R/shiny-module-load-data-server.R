@@ -166,7 +166,7 @@ moduleLoadDataServer <- function(id, object){
               shiny::fluidRow(
                 shiny::column(
                   shiny::helpText("Assign folders to well plates and check file availability.") %>% 
-                    add_helper(content = helper_content$assign_folder),
+                    add_helper(content = helper_content$assign_folder, size = "m"),
                   width = 12, 
                 )
               ), 
@@ -245,16 +245,17 @@ moduleLoadDataServer <- function(id, object){
         
         ns <- session$ns
         
-        shinyWidgets::pickerInput(inputId = ns("ld_well_plate_errors"), 
-                                  label = "Well Plate:", 
-                                  choices = well_plates_with_errors(), 
-                                  choicesOpt = list(
-                                    subtext = stringr::str_c(
-                                      "Errors", 
-                                      well_plate_error_count(), 
-                                      sep = ": "
-                                    )
-                                  )
+        shinyWidgets::pickerInput(
+          inputId = ns("ld_well_plate_errors"), 
+          label = "Well Plate:", 
+          choices = well_plates_with_errors(), 
+          choicesOpt = list(
+            subtext = stringr::str_c(
+              "Errors", 
+              well_plate_error_count(), 
+              sep = ": "
+            )
+          )
         )
         
       })
@@ -265,9 +266,10 @@ moduleLoadDataServer <- function(id, object){
         
         shiny::req(well_plates_with_errors())
         
-        shinyWidgets::pickerInput(inputId = ns("ld_well_image_errors"), 
-                                  label = "Failed files:", 
-                                  choices = well_images_with_errors())
+        shinyWidgets::pickerInput(
+          inputId = ns("ld_well_image_errors"), 
+          label = "Failed Files:", 
+          choices = well_images_with_errors())
         
       })
       
@@ -288,7 +290,7 @@ moduleLoadDataServer <- function(id, object){
         
         shinydashboard::box(
           shiny::helpText("Check the progress you have made assigning folders to well plates.") %>%
-            add_helper(content = helper_content$well_plate_status),
+            add_helper(content = helper_content$well_plate_status, size = "m"),
           shiny::fluidRow(
             shiny::column(
               DT::dataTableOutput(outputId = ns("ld_loading_status")),
@@ -329,20 +331,22 @@ moduleLoadDataServer <- function(id, object){
         
         shinydashboard::box(
           shiny::helpText("Check for errors during the loading process.") %>%
-            add_helper(content = helper_content$load_files_and_proceed),
+            add_helper(content = helper_content$load_files_and_proceed, size = "m"),
           shiny::uiOutput(outputId = ns("ld_well_plate_errors")),
           shiny::uiOutput(outputId = ns("ld_well_image_errors")),
           shiny::textOutput(outputId = ns("ld_error_message")),
           shiny::HTML("<br>"),
-          shiny::column(width = 12, align = "center",
-                        shiny::splitLayout(
-                          cellWidths = c("50%", "50%"),
-                          shiny::actionButton(inputId = ns("ld_save_and_proceed"), label = "Save & Proceed")
-                        )
+          shiny::column(
+            width = 12,
+            align = "center",
+            shiny::splitLayout(
+              cellWidths = c("50%", "50%"),
+              shiny::actionButton(inputId = ns("ld_save_and_proceed"), label = "Save & Proceed")
+            )
           ),
           solidHeader = TRUE,
           status = status, 
-          title = "Load Files & Proceed",
+          title = "Save & Proceed",
           width = 12
         )  
         
@@ -422,9 +426,6 @@ moduleLoadDataServer <- function(id, object){
             test_overlap = TRUE
           )
         
-        assign("ai_step2", value = res_info, envir = .GlobalEnv)
-        assign("used_id_names", value = used_id_names, envir = .GlobalEnv)
-        
         if(base::length(used_id_names) >= 1){
         
           shiny_fdb(ui = "Identification variables saved.")  
@@ -457,15 +458,11 @@ moduleLoadDataServer <- function(id, object){
             object = object
           )
         
-        assign("ai_step3", value = res_info, envir = .GlobalEnv)
-        
         used_mod_names <- 
           used_variable_names_shiny(
             assembled_module_info = res_info, 
             test_overlap = TRUE
           )
-        
-        assign("used_analysis_module_names", value = used_mod_names, envir = .GlobalEnv)
         
         if(base::length(used_mod_names) >= 1){
           
@@ -505,9 +502,6 @@ moduleLoadDataServer <- function(id, object){
             assembled_module_info = res_info, 
             test_overlap = TRUE
           )
-        
-        assign("ai_step4", value = res_info, envir = .GlobalEnv)
-        assign("used_add_names", value = used_add_names, envir = .GlobalEnv)
         
         if(base::length(used_add_names) >= 1){
         
@@ -588,15 +582,6 @@ moduleLoadDataServer <- function(id, object){
         
       })
       
-      # development 
-      oe <- shiny::observeEvent(input$print_input_names, {
-        
-        print(names(input))
-        
-        assign(x = "input_list", value = shiny::reactiveValuesToList(input), envir = .GlobalEnv)
-        
-      })
-      
       # add new directory to well plate
       oe <- shiny::observeEvent(well_plate_dir_string(), {
         
@@ -658,7 +643,7 @@ moduleLoadDataServer <- function(id, object){
                       session = session)
         
         shiny::showNotification(ui = "Reading done.", type = "message")
-        assign(x = "read_in_data", value= data_list, envir = .GlobalEnv)
+        
         # update read_in_data
         read_in_data(data_list)
         

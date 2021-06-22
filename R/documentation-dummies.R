@@ -119,7 +119,7 @@ dim_red_df <- function(dim_red_df){}
 #' 
 #' Use \code{validDistanceMethods()} to obtain all valid input options.
 #' 
-#' @param method_kmeans Character vector (or value see details for more.) Denotes the algorithm of interest defaults 
+#' @param method_kmeans Character vector (or value see details for more.) Denotes the algorithms of interest. Defaults 
 #' to \emph{'Hartigan-Wong'}. 
 #' 
 #' Use \code{validKmeansMethods()} to obtain all valid input options.

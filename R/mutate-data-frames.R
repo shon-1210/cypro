@@ -72,16 +72,16 @@ mutateMetaDf <- function(object, ..., group_by = NULL, phase = NULL){
 
 #' @rdname mutateClusterDf
 #' @export
-mutateStatsDf <- function(object, ..., group_by = NULL, phase = NULL){
+mutateStatsDf <- function(object, ..., group_by = NULL){
   
   enquos_input <- rlang::enquos(...)
   
   mutate_cdata_slot(
     object = object, 
     slot = "stats", 
-    phase = phase, 
     enquos_input = enquos_input, 
-    group_by = group_by
+    group_by = group_by,
+    phase = "all"
   )
   
 }
@@ -109,35 +109,48 @@ mutateStatsDf <- function(object, ..., group_by = NULL, phase = NULL){
 #'
 #' @export
 #'
-mutateTracksDf <- function(object, ..., group_by = NULL, phase = NULL){
+mutateTracksDf <- function(object, ..., group_by = NULL){
   
   enquos_input <- rlang::enquos(...)
   
   mutate_cdata_slot(
     object = object, 
-    slot = "stats", 
-    phase = phase, 
+    slot = "tracks", 
     enquos_input = enquos_input, 
-    group_by = group_by
+    group_by = group_by,
+    phase = "all"
   )
+  
+}
 
   
 # helper ----------------------------------------------------------------
 
-mutate_cdata_slot <- function(object, phase, slot, enquos_input, group_by = NULL){
+mutate_cdata_slot <- function(object, slot, phase = NULL, enquos_input, group_by = NULL){
   
   check_object(object)
   
   assign_default(object)
   
+  # stats and tracks have to be mutated across all phases
+  if(slot %in% c("stats", "tracks")){
+    
+    phase <- "all"
+    
+  }
+  
   phase <- check_phase(object, phase = phase)
   
   if(multiplePhases(object)){
     
-    object@cdat[[slot]][phase] <- 
-      purrr::map(
-        .x = object@cdata[[slot]][phase], 
+    all_phases <- phase
+    
+    object@cdata[[slot]][all_phases] <- 
+      purrr::map2(
+        .x = object@cdata[[slot]][all_phases],
+        .y = all_phases, 
         .f = mutate_cell_df, 
+        object = object,
         slot = slot,
         enquos_input = enquos_input, 
         group_by = group_by
@@ -150,7 +163,6 @@ mutate_cdata_slot <- function(object, phase, slot, enquos_input, group_by = NULL
     mdf <-
       mutate_cell_df(
         df = df,
-        phase = phase,
         object = object,
         slot = slot,
         enquos_input = enquos_input, 
@@ -172,7 +184,11 @@ mutate_cell_df <- function(df, phase = NULL, object, slot, enquos_input, group_b
   
   join_slots <- cdata_slots[!cdata_slots %in% c(slot, "tracks")]
 
-  join_df <- getStatsDf(object, phase = phase) %>% dplyr::select(cell_id)
+  join_df <- 
+    getStatsDf(object, phase = phase, drop_na = FALSE) %>%
+    dplyr::select(cell_id)
+  
+  phase <- check_phase(object, phase = phase, max_phases = 1)
   
   for(join_slot in join_slots){
     
@@ -182,9 +198,12 @@ mutate_cell_df <- function(df, phase = NULL, object, slot, enquos_input, group_b
         y = getCellDf(object, slot = join_slot, phase = phase),
         by = "cell_id")
     
+    
   }
     
-  joined_vars <- base::colnames(join_df) %>% confuns::vselect(-cell_id)
+  joined_vars <-
+    base::colnames(join_df) %>%
+    confuns::vselect(-cell_id)
     
   if(slot == "meta"){
     
@@ -202,27 +221,37 @@ mutate_cell_df <- function(df, phase = NULL, object, slot, enquos_input, group_b
     
     core_vars <- c("cell_id")
     
-    var_names <- getStatVariableNames(object, phase = phase)
+    var_names <- getStatVariableNames(object)
     
   } else if(slot == "tracks"){
     
     core_vars <- c("cell_id")
     
-    var_names <- getTrackVariableNames(object, phase = phase)
+    var_names <- getTrackVariableNames(object)
     
-    # module vars 
-    if(isUsable(object, module = "migration")){
-      
-      core_vars <- c(core_vars, "x_coords", "y_coords")
-      
-    }
+  }
+  
+  # module vars 
+  used_modules <- get_used_module_names(object)
+  
+  for(i in base::seq_along(used_modules)){
+  
+    used_module <- used_modules[i]
+    
+    module_info <- cypro_modules[[used_module]]
+    
+    needed_vars <- 
+      module_info$variables %>% 
+      purrr::keep(.p = ~ .x$relevance == "needed") %>% 
+      base::names()
+    
+    core_vars <- c(core_vars, needed_vars)
     
   }
   
   # extraction part
   cell_df <- 
-    getCellDf(object, slot = slot, phase = phase) %>% 
-    dplyr::left_join(x = ., y = join_df, by = "cell_id")
+    dplyr::left_join(x = df, y = join_df, by = "cell_id")
   
   original_vars <- base::colnames(cell_df)
   
@@ -235,7 +264,8 @@ mutate_cell_df <- function(df, phase = NULL, object, slot, enquos_input, group_b
       against = base::colnames(cell_df)
     )
     
-    cell_df <- dplyr::group_by(cell_df, dplyr::across(.cols = dplyr::all_of(group_by)))
+    cell_df <-
+      dplyr::group_by(cell_df, dplyr::across(.cols = dplyr::all_of(group_by)))
     
     confuns::give_feedback(
       msg = glue::glue("Grouped data.frame by '{confuns::scollapse(group_by}'."),
@@ -244,8 +274,17 @@ mutate_cell_df <- function(df, phase = NULL, object, slot, enquos_input, group_b
     
   }
   
+  
+  
   # mutation part
-  confuns::give_feedback(msg = glue::glue("Mutating {slot}-data.frame."), verbose = verbose)
+  
+  msg <- 
+    glue::glue(
+      "Mutating {slot}-data.frame{ref_phase}.",
+      ref_phase = hlpr_glue_phase(object, phase, FALSE, "of")
+      )
+  
+  confuns::give_feedback(msg = msg, verbose = verbose)
   
   mutated_df <-
     dplyr::mutate(cell_df, !!!enquos_input, .keep = "all", .before = NULL, .after = NULL) %>% 
@@ -286,7 +325,7 @@ mutate_cell_df <- function(df, phase = NULL, object, slot, enquos_input, group_b
     
     msg <- 
       glue::glue(
-        "While mutating a cell data.frame of slot {slot} variables",
+        "While mutating a cell data.frame of slot {slot} the variables",
         "'{confuns::scollapse(core_vars)}' must not change."
         )
     
@@ -349,8 +388,6 @@ mutate_cell_df <- function(df, phase = NULL, object, slot, enquos_input, group_b
 
 
 
-# not exported ------------------------------------------------------------
 
 
-}
 

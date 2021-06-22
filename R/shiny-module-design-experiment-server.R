@@ -138,7 +138,11 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
                 placeholder = "well plate name")), 
             shiny::column(
               width = 2,
-              shiny::h5(shiny::strong("Covered Areas per Well:")), 
+              shiny::h5(shiny::strong("Images per Well:")) %>% 
+                add_helper(
+                  content = helper_content$images_per_well,
+                  title = "In how many fields of view has each well been divided?"
+                  ), 
               shiny::numericInput(
                 inputId = ns("ed_images_per_well"),
                 min = 0, value = 0, step = 1,
@@ -190,7 +194,7 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
               shiny::h5(shiny::strong("Step 3:")),
               shiny::actionButton(
                 inputId = ns("ed_add_well_plate"), 
-                label = "Add Well Plate",
+                label = "Save Well Plate",
                 width = "100%")
             ),
             shiny::column(
@@ -338,23 +342,33 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
               inputId = ns("ed_meas_num"),
               label = "Total Number of Images:",
               min = 0, step = 1, value = 0
+              ) %>% 
+              add_helper(
+                content = helper_content$total_number_of_images
               )
           )
         ),
         shiny::fluidRow(
           hs(6,
-             shiny::h5(shiny::strong("Interval:")), 
+             shiny::h5(shiny::strong("Interval:")) %>%
+               add_helper(
+                 content = helper_content$interval
+               ), 
              shiny::numericInput(
                inputId = ns("ed_meas_interval"), 
                label = NULL, 
-               min = 1, step = 0.5, value = 1)), 
+               min = 1, step = 0.5, value = 1)
+             ) , 
           hs(6,
-             shiny::h5(shiny::strong("Interval Unit:")),
+             shiny::h5(shiny::strong("Interval Unit:")) %>% 
+               add_helper(
+                 content = helper_content$interval_unit
+               ),
              shiny::selectInput(
                inputId = ns("ed_interval_unit"), 
                label = NULL, 
                choices = interval_options, 
-               selected = "hours"))
+               selected = "hours") )
         ),
         shiny::actionButton(
           inputId = ns("ed_imaging_set_up_save"), 
@@ -388,10 +402,15 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
       )
     )
     
-    shiny::numericInput(inputId = ns("ed_phases_number"), 
-                        label = "Number of Phases:",
-                        value = 1, min = 1, max = 10, step = 1
-    )
+    shiny::numericInput(
+      inputId = ns("ed_phases_number"), 
+      label = "Number of Phases:",
+      value = 1, min = 1, max = 10, step = 1
+    ) %>% 
+      add_helper(
+        content = helper_content$number_of_phases, 
+        title = "How many phases does the experiment design contain?"
+      )
     
   })
   
@@ -539,7 +558,7 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
     )
     
     checkpoint(
-      evaluate = input$ed_software %in% c("cell_tracker", "cell_profiler"), 
+      evaluate = input$ed_software %in% image_processing_softwares, 
       case_false = "no_software_input"
     )
     
@@ -549,7 +568,7 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
     
     ed_list$set_up$experiment_type <- input$ed_exp_type
     
-    # unlick subsequent steps
+    # unlock subsequent steps
     module_progress_overall_information(TRUE)
     
     if(ed_list$set_up$experiment_type == "time_lapse"){
@@ -642,8 +661,7 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
           
         } else {
           
-          res <- 
-            input[[stringr::str_c("ed_phases_start", p, sep = "_")]]
+          res <- input[[stringr::str_c("ed_phases_start", p, sep = "_")]]
           
         }
         
@@ -699,7 +717,7 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
         ui = shiny::modalDialog(
           shiny::helpText(
             glue::glue(
-              "You have not added the current well plate. ",
+              "You have not saved progress of the current well plate design. ",
               "Setting up a new well plate will result in all modifications of ",
               "the current well plate design beeing lost. "
               )
@@ -1002,7 +1020,7 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
         ui = shiny::modalDialog(
           shiny::helpText(
             glue::glue(
-              "You have not saved the current well plate yet. ",
+              "You have not saved progress of the current well plate design. ",
               "Editing a well plate will result in all modifications of ",
               "the current well plate design beeing lost. "
             )
@@ -1010,7 +1028,7 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
           footer = shiny::tagList(
             act_button(
               inputId = ns("ed_overwrite_well_plate2_confirmed"),
-              label = "New Well Plate"
+              label = "Edit Well Plate"
               ),
             act_button(
               inputId = ns("ed_overwrite_well_plate2_cancelled"),
@@ -1127,19 +1145,21 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
   
   if(sysname == "Windows"){
     
-    shinyFiles::shinyDirChoose(input = input, 
-                               id = "ed_experiment_dir", 
-                               session = session, 
-                               roots = dir_roots()
+    shinyFiles::shinyDirChoose(
+      input = input, 
+      id = "ed_experiment_dir", 
+      session = session, 
+      roots = dir_roots()
     )
     
   } else {
     
-    shinyFiles::shinyDirChoose(input = input, 
-                               id = "ed_experiment_dir", 
-                               session = session, 
-                               roots = dir_roots, 
-                               restrictions = base::system.file(package = "base")
+    shinyFiles::shinyDirChoose(
+      input = input, 
+      id = "ed_experiment_dir", 
+      session = session, 
+      roots = dir_roots, 
+      restrictions = base::system.file(package = "base")
     )
     
   }

@@ -15,9 +15,10 @@ hlpr_add_data_to_cluster_object <- function(object, cluster_object, with_data, p
     variables <- cluster_object@variables
     
     data_mtr <-
-      getStatsOrTracksDf(object = object, phase = phase) %>% 
+      getStatsDf(object = object, phase = phase) %>% 
       dplyr::select(cell_id, dplyr::all_of(x = variables)) %>% 
       tibble::column_to_rownames(var = "cell_id") %>% 
+      tidyr::drop_na() %>% 
       base::as.matrix()
     
     if(base::isTRUE(cluster_object@scale)){
@@ -31,6 +32,28 @@ hlpr_add_data_to_cluster_object <- function(object, cluster_object, with_data, p
   }
   
   base::return(cluster_object)
+  
+}
+
+#' Complete argument list in compute_module_variables
+#'
+hlpr_add_variable_specific_args <- function(variable_info, args){
+  
+  ce <- rlang::caller_env()
+  
+  arg_names <- variable_info$compute_with_args
+  
+  for(i in base::seq_along(arg_names)){
+    
+    arg_name <- arg_names[i]
+    
+    args[[arg_name]] <- 
+      base::parse(text = arg_name) %>% 
+      base::eval(envir = ce)
+    
+  }
+  
+  return(args)
   
 }
 
