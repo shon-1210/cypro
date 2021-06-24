@@ -40,7 +40,8 @@
 
 
 <meta property="og:title" content="Get cell ids — getCellIds" />
-<meta property="og:description" content="Allows to filter cell ids according to a variety of aspects." />
+<meta property="og:description" content="Using the ... options the stats data can be
+subsetted in the style of dplyr::filter()." />
 
 
 
@@ -81,7 +82,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">cypro</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.2.0</span>
       </span>
     </div>
 
@@ -106,9 +107,26 @@
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
-    <li class="dropdown-header">The cypro object</li>
+    <li class="dropdown-header">Getting started</li>
     <li>
-      <a href="../articles/getting-started.html">Experiment design and data loading</a>
+      <a href="../articles/design-experiment.html">1. Experiment design</a>
+    </li>
+    <li>
+      <a href="../articles/load-data.html">2. Data loading</a>
+    </li>
+    <li>
+      <a href="../articles/process-data.html">3. Data processing</a>
+    </li>
+    <li class="dropdown-header">Quality checks</li>
+    <li>
+      <a href="../articles/batch-effect-detection.html">Batch effect detection</a>
+    </li>
+    <li>
+      <a href="../articles/outlier-detection.html">Outlier detection</a>
+    </li>
+    <li class="dropdown-header">Around the cypro object</li>
+    <li>
+      <a href="../articles/default-setting.html">Default setting</a>
     </li>
     <li>
       <a href="../articles/subsetting.html">Create data subsets</a>
@@ -117,12 +135,15 @@
       <a href="../articles/extract-data.html">Extract data and information</a>
     </li>
     <li>
+      <a href="../articles/adding.html">Add content</a>
+    </li>
+    <li>
       <a href="../articles/renaming.html">Rename content</a>
     </li>
     <li>
       <a href="../articles/variable-sets.html">Variable sets</a>
     </li>
-    <li class="dropdown-header">Analysis &amp; Profiling</li>
+    <li class="dropdown-header">Cell Profiling</li>
     <li>
       <a href="../articles/dim-red.html">Dimensionality reduction</a>
     </li>
@@ -132,12 +153,19 @@
     <li>
       <a href="../articles/clustering.html">Clustering</a>
     </li>
-    <li>
-      <a href="../articles/plotting-stats.html">Statistical tests and plots</a>
-    </li>
-    <li class="dropdown-header">Modules</li>
+    <li class="dropdown-header">Analysis Modules</li>
     <li>
       <a href="../articles/module-migration.html">Migration</a>
+    </li>
+    <li>
+      <a href="../articles/module-mitosis.html">Mitosis &amp; Cell lineages</a>
+    </li>
+    <li class="dropdown-header">Visualization</li>
+    <li>
+      <a href="../articles/plotting-well-plates.html">Well plates</a>
+    </li>
+    <li>
+      <a href="../articles/plotting-stats.html">Statistical tests and plots</a>
     </li>
   </ul>
 </li>
@@ -168,10 +196,11 @@
     </div>
 
     <div class="ref-description">
-    <p>Allows to filter cell ids according to a variety of aspects.</p>
+    <p>Using the ... options the stats data can be
+subsetted in the style of <code><a href='https://dplyr.tidyverse.org/reference/filter.html'>dplyr::filter()</a></code>.</p>
     </div>
 
-    <div class="ref-usage sourceCode"><pre class='sourceCode r'><code><span class='fu'>getCellIds</span><span class='op'>(</span><span class='va'>object</span>, <span class='va'>...</span>, na_max <span class='op'>=</span> <span class='cn'>Inf</span>, phase <span class='op'>=</span> <span class='cn'>NULL</span><span class='op'>)</span></code></pre></div>
+    <div class="ref-usage sourceCode"><pre class='sourceCode r'><code><span class='fu'>getCellIds</span><span class='op'>(</span><span class='va'>object</span>, <span class='va'>...</span>, phase <span class='op'>=</span> <span class='cn'>NULL</span><span class='op'>)</span></code></pre></div>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -181,10 +210,11 @@
       <td><p>A valid cypro object.</p></td>
     </tr>
     <tr>
-      <th>na_max</th>
-      <td><p>Numeric value. Sets the threshold of the maximum number of missing values
-a cell can have across all variables. Ignored if set to NULL or if the experiment
-is not of type <em>timelapse</em>.</p></td>
+      <th>...</th>
+      <td><p>&lt;<code><a href='https://dplyr.tidyverse.org/reference/dplyr_data_masking.html'>data-masking</a></code>&gt; Expressions that return a
+logical value, and are defined in terms of the variables in <code>.data</code>.
+If multiple expressions are included, they are combined with the <code>&amp;</code> operator.
+Only rows for which all conditions evaluate to <code>TRUE</code> are kept.</p></td>
     </tr>
     <tr>
       <th>phase</th>

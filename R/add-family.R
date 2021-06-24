@@ -207,8 +207,9 @@ addStatVariables <- function(object,
                              input_df,
                              variable_names,
                              phase = NULL,
-                             overwrite = FALSE,
                              verbose = TRUE){
+  
+  overwrite = FALSE
   
   check_object(object)
   assign_default(object)
@@ -244,7 +245,7 @@ addStatVariables <- function(object,
   
   if(base::length(overlap) >= 1){
     
-    if(base::isTRUE(overwrite)){
+    if(FALSE){ # currently not allowed
       
       confuns::give_feedback(msg = "Discarding overlapping variables.", verbose = verbose)
       
@@ -256,8 +257,7 @@ addStatVariables <- function(object,
         glue::glue(
           "Data variables of 'input_df' and stat data.frame overlap:", 
           " '{confuns::scollapse(overlap)}' ", 
-          "Set argument 'overwrite' to TRUE in order to allow overwriting.",
-          ref_vars = confuns::adapt_reference(overlap, "variable", "variables")
+          "This is not allowed."
         )
       
       confuns::give_feedback(

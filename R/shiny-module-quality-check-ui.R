@@ -7,11 +7,11 @@ moduleQualityCheckUI <- function(id){
   
   shiny::tagList(
     shiny::fluidRow(
-      blue_box(title = "Quality Check", width = 12, 
+      blue_box(title = "Subset By Quality", width = 12, 
                shiny::fluidRow(
                  shiny::column(width = 6,
                                shiny::wellPanel(
-                                 shiny::h4(shiny::strong("Total number of measurements")) %>% 
+                                 shiny::h4(shiny::strong("Total number of frames")) %>% 
                                    shinyhelper::helper(content = c("The number of measurements each cell undergoes can vary due to a variety of reasons (e.g. 'Cell Tracker' could not
                                                       identify it as a cell in an image, the cell temporarily moved out of the cameras range, the cell emerges from mitosis during the experiment,
                                                       etc.). In order not to include cells that were covered poorly this plot provides information about how many cells feature a certain number of 
@@ -24,7 +24,7 @@ moduleQualityCheckUI <- function(id){
                                )),
                  shiny::column(width = 6,
                                shiny::wellPanel(
-                                 shiny::h4(shiny::strong("Total number of skipped measurements")) %>% 
+                                 shiny::h4(shiny::strong("Total number of skipped frames")) %>% 
                                    shinyhelper::helper(content = c("Cells might skip measurements due to a variety of reasons. In order not to include cells that skipped too many measurements this plot provides
                                                          information about how many cells skipped a certain number of measurements."),
                                                        type = "inline", title = "What does this plot dislay?",
@@ -38,7 +38,7 @@ moduleQualityCheckUI <- function(id){
                shiny::fluidRow(
                  shiny::column(width = 6,
                                shiny::wellPanel(
-                                 shiny::h4(shiny::strong("First measurement")) %>% 
+                                 shiny::h4(shiny::strong("First frame")) %>% 
                                    shinyhelper::helper(content = c("This plot displays how many cells started to be covered at different measurements."),
                                                        type = "inline", title = "What does this plot dislay?",
                                                        buttonLabel = "Got it!", size = "s"),
@@ -48,7 +48,7 @@ moduleQualityCheckUI <- function(id){
                                )),
                  shiny::column(width = 6,
                                shiny::wellPanel(
-                                 shiny::h4(shiny::strong("Last measurement")) %>% 
+                                 shiny::h4(shiny::strong("Last frame")) %>% 
                                    shinyhelper::helper(content = c("This plot displays how many cells stopped to be covered at different measurements."),
                                                        type = "inline", title = "What does this plot dislay?",
                                                        buttonLabel = "Got it!", size = "s"),

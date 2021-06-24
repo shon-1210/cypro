@@ -9,9 +9,10 @@ plotCellCount(object, across, color_by = across, phase = NULL)
 \arguments{
 \item{object}{A valid cypro object.}
 
-\item{across}{Character value or NULL. Specifies the grouping variable of interest.
+\item{across}{Character value, character vector or NULL (see details for more).
+Specifies the grouping variable of interest.
 
-Use \code{getGroupingOptions()} to obtain all variable names that group the
+Use \code{getGroupingVariableNames()} to obtain all variable names that group the
 cells of your experiment in a certain manner.}
 
 \item{color_by}{Character value. Denotes the discrete variable with

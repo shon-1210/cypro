@@ -340,7 +340,7 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
             width = 6, 
             shiny::numericInput(
               inputId = ns("ed_meas_num"),
-              label = "Total Number of Images:",
+              label = "Total Number of Frames:",
               min = 0, step = 1, value = 0
               ) %>% 
               add_helper(

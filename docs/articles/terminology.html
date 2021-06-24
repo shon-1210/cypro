@@ -5,13 +5,13 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Terminology • cypro</title>
+<title>Terminology, Hints and Clarifications • cypro</title>
 <!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/flatly/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
-<script src="../pkgdown.js"></script><meta property="og:title" content="Terminology">
+<script src="../pkgdown.js"></script><meta property="og:title" content="Terminology, Hints and Clarifications">
 <meta property="og:description" content="cypro">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">cypro</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.2.0</span>
       </span>
     </div>
 
@@ -58,9 +58,26 @@
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
-<li class="dropdown-header">The cypro object</li>
+<li class="dropdown-header">Getting started</li>
     <li>
-      <a href="../articles/getting-started.html">Experiment design and data loading</a>
+      <a href="../articles/design-experiment.html">1. Experiment design</a>
+    </li>
+    <li>
+      <a href="../articles/load-data.html">2. Data loading</a>
+    </li>
+    <li>
+      <a href="../articles/process-data.html">3. Data processing</a>
+    </li>
+    <li class="dropdown-header">Quality checks</li>
+    <li>
+      <a href="../articles/batch-effect-detection.html">Batch effect detection</a>
+    </li>
+    <li>
+      <a href="../articles/outlier-detection.html">Outlier detection</a>
+    </li>
+    <li class="dropdown-header">Around the cypro object</li>
+    <li>
+      <a href="../articles/default-setting.html">Default setting</a>
     </li>
     <li>
       <a href="../articles/subsetting.html">Create data subsets</a>
@@ -69,12 +86,15 @@
       <a href="../articles/extract-data.html">Extract data and information</a>
     </li>
     <li>
+      <a href="../articles/adding.html">Add content</a>
+    </li>
+    <li>
       <a href="../articles/renaming.html">Rename content</a>
     </li>
     <li>
       <a href="../articles/variable-sets.html">Variable sets</a>
     </li>
-    <li class="dropdown-header">Analysis &amp; Profiling</li>
+    <li class="dropdown-header">Cell Profiling</li>
     <li>
       <a href="../articles/dim-red.html">Dimensionality reduction</a>
     </li>
@@ -84,12 +104,19 @@
     <li>
       <a href="../articles/clustering.html">Clustering</a>
     </li>
-    <li>
-      <a href="../articles/plotting-stats.html">Statistical tests and plots</a>
-    </li>
-    <li class="dropdown-header">Modules</li>
+    <li class="dropdown-header">Analysis Modules</li>
     <li>
       <a href="../articles/module-migration.html">Migration</a>
+    </li>
+    <li>
+      <a href="../articles/module-mitosis.html">Mitosis &amp; Cell lineages</a>
+    </li>
+    <li class="dropdown-header">Visualization</li>
+    <li>
+      <a href="../articles/plotting-well-plates.html">Well plates</a>
+    </li>
+    <li>
+      <a href="../articles/plotting-stats.html">Statistical tests and plots</a>
     </li>
   </ul>
 </li>
@@ -114,7 +141,7 @@
       </header><script src="terminology_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
-      <h1 data-toc-skip>Terminology</h1>
+      <h1 data-toc-skip>Terminology, Hints and Clarifications</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/theMILOlab/cypro/blob/master/vignettes/terminology.Rmd" class="external-link"><code>vignettes/terminology.Rmd</code></a></small>
@@ -124,9 +151,69 @@
 
     
     
-<div id="coming-soon-" class="section level2">
+<p>This article elaborates on the vocabulary that is used throughout <code>cypro</code>. You might be familiar with a lot of words but to make sure that everything comes to you as intuitive as possible we list recurring terms and function-/argument names.</p>
+<div id="imaging-process" class="section level2">
 <h2 class="hasAnchor">
-<a href="#coming-soon-" class="anchor" aria-hidden="true"></a>Coming soon.</h2>
+<a href="#imaging-process" class="anchor" aria-hidden="true"></a>1. Imaging process</h2>
+<p>In time lapse experiments cells are tracked over a defined span of time. A camera repeatedly takes pictures of certain fields of view in all wells of the well plate being imaged. Every image taken at a given time point is referred to as a <em>frame</em>. Most automated microscopy devices allow to define one or more fields of view within one well and after the imaging process is done allow to download all images of that particular field of view as a stack of several frames. This imagestack is often identified with a naming pattern that looks like this A1_1, A1_2, A2_1, A2_2 etc. Well - underscore - field of view index. We refer to this naming pattern as <em>well image</em> which simply is more concise than <em>well_field_of_view_index</em>.</p>
+</div>
+<div id="variables" class="section level2">
+<h2 class="hasAnchor">
+<a href="#variables" class="anchor" aria-hidden="true"></a>2. Variables</h2>
+<p>As mentioned during the <a href="about.html">introduction</a> <code>cypro</code> makes heavy use of the <a href="https://www.tidyverse.org/" class="external-link">tidyverse</a>. In accordance to the vocabulary of this set of R-packages we refer to the columns of data.frames as <strong>data variables</strong> or simply <strong>variables</strong>. Whenever you read <em>variables</em> somewhere in <code>cypro</code> <em>column</em> would be a valid synonym. The same interchangeability applies to the terms <strong>observation</strong> and <strong>rows</strong>.</p>
+<div id="data-variables" class="section level3">
+<h3 class="hasAnchor">
+<a href="#data-variables" class="anchor" aria-hidden="true"></a>2.1 Data variables</h3>
+<p>In <code>cypro</code> data of cells is split in five types (click <a href="extract-data.html">here</a> for more). You will often read the term variables prefixed with the kind of data it belongs to in <code>cypro</code>. For instance, track variables refer to the columns of the track data.frame, well plate variables refer to the columns of the well plate data.frame etc.</p>
+</div>
+<div id="identifier-variables" class="section level3">
+<h3 class="hasAnchor">
+<a href="#identifier-variables" class="anchor" aria-hidden="true"></a>2.2 Identifier variables</h3>
+<p>Every observation represents something. In timelapse cell tracking this is a cell at a given point of time As mentioned during the introduction two variables are needed to identify each observation. First, a frame variable indicating the frame or the point of time during the observation was made. In <code>cypro</code> this variable is called <em>frame_num</em>. Second, a cell ID variable denoting the cell this observation is about. In <code>cypro</code> this variable is called <em>cell_id</em>.</p>
+</div>
+</div>
+<div id="time-lapse-vs--one-time-imaging" class="section level2">
+<h2 class="hasAnchor">
+<a href="#time-lapse-vs--one-time-imaging" class="anchor" aria-hidden="true"></a>3. Time lapse vs. One time imaging</h2>
+<p>The <code>cypro</code> package has been developed for analysis of time lapse cell tracking data. This is why the slot <code>@cdata</code> of the cypro object contains a subslot <code>$tracks</code> for a data.frame whose observation represent cells at a given point of time and a subslot <code>$stats</code> for a data.frame whose observations represent summaries by cell. The built in cluster- and correlation pipelines of <code>cypro</code> refer to the <code>$stat</code> slot while time dependent functions such as <code><a href="../reference/plotAllTracks.html">plotAllTracks()</a></code> of the <a href="module-migration.html">migration module</a> refer to the <code>$track</code> slot.</p>
+<p>The distinction between stat data.frame and track data.frame becomes obsolete in case of one time imaging experiments as summarizing the data of one cell of one frame by cell ID results in exactly the same data. Therefore the slot <code>$stat</code> of cypro objects deriving from one time imaging experiments is going to be empty. This might sound obvious. However, many function descriptions refer to variables as either stat variables or track variables. Just keep in mind that in case of one time imaging experiments stat- and track variables can be thought of as interchangeable. Clustering and correlation, for instance, will use the track data because every observation can be identified by only the cell ID as the frame number is always 1.</p>
+</div>
+<div id="multiple-phases" class="section level2">
+<h2 class="hasAnchor">
+<a href="#multiple-phases" class="anchor" aria-hidden="true"></a>4. Multiple phases</h2>
+<p>Most time lapse experiments are set up in way that different wells feature different conditions with the goal the characterize the features of cells under different conditions. Some experiment designs include changing conditions over time. This is if, for instance, if all wells start with no condition at all (Control). Then after some time wells are treated with different compounds while the imaging process continues. After another period of time the wells again are treated with certain compounds. This experiment design contains multiple phases. Only one cypro object is needed to contain the data but each phase is handled separately. If your experiment design includes several phases you have to make use of the argument <code>phase</code> whenever you use a function.</p>
+<p>This cypro object has been initiated during the tutorials on how to <a href="design-experiment.html">design an experiment</a>, <a href="load-data.html">load data</a> and <a href="process-data.html">process data</a>. The design includes two phases as the treatment started after the seventeenth frame.</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="../reference/printSummary.html">printSummary</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span></code></pre></div>
+<pre><code>## An object of class 'cypro'.
+## 
+## Name: TMZ + LY34
+## Type: Time Lapse
+## Number of Cells: 8407
+## Conditions:
+##  First phase: 'Ctrl'
+##  Second phase: 'Ctrl', 'LY(1uM)', 'TMZ(100uM)' and 'TMZ(100uM)+LY(1uM)'
+## Cell Lines: '168', '233' and 'GSC'
+## Well Plates: 'green'
+## No variables sets have been defined yet.</code></pre>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="../reference/plotBoxplot.html">plotBoxplot</a></span><span class="op">(</span><span class="va">object</span>, variables <span class="op">=</span> <span class="st">"mean_speed"</span>, across <span class="op">=</span> <span class="st">"condition"</span>, phase <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>
+
+<span class="fu"><a href="../reference/plotBoxplot.html">plotBoxplot</a></span><span class="op">(</span><span class="va">object</span>, variables <span class="op">=</span> <span class="st">"mean_speed"</span>, across <span class="op">=</span> <span class="st">"condition"</span>, phase <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></code></pre></div>
+<p><img src="terminology_files/figure-html/phase-example-1.png" width="50%"><img src="terminology_files/figure-html/phase-example-2.png" width="50%"></p>
+<p>Instead of specifying the phase of interest every time you use a function you can set the phase that is currently of interest as the default by using <code><a href="../reference/adjustDefaultInstructions.html">adjustDefaultInstructions()</a></code>. As mentioned later cypro objects carry the default input of recurring arguments. Therefore, if you are currently analyzing cells during the second phase you can set the default accordingly instead of denoting it every time.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">object</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/adjustDefaultInstructions.html">adjustDefaultInstructions</a></span><span class="op">(</span><span class="va">object</span>, phase <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>
+
+<span class="co"># argument phase does not need to be specified</span>
+<span class="fu"><a href="../reference/plotBoxplot.html">plotBoxplot</a></span><span class="op">(</span><span class="va">object</span>, variables <span class="op">=</span> <span class="st">"mean_speed"</span>, across <span class="op">=</span> <span class="st">"condition"</span><span class="op">)</span>
+
+<span class="va">object</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/adjustDefaultInstructions.html">adjustDefaultInstructions</a></span><span class="op">(</span><span class="va">object</span>, phase <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>
+
+<span class="co"># argument phase does not need to be specified</span>
+<span class="fu"><a href="../reference/plotBoxplot.html">plotBoxplot</a></span><span class="op">(</span><span class="va">object</span>, variables <span class="op">=</span> <span class="st">"mean_speed"</span>, across <span class="op">=</span> <span class="st">"condition"</span><span class="op">)</span></code></pre></div>
+<p><img src="terminology_files/figure-html/phase%20example%202-1.png" width="50%"><img src="terminology_files/figure-html/phase%20example%202-2.png" width="50%"> What has been denoted as the default is only used if the argument of the function is not specified. If you set the default to <code>phase = 2</code> you can still plot data of the another phase without using <code><a href="../reference/adjustDefaultInstructions.html">adjustDefaultInstructions()</a></code> by simply specifying argument <code>phase</code> of the used function.</p>
+<p>If your experiment design does not contain several phases the <code>phase</code>-argument is ignored.</p>
 </div>
   </div>
 

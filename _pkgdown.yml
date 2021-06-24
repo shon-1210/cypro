@@ -23,38 +23,56 @@ navbar:
       articles:
        text: Articles
        menu: 
-       - text: The cypro object
-       - text: Experiment design and data loading
-         href: articles/getting-started.html
+       - text: Getting started
+       - text: 1. Experiment design 
+         href: articles/design-experiment.html
+       - text: 2. Data loading 
+         href: articles/load-data.html
+       - text: 3. Data processing
+         href: articles/process-data.html
+       - text: Quality checks
+       - text: Batch effect detection
+         href: articles/batch-effect-detection.html
+       - text: Outlier detection 
+         href: articles/outlier-detection.html
+       - text: Around the cypro object
+       - text: Default setting 
+         href: articles/default-setting.html
        - text: Create data subsets
          href: articles/subsetting.html
        - text: Extract data and information
          href: articles/extract-data.html
+       - text: Add content 
+         href: articles/adding.html
        - text: Rename content
          href: articles/renaming.html
        - text: Variable sets 
          href: articles/variable-sets.html
-       - text: Analysis & Profiling
+       - text: Cell Profiling
        - text: Dimensionality reduction
          href: articles/dim-red.html
        - text: Correlation
          href: articles/correlation.html
        - text: Clustering
          href: articles/clustering.html
-       - text: Statistical tests and plots
-         href: articles/plotting-stats.html
-       - text: Modules
+       - text: Analysis Modules
        - text: Migration
          href: articles/module-migration.html
+       - text: Mitosis & Cell lineages
+         href: articles/module-mitosis.html
+       - text: Visualization
+       - text: Well plates 
+         href: articles/plotting-well-plates.html
+       - text: Statistical tests and plots
+         href: articles/plotting-stats.html
 
 reference:
 
  - title: Object Initiation
-   desc: Four functions are needed to set up a fully functional cypro object.
+   desc: Three functions are needed to set up a fully functional cypro object.
  - contents:
    - designExperiment
    - loadData
-   - checkDataQuality
    - processData
    
  - title: Object Summary and Information 
@@ -72,7 +90,7 @@ reference:
    desc: Create cypro object from data subsets for more in depth analysis.
  - contents:
    - starts_with("subsetBy")
-
+   
 
  - title: Object Manipulation
    desc: cypro invites you to extract your analysis and to add the results of your
@@ -155,6 +173,10 @@ reference:
  - contents: 
    - detectOutliers
    - removeOutliers
+ - subtitle: Batch effect detection
+ - contents:
+   - detectBatchEffects
+   - plotBatchHeatmap
 
  - title: Analysis and Profiling 
    desc: Leverage convenient implementations of several machine learning algorithms 
@@ -226,5 +248,6 @@ reference:
  - contents: 
    - starts_with("valid")
    - -starts_with("valid_")
+   - -starts_with("validate_")
            
 

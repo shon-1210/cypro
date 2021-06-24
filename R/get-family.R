@@ -181,7 +181,7 @@ getCorrConv <- function(object, variable_set, phase = NULL){
       by = c("key" = "cell_id"))
   
   corr_object@data <- 
-    getStatsOrTracksDf(object = object, phase = phase) %>% 
+    getStatsDf(object = object, phase = phase) %>% 
     tibble::column_to_rownames(var = "cell_id") %>% 
     dplyr::select(dplyr::all_of(corr_object@variables_num)) %>% 
     base::as.matrix()
@@ -378,7 +378,7 @@ getCellIds <- function(object, ..., phase = NULL){
   phase <- check_phase(object, phase = phase, max_phases = 1)
   
   cell_ids <- 
-    getStatsOrTracksDf(object = object, phase = phase) %>% 
+    getStatsDf(object = object, phase = phase) %>% 
     dplyr::filter(!!!filtering) %>% 
     dplyr::pull(cell_id) %>% 
     base::unique()

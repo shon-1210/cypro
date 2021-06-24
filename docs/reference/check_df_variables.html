@@ -42,7 +42,7 @@
 <meta property="og:title" content="Detect missing variables — check_df_variables" />
 <meta property="og:description" content="Returns variable if it was not detected in the column names
 of the specified data.frame. To be used in purrr::map() with argument .x
-set to original_ct_variables" />
+set to a vector of all used variable names." />
 
 
 
@@ -83,7 +83,7 @@ set to original_ct_variables" />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">cypro</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.2.0</span>
       </span>
     </div>
 
@@ -108,9 +108,26 @@ set to original_ct_variables" />
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
-    <li class="dropdown-header">The cypro object</li>
+    <li class="dropdown-header">Getting started</li>
     <li>
-      <a href="../articles/getting-started.html">Experiment design and data loading</a>
+      <a href="../articles/design-experiment.html">1. Experiment design</a>
+    </li>
+    <li>
+      <a href="../articles/load-data.html">2. Data loading</a>
+    </li>
+    <li>
+      <a href="../articles/process-data.html">3. Data processing</a>
+    </li>
+    <li class="dropdown-header">Quality checks</li>
+    <li>
+      <a href="../articles/batch-effect-detection.html">Batch effect detection</a>
+    </li>
+    <li>
+      <a href="../articles/outlier-detection.html">Outlier detection</a>
+    </li>
+    <li class="dropdown-header">Around the cypro object</li>
+    <li>
+      <a href="../articles/default-setting.html">Default setting</a>
     </li>
     <li>
       <a href="../articles/subsetting.html">Create data subsets</a>
@@ -119,12 +136,15 @@ set to original_ct_variables" />
       <a href="../articles/extract-data.html">Extract data and information</a>
     </li>
     <li>
+      <a href="../articles/adding.html">Add content</a>
+    </li>
+    <li>
       <a href="../articles/renaming.html">Rename content</a>
     </li>
     <li>
       <a href="../articles/variable-sets.html">Variable sets</a>
     </li>
-    <li class="dropdown-header">Analysis &amp; Profiling</li>
+    <li class="dropdown-header">Cell Profiling</li>
     <li>
       <a href="../articles/dim-red.html">Dimensionality reduction</a>
     </li>
@@ -134,12 +154,19 @@ set to original_ct_variables" />
     <li>
       <a href="../articles/clustering.html">Clustering</a>
     </li>
-    <li>
-      <a href="../articles/plotting-stats.html">Statistical tests and plots</a>
-    </li>
-    <li class="dropdown-header">Modules</li>
+    <li class="dropdown-header">Analysis Modules</li>
     <li>
       <a href="../articles/module-migration.html">Migration</a>
+    </li>
+    <li>
+      <a href="../articles/module-mitosis.html">Mitosis &amp; Cell lineages</a>
+    </li>
+    <li class="dropdown-header">Visualization</li>
+    <li>
+      <a href="../articles/plotting-well-plates.html">Well plates</a>
+    </li>
+    <li>
+      <a href="../articles/plotting-stats.html">Statistical tests and plots</a>
     </li>
   </ul>
 </li>
@@ -172,17 +199,17 @@ set to original_ct_variables" />
     <div class="ref-description">
     <p>Returns <code>variable</code> if it was not detected in the column names
 of the specified data.frame. To be used in <code><a href='https://purrr.tidyverse.org/reference/map.html'>purrr::map()</a></code> with argument <code>.x</code>
-set to <code>original_ct_variables</code></p>
+set to a vector of all used variable names.</p>
     </div>
 
-    <div class="ref-usage sourceCode"><pre class='sourceCode r'><code><span class='fu'>check_df_variables</span><span class='op'>(</span><span class='va'>variable</span>, <span class='va'>df</span><span class='op'>)</span></code></pre></div>
+    <div class="ref-usage sourceCode"><pre class='sourceCode r'><code><span class='fu'>check_df_variables</span><span class='op'>(</span><span class='va'>variable_name</span>, <span class='va'>df</span><span class='op'>)</span></code></pre></div>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>variable</th>
-      <td><p>Character value. The variable to be checked.</p></td>
+      <th>variable_name</th>
+      <td><p>Character value. The name of the variable to be checked.</p></td>
     </tr>
     <tr>
       <th>df</th>

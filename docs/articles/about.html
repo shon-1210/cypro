@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">cypro</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.2.0</span>
       </span>
     </div>
 
@@ -58,9 +58,26 @@
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
-<li class="dropdown-header">The cypro object</li>
+<li class="dropdown-header">Getting started</li>
     <li>
-      <a href="../articles/getting-started.html">Experiment design and data loading</a>
+      <a href="../articles/design-experiment.html">1. Experiment design</a>
+    </li>
+    <li>
+      <a href="../articles/load-data.html">2. Data loading</a>
+    </li>
+    <li>
+      <a href="../articles/process-data.html">3. Data processing</a>
+    </li>
+    <li class="dropdown-header">Quality checks</li>
+    <li>
+      <a href="../articles/batch-effect-detection.html">Batch effect detection</a>
+    </li>
+    <li>
+      <a href="../articles/outlier-detection.html">Outlier detection</a>
+    </li>
+    <li class="dropdown-header">Around the cypro object</li>
+    <li>
+      <a href="../articles/default-setting.html">Default setting</a>
     </li>
     <li>
       <a href="../articles/subsetting.html">Create data subsets</a>
@@ -69,12 +86,15 @@
       <a href="../articles/extract-data.html">Extract data and information</a>
     </li>
     <li>
+      <a href="../articles/adding.html">Add content</a>
+    </li>
+    <li>
       <a href="../articles/renaming.html">Rename content</a>
     </li>
     <li>
       <a href="../articles/variable-sets.html">Variable sets</a>
     </li>
-    <li class="dropdown-header">Analysis &amp; Profiling</li>
+    <li class="dropdown-header">Cell Profiling</li>
     <li>
       <a href="../articles/dim-red.html">Dimensionality reduction</a>
     </li>
@@ -84,12 +104,19 @@
     <li>
       <a href="../articles/clustering.html">Clustering</a>
     </li>
-    <li>
-      <a href="../articles/plotting-stats.html">Statistical tests and plots</a>
-    </li>
-    <li class="dropdown-header">Modules</li>
+    <li class="dropdown-header">Analysis Modules</li>
     <li>
       <a href="../articles/module-migration.html">Migration</a>
+    </li>
+    <li>
+      <a href="../articles/module-mitosis.html">Mitosis &amp; Cell lineages</a>
+    </li>
+    <li class="dropdown-header">Visualization</li>
+    <li>
+      <a href="../articles/plotting-well-plates.html">Well plates</a>
+    </li>
+    <li>
+      <a href="../articles/plotting-stats.html">Statistical tests and plots</a>
     </li>
   </ul>
 </li>
@@ -139,7 +166,7 @@
 <div id="timelapse-experiments" class="section level3">
 <h3 class="hasAnchor">
 <a href="#timelapse-experiments" class="anchor" aria-hidden="true"></a>2.1 Timelapse Experiments</h3>
-<p>In timelapse experiments cells are repeatedly imaged over a defined timespan. Data tables that quantify the measurements of every image contain observations/rows that represent a cell at a given point of time with all its measured features. The track files of the <a href="https://celltracker.website/index.html" class="external-link">CellTracker</a>-software exemplify that.</p>
+<p>In timelapse experiments cells are repeatedly imaged over a defined time span. Data tables that quantify the measurements of every image contain observations/rows that represent a cell at a given point of time with all its measured features. The track files of the <a href="https://celltracker.website/index.html" class="external-link">CellTracker</a>-software exemplify that.</p>
 <pre><code>## # A tibble: 200 x 9
 ##    `Cell ID` `Frame number` `y-coordinate [p~ `x-coordinate [~ `Distance from o~
 ##        &lt;dbl&gt;          &lt;dbl&gt;             &lt;dbl&gt;            &lt;dbl&gt;             &lt;dbl&gt;
@@ -157,33 +184,13 @@
 ## #   Distance from last point [micrometer] &lt;dbl&gt;,
 ## #   Instantaneous speed [micrometer/hour] &lt;dbl&gt;,
 ## #   Angle from origin [degree] &lt;dbl&gt;, Angle from last point [degree] &lt;dbl&gt;</code></pre>
-<p>The cell is identified by the <em>Cell ID</em>-variable and the point of time is identified by the <em>Frame number</em>-variable. As long as your data tables contain columns that represent these two variables you can analyze them with celltracer. Every additional variable such as coordinates, distances, or - in case of CellProfiler outputs - shape and intensity related features provide optional additional information.</p>
-<p>Based on the timelapse results summary statistics can be computed that describe a cells mean or median characteristics. This is exemplified by the stat files of the <a href="https://celltracker.website/index.html" class="external-link">CellTracker</a>-software.</p>
-<pre><code>## # A tibble: 123 x 10
-##    `Cell ID` `Length total w~ `Maximum distan~ `Average distan~ `Maximum distan~
-##        &lt;dbl&gt;            &lt;dbl&gt;            &lt;dbl&gt;            &lt;dbl&gt;            &lt;dbl&gt;
-##  1         1            228.              66.1             30.8             31.8
-##  2         2            255.              91.0             47.7             34.1
-##  3         3            272.              81.3             31.5             38.2
-##  4         4            326.             128.              48.7             38.8
-##  5         5            396.              77.0             24.4             40.5
-##  6         6             91.4             17.3             11.5             12.4
-##  7         7            107.              19.8             11.6             15.3
-##  8         8            133.              47.0             34.6             17.0
-##  9         9            160.              35.2             17.7             19  
-## 10        10            288.             144.              47.8             38.8
-## # ... with 113 more rows, and 5 more variables:
-## #   Average distance from last point [micrometer] &lt;dbl&gt;,
-## #   Maximum speed [micrometer/hour] &lt;dbl&gt;,
-## #   Average speed [micrometer/hour] &lt;dbl&gt;,
-## #   Average angle of direction from origin [degree] &lt;dbl&gt;,
-## #   Average angle of direction from last point [degree] &lt;dbl&gt;</code></pre>
-<p>Here, the focus shifts from cells at a given point of time to only cells which is why the identifying variable referring to the point of time is no longer needed and the <em>Cell ID</em>-variable is sufficient. <code>cypro</code> calculates the summary statistics automatically if you provide it with track files. If you only have files that contain summarized time lapse data you can analyze them with celltracer, too, though you would have to take a pass on the analysis of cellular states at given points of time as the information is missing.</p>
+<p>The cell is identified by the <em>Cell ID</em>-variable and the point of time is identified by the <em>Frame number</em>-variable. As long as your data tables contain columns that represent these two variables you can analyze them with <code>cypro</code>. Every additional variable such as coordinates, distances, or - in case of CellProfiler outputs - shape and intensity related features provide optional additional information.</p>
 </div>
 <div id="one-time-imaging" class="section level3">
 <h3 class="hasAnchor">
 <a href="#one-time-imaging" class="anchor" aria-hidden="true"></a>2.2 One Time Imaging</h3>
-<p>In one time imaging experiments cells are imaged only one time. The <a href="https://bbbc.broadinstitute.org/BBBC021" class="external-link">Human MCF7 cells-compound-profiling-experiment</a> serves as an example for that. In this case again the data files observations refer to cells at a given point of time. As there is, however, only one point of time the variable referring to it is negligible. The table below is a subset of an output file derived from the CellProfiler pipeline that has been published together with the data set you find using the link above.</p>
+<p>The <code>cypro</code>-package has been initially developed for analysis of time lapse imaging data. However, in some experiment set ups cells are only imaged one time. We refer to this experiment design as <em>one-time-imaging</em>. Although time dependent data such as cellular migration or mitosis can not be obtained by such experiments image processing with CellProfiler still allows to quantify characteristics such as shape-, intensity- and granularity related features of cells under different conditions.</p>
+<p>The <a href="https://bbbc.broadinstitute.org/BBBC021" class="external-link">Human MCF7 cells-compound-profiling-experiment</a> serves as an example for that. In this case again the data files observations refer to cells at a given point of time. As there is, however, only one point of time the variable referring to the point of time is negligible. The table below is a subset of an output file derived from the CellProfiler pipeline that has been published together with the data set you find using the link above.</p>
 <pre><code>## # A tibble: 164 x 25
 ##    ObjectNumber  Area BoundingBoxArea BoundingBoxMaximum_X BoundingBoxMaximum_Y
 ##           &lt;dbl&gt; &lt;dbl&gt;           &lt;dbl&gt;                &lt;dbl&gt;                &lt;dbl&gt;
@@ -204,7 +211,7 @@
 ## #   MaxFeretDiameter &lt;dbl&gt;, MaximumRadius &lt;dbl&gt;, MeanRadius &lt;dbl&gt;,
 ## #   MedianRadius &lt;dbl&gt;, MinFeretDiameter &lt;dbl&gt;, MinorAxisLength &lt;dbl&gt;,
 ## #   Orientation &lt;dbl&gt;, Perimeter &lt;dbl&gt;, Solidity &lt;dbl&gt;</code></pre>
-<p>Here, the variable referring to the cell ID is called <em>ObjectNumber</em>.</p>
+<p>Here, the variable referring to the cell ID is called <em>ObjectNumber</em>. As mentioned above, many built in analysis modules for aspects like migration and mitosis can not be used with <em>one-time-imaging</em> experiments due to the lack of time lapse data. However, you can still use the built in clustering, correlation and dimensional reduction pipelines of <code>cypro</code> as well as its <a href="plotting-stats.html">statistical plotting functions</a>.</p>
 </div>
 </div>
 <div id="conclusion" class="section level2">

@@ -660,6 +660,18 @@ time_displaced_tmt <- function(object){
   
 }
 
+#' @title Set data data.frames
+#' 
+setGroupingDf <- function(object, grouping_df, phase){
+  
+  warning("setGroupingDf() is deprecated in favor of setCellDf()")
+  
+  object@data$grouping[[phase]] <- grouping_df
+  
+  base::return(object)
+  
+}
+
 
 # NOT EXPORTED ------------------------------------------------------------
 

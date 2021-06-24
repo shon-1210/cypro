@@ -26,9 +26,10 @@ color is continuous. Run \code{validColorSpectra()} to see valid input.}
 
 \item{pt_size}{Numeric value. Specifies the size of all points.}
 
-\item{across}{Character value or NULL. Specifies the grouping variable of interest.
+\item{across}{Character value, character vector or NULL (see details for more).
+Specifies the grouping variable of interest.
 
-Use \code{getGroupingOptions()} to obtain all variable names that group the
+Use \code{getGroupingVariableNames()} to obtain all variable names that group the
 cells of your experiment in a certain manner.}
 
 \item{across_subset}{Character vector or NULL. Specifies the particular groups
@@ -147,6 +148,8 @@ to FALSE a list is returned.}
 \emph{'lm'} (linear model). Given to argument \code{method} of function \code{ggplot2::geom_smooth()}.}
 
 \item{smooth_se}{Logical. If set to TRUE the standard error will be displayed.}
+
+\item{smooth_size}{Numeric value. Denotes the size of the smoothed line.}
 
 \item{smooth_span}{NUmeric value. Denotes the smoothing span used.}
 

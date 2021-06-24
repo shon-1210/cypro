@@ -463,11 +463,15 @@ summarize_module_variables <- function(stat_df, track_df, object, verbose){
 
 compute_var_afo <- function(track_df, object, ...){
   
+  track_df$afo <- 0
+  
   return(track_df)
   
 }
 
 compute_var_aflp <- function(track_df, object, ...){
+  
+  track_df$aflp <- 0
   
   return(track_df)
   

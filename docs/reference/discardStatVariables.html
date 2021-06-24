@@ -83,7 +83,7 @@ decreasing the overall object size." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">cypro</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.2.0</span>
       </span>
     </div>
 
@@ -108,9 +108,26 @@ decreasing the overall object size." />
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
-    <li class="dropdown-header">The cypro object</li>
+    <li class="dropdown-header">Getting started</li>
     <li>
-      <a href="../articles/getting-started.html">Experiment design and data loading</a>
+      <a href="../articles/design-experiment.html">1. Experiment design</a>
+    </li>
+    <li>
+      <a href="../articles/load-data.html">2. Data loading</a>
+    </li>
+    <li>
+      <a href="../articles/process-data.html">3. Data processing</a>
+    </li>
+    <li class="dropdown-header">Quality checks</li>
+    <li>
+      <a href="../articles/batch-effect-detection.html">Batch effect detection</a>
+    </li>
+    <li>
+      <a href="../articles/outlier-detection.html">Outlier detection</a>
+    </li>
+    <li class="dropdown-header">Around the cypro object</li>
+    <li>
+      <a href="../articles/default-setting.html">Default setting</a>
     </li>
     <li>
       <a href="../articles/subsetting.html">Create data subsets</a>
@@ -119,12 +136,15 @@ decreasing the overall object size." />
       <a href="../articles/extract-data.html">Extract data and information</a>
     </li>
     <li>
+      <a href="../articles/adding.html">Add content</a>
+    </li>
+    <li>
       <a href="../articles/renaming.html">Rename content</a>
     </li>
     <li>
       <a href="../articles/variable-sets.html">Variable sets</a>
     </li>
-    <li class="dropdown-header">Analysis &amp; Profiling</li>
+    <li class="dropdown-header">Cell Profiling</li>
     <li>
       <a href="../articles/dim-red.html">Dimensionality reduction</a>
     </li>
@@ -134,12 +154,19 @@ decreasing the overall object size." />
     <li>
       <a href="../articles/clustering.html">Clustering</a>
     </li>
-    <li>
-      <a href="../articles/plotting-stats.html">Statistical tests and plots</a>
-    </li>
-    <li class="dropdown-header">Modules</li>
+    <li class="dropdown-header">Analysis Modules</li>
     <li>
       <a href="../articles/module-migration.html">Migration</a>
+    </li>
+    <li>
+      <a href="../articles/module-mitosis.html">Mitosis &amp; Cell lineages</a>
+    </li>
+    <li class="dropdown-header">Visualization</li>
+    <li>
+      <a href="../articles/plotting-well-plates.html">Well plates</a>
+    </li>
+    <li>
+      <a href="../articles/plotting-stats.html">Statistical tests and plots</a>
     </li>
   </ul>
 </li>
@@ -175,7 +202,9 @@ and makes them unavailable for subsequent analysis steps. Might be useful for
 decreasing the overall object size.</p>
     </div>
 
-    <div class="ref-usage sourceCode"><pre class='sourceCode r'><code><span class='fu'>discardStatVariables</span><span class='op'>(</span><span class='va'>object</span>, <span class='va'>stat_variables</span>, verbose <span class='op'>=</span> <span class='cn'>NULL</span><span class='op'>)</span></code></pre></div>
+    <div class="ref-usage sourceCode"><pre class='sourceCode r'><code><span class='fu'>discardStatVariables</span><span class='op'>(</span><span class='va'>object</span>, <span class='va'>stat_variables</span>, verbose <span class='op'>=</span> <span class='cn'>NULL</span><span class='op'>)</span>
+
+<span class='fu'>keepStatVariables</span><span class='op'>(</span><span class='va'>object</span>, <span class='va'>stat_variables</span>, verbose <span class='op'>=</span> <span class='cn'>NULL</span><span class='op'>)</span></code></pre></div>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -186,7 +215,8 @@ decreasing the overall object size.</p>
     </tr>
     <tr>
       <th>stat_variables</th>
-      <td><p>Character vector. The variables from the cell statistics data you want to discard.</p></td>
+      <td><p>Character vector. The variables from the cell statistics data you want to discard
+in case of <code>discardStatVariables()</code> or keep in case of <code>keepStatVariables()</code>.</p></td>
     </tr>
     <tr>
       <th>verbose</th>
@@ -207,9 +237,11 @@ the computational progress will be printed.</p>
 
     <p>As clustering and dimensional reduction results base on stat variables
 or variable sets to be more precise all clustering results in slot @analysis that included variables denoted
-in argument <code>stat_variables</code> are discarded, too! This is because clustering
+in argument <code>stat_variables</code> are discarded, too. This is because clustering
 results based on variable x, y and z might differ from results based
 on only variables x and y.</p>
+<p>Defined variable sets including variables that are discarded are modified in a way that
+they only contain variables that remain in the cypro object.</p>
 <p>Correlation results are not discarded but only filtered accordingly. This is because correlation
 results between variable x and variable y are not affected by discarding variable z.</p>
 

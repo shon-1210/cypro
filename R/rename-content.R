@@ -303,7 +303,7 @@ renameStatsDf <- function(object, ...){
                  
                  renamed_vset <- base::tryCatch({
                    
-                   confuns::vrename(input = vset, ...)
+                   confuns::vredefine(input = vset, ...)
                    
                  }, error = function(error){
                    
@@ -331,7 +331,7 @@ renameStatsDf <- function(object, ...){
                  .f = function(summary_df){
                    
                    summary_df$variable <- 
-                     confuns::vrename(input = summary_df$variable, ...)
+                     confuns::vredefine(input = summary_df$variable, ...)
                    
                    base::return(summary_df)
                    
@@ -340,7 +340,7 @@ renameStatsDf <- function(object, ...){
   } else {
     
     object@vdata$summary$variable <- 
-      confuns::vrename(input = object@vdata$summary$variable, ...)
+      confuns::vredefine(input = object@vdata$summary$variable, ...)
     
   }
   
@@ -398,7 +398,7 @@ renameStatsDfWith <- function(object, ...){
     purrr::map(.x = object@variable_sets,
                .f = function(vset){
                  
-                 confuns::vrename_with(input = vset, ...)
+                 confuns::vredefine_with(input = vset, ...)
                  
                })
   
@@ -410,7 +410,7 @@ renameStatsDfWith <- function(object, ...){
                  .f = function(summary_df){
                    
                    summary_df$variable <- 
-                     confuns::vrename_with(input = summary_df$variable, ...)
+                     confuns::vredefine_with(input = summary_df$variable, ...)
                    
                    base::return(summary_df)
                    
@@ -419,7 +419,7 @@ renameStatsDfWith <- function(object, ...){
   } else {
     
     object@vdata$summary$variable <- 
-      confuns::vrename_with(input = object@vdata$summary$variable, ...)
+      confuns::vredefine_with(input = object@vdata$summary$variable, ...)
     
   }
   
@@ -503,7 +503,7 @@ renameTracksDf <- function(object, ...){
       
       renamed_vset <- base::tryCatch({
         
-        confuns::vrename(input = vset, ...)
+        confuns::vredefine(input = vset, ...)
         
       }, error = function(error){
         
@@ -530,7 +530,7 @@ renameTracksDf <- function(object, ...){
       purrr::map(.x = object@vdata$summary, .f = function(summary_df){
                    
                    summary_df$variable <- 
-                     confuns::vrename(input = summary_df$variable, ...)
+                     confuns::vredefine(input = summary_df$variable, ...)
                    
                    base::return(summary_df)
                    
@@ -539,7 +539,7 @@ renameTracksDf <- function(object, ...){
   } else {
     
     object@vdata$summary$variable <- 
-      confuns::vrename(input = object@vdata$summary$variable, ...)
+      confuns::vredefine(input = object@vdata$summary$variable, ...)
     
   }
   
@@ -598,7 +598,7 @@ renameTracksDfWith <- function(object, ...){
   object@variable_sets <- 
     purrr::map(.x = object@variable_sets, .f = function(vset){
                  
-                 confuns::vrename_with(input = vset, ...)
+                 confuns::vredefine_with(input = vset, ...)
                  
                })
   
@@ -609,7 +609,7 @@ renameTracksDfWith <- function(object, ...){
       purrr::map(.x = object@vdata$summary, .f = function(summary_df){
                    
                    summary_df$variable <- 
-                     confuns::vrename_with(input = summary_df$variable, ...)
+                     confuns::vredefine_with(input = summary_df$variable, ...)
                    
                    base::return(summary_df)
                    
@@ -618,7 +618,7 @@ renameTracksDfWith <- function(object, ...){
   } else {
     
     object@vdata$summary$variable <- 
-      confuns::vrename_with(input = object@vdata$summary$variable, ...)
+      confuns::vredefine_with(input = object@vdata$summary$variable, ...)
     
   }
   
@@ -679,7 +679,7 @@ rename_analysis_slots <- function(object, ...){
                                                .f = function(conv_object){
                                                  
                                                  conv_object@variables <- 
-                                                   confuns::vrename(input = conv_object@variables, ...)
+                                                   confuns::vredefine(input = conv_object@variables, ...)
                                                  
                                                  base::return(conv_object)
                                                  
@@ -705,7 +705,7 @@ rename_analysis_slots <- function(object, ...){
                                 .f = function(conv_object){
                                   
                                   conv_object@variables <- 
-                                    confuns::vrename(input = conv_object@variables, ...)
+                                    confuns::vredefine(input = conv_object@variables, ...)
                                   
                                   base::return(conv_object)
                                   
@@ -734,7 +734,7 @@ rename_analysis_slots <- function(object, ...){
                                                .f = function(conv_object){
                                                  
                                                  conv_object@variables_num <- 
-                                                   confuns::vrename(input = conv_object@variables_num, ...)
+                                                   confuns::vredefine(input = conv_object@variables_num, ...)
                                                  
                                                  base::return(conv_object)
                                                  
@@ -760,7 +760,7 @@ rename_analysis_slots <- function(object, ...){
                                 .f = function(conv_object){
                                   
                                   conv_object@variables_num <- 
-                                    confuns::vrename(input = conv_object@variables_num, ...)
+                                    confuns::vredefine(input = conv_object@variables_num, ...)
                                   
                                   base::return(conv_object)
                                   
@@ -821,7 +821,7 @@ rename_analysis_slots_with <- function(object, ...){
                                                .f = function(conv_object){
                                                  
                                                  conv_object@variables <- 
-                                                   confuns::vrename_with(
+                                                   confuns::vredefine_with(
                                                      input = conv_object@variables, 
                                                      ...)
                                                  
@@ -849,7 +849,7 @@ rename_analysis_slots_with <- function(object, ...){
                                 .f = function(conv_object){
                                   
                                   conv_object@variables <- 
-                                    confuns::vrename_with(
+                                    confuns::vredefine_with(
                                       input = conv_object@variables, 
                                       ...)
                                   
@@ -880,7 +880,7 @@ rename_analysis_slots_with <- function(object, ...){
                                                .f = function(conv_object){
                                                  
                                                  conv_object@variables_num <- 
-                                                   confuns::vrename_with(
+                                                   confuns::vredefine_with(
                                                      input = conv_object@variables_num, 
                                                      ...)
                                                  
@@ -908,7 +908,7 @@ rename_analysis_slots_with <- function(object, ...){
                                 .f = function(conv_object){
                                   
                                   conv_object@variables_num <- 
-                                    confuns::vrename_with(
+                                    confuns::vredefine_with(
                                       input = conv_object@variables_num, 
                                       ...)
                                   

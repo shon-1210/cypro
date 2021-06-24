@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">cypro</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.2.0</span>
       </span>
     </div>
 
@@ -58,9 +58,26 @@
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
-<li class="dropdown-header">The cypro object</li>
+<li class="dropdown-header">Getting started</li>
     <li>
-      <a href="../articles/getting-started.html">Experiment design and data loading</a>
+      <a href="../articles/design-experiment.html">1. Experiment design</a>
+    </li>
+    <li>
+      <a href="../articles/load-data.html">2. Data loading</a>
+    </li>
+    <li>
+      <a href="../articles/process-data.html">3. Data processing</a>
+    </li>
+    <li class="dropdown-header">Quality checks</li>
+    <li>
+      <a href="../articles/batch-effect-detection.html">Batch effect detection</a>
+    </li>
+    <li>
+      <a href="../articles/outlier-detection.html">Outlier detection</a>
+    </li>
+    <li class="dropdown-header">Around the cypro object</li>
+    <li>
+      <a href="../articles/default-setting.html">Default setting</a>
     </li>
     <li>
       <a href="../articles/subsetting.html">Create data subsets</a>
@@ -69,12 +86,15 @@
       <a href="../articles/extract-data.html">Extract data and information</a>
     </li>
     <li>
+      <a href="../articles/adding.html">Add content</a>
+    </li>
+    <li>
       <a href="../articles/renaming.html">Rename content</a>
     </li>
     <li>
       <a href="../articles/variable-sets.html">Variable sets</a>
     </li>
-    <li class="dropdown-header">Analysis &amp; Profiling</li>
+    <li class="dropdown-header">Cell Profiling</li>
     <li>
       <a href="../articles/dim-red.html">Dimensionality reduction</a>
     </li>
@@ -84,12 +104,19 @@
     <li>
       <a href="../articles/clustering.html">Clustering</a>
     </li>
-    <li>
-      <a href="../articles/plotting-stats.html">Statistical tests and plots</a>
-    </li>
-    <li class="dropdown-header">Modules</li>
+    <li class="dropdown-header">Analysis Modules</li>
     <li>
       <a href="../articles/module-migration.html">Migration</a>
+    </li>
+    <li>
+      <a href="../articles/module-mitosis.html">Mitosis &amp; Cell lineages</a>
+    </li>
+    <li class="dropdown-header">Visualization</li>
+    <li>
+      <a href="../articles/plotting-well-plates.html">Well plates</a>
+    </li>
+    <li>
+      <a href="../articles/plotting-stats.html">Statistical tests and plots</a>
     </li>
   </ul>
 </li>
@@ -140,6 +167,7 @@
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># load packages</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">cypro</span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://patchwork.data-imaginist.com" class="external-link">patchwork</a></span><span class="op">)</span>
 
 <span class="co"># load object from broad institute compound profiling experiment week 4</span>
 <span class="co"># contains one time imaging data</span>
@@ -224,15 +252,10 @@ Figure 2.1 Basic densityplots and histograms.
 </details><div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/getGroupNames.html">getGroupNames</a></span><span class="op">(</span><span class="va">object</span>, grouping_variable <span class="op">=</span> <span class="st">"condition"</span><span class="op">)</span></code></pre></div>
 <details><p><summary>output</summary></p>
-<pre><code>##  [1] "5-fluorouracil"           "AG-1478"                 
-##  [3] "anisomycin"               "AZ258"                   
-##  [5] "caspase inhibitor (ZVAD)" "cyclohexamide"           
-##  [7] "DMSO"                     "indirubin monoxime"      
-##  [9] "mitomycin C"              "neomycin"                
-## [11] "olomoucine"               "taxol"                   
-## [13] "tunicamycin"</code></pre>
+<pre><code>## [1] "anisomycin"    "AZ258"         "cyclohexamide" "DMSO"         
+## [5] "mitomycin C"   "taxol"</code></pre>
 </details><div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">conds_of_interest</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"DMSO"</span>, <span class="st">"5-fluorouracil"</span>, <span class="st">"taxol"</span>, <span class="st">"tunicamycin"</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="va">conds_of_interest</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"DMSO"</span>, <span class="st">"AZ258"</span>, <span class="st">"taxol"</span>, <span class="st">"mitomycin C"</span><span class="op">)</span></code></pre></div>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># histograms are not suited for comparative plotting</span>
 <span class="fu"><a href="../reference/plotBoxplot.html">plotHistogram</a></span><span class="op">(</span><span class="va">object</span>, 
@@ -338,16 +361,55 @@ Figure 2.5 Boxplots and violinplots with t-test and anova.
 </div>
 </div>
 </div>
-<div id="caterogical-variables" class="section level2">
+<div id="grouping-variables" class="section level2">
 <h2 class="hasAnchor">
-<a href="#caterogical-variables" class="anchor" aria-hidden="true"></a>3. Caterogical variables</h2>
-<p>(coming soon)</p>
+<a href="#grouping-variables" class="anchor" aria-hidden="true"></a>3. Grouping variables</h2>
+<p>The function <code><a href="../reference/plotBarchart.html">plotBarchart()</a></code> provides options to visualize categorical data variables.</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># visualize counts</span>
+<span class="va">count_plot</span> <span class="op">&lt;-</span> 
+  <span class="fu"><a href="../reference/plotBarchart.html">plotBarchart</a></span><span class="op">(</span>
+    object <span class="op">=</span> <span class="va">object</span>,
+    variables <span class="op">=</span> <span class="st">"condition"</span>,
+    position <span class="op">=</span> <span class="st">"stack"</span> <span class="co"># stack -&gt; absolute numbers</span>
+    <span class="op">)</span> <span class="op">+</span> <span class="fu">coord_flip</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu"><a href="../reference/plotBarchart.html">plotBarchart</a></span><span class="op">(</span>
+    object <span class="op">=</span> <span class="va">object</span>,
+    variables <span class="op">=</span> <span class="st">"well_plate_name"</span>,
+    position <span class="op">=</span> <span class="st">"stack"</span>
+  <span class="op">)</span> <span class="op">+</span> <span class="fu">coord_flip</span><span class="op">(</span><span class="op">)</span>
+
+<span class="co"># visualize proportions with argument 'across'</span>
+<span class="va">prop_dodge</span> <span class="op">&lt;-</span> 
+  <span class="fu"><a href="../reference/plotBarchart.html">plotBarchart</a></span><span class="op">(</span>
+    object <span class="op">=</span> <span class="va">object</span>,
+    variables <span class="op">=</span> <span class="st">"condition"</span>, 
+    across <span class="op">=</span> <span class="st">"pam_euclidean_k_4_(intensity)"</span>, 
+    position <span class="op">=</span> <span class="st">"dodge"</span>
+  <span class="op">)</span> <span class="op">+</span> <span class="fu">coord_flip</span><span class="op">(</span><span class="op">)</span>
+
+<span class="va">prop_fill</span> <span class="op">&lt;-</span> 
+  <span class="fu"><a href="../reference/plotBarchart.html">plotBarchart</a></span><span class="op">(</span>
+    object <span class="op">=</span> <span class="va">object</span>,
+    variables <span class="op">=</span> <span class="st">"condition"</span>, 
+    across <span class="op">=</span> <span class="st">"pam_euclidean_k_4_(intensity)"</span>, 
+    position <span class="op">=</span> <span class="st">"fill"</span>
+  <span class="op">)</span> <span class="op">+</span> <span class="fu">coord_flip</span><span class="op">(</span><span class="op">)</span>
+
+
+<span class="co"># combine with patchwork </span>
+<span class="va">count_plot</span> <span class="op">/</span> <span class="op">(</span><span class="va">prop_dodge</span> <span class="op">+</span> <span class="va">prop_fill</span><span class="op">)</span></code></pre></div>
+<div class="figure">
+<img src="plotting-stats_files/figure-html/plot-barchart-invis-1.png" alt="Figure 3.1 Visualize categorical data variables." width="100%"><p class="caption">
+Figure 3.1 Visualize categorical data variables.
+</p>
+</div>
 </div>
 <div id="interactive-plotting" class="section level2">
 <h2 class="hasAnchor">
 <a href="#interactive-plotting" class="anchor" aria-hidden="true"></a>4. Interactive plotting</h2>
 <p>The function <code><a href="../reference/plotStatisticsInteractive.html">plotStatisticsInteractive()</a></code> gives access to an interactive graphical user interface in which most of the functionalities introduced in Section 2 and 3 can be used interactively. Plots can be immediately exported as .PNG or .pdf files.</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu">ploStatisticsInteractive</span><span class="op">(</span><span class="va">object</span><span class="op">)</span></code></pre></div>
 <div class="figure">
 <img src="images/plot-statistics-interactive.PNG" alt="4.1 Interface of plotStatisticsInteractive()" width="100%"><p class="caption">

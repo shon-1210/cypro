@@ -43,8 +43,8 @@
 <meta property="og:description" content="Implementations of the functions dplyr::rename() and
 dplyr::rename_with() that can be used to rename the variables of the cell meta
 data.frame.
-renameMetaDf() changes the names of individual variables using new_name = old_name
-syntax. renameMetaDfWith() renames variables with a function specified in argument .fn." />
+rename*Df() changes the names of individual variables using new_name = old_name
+syntax. rename*DfWith() renames variables with a function specified in argument .fn." />
 
 
 
@@ -85,7 +85,7 @@ syntax. renameMetaDfWith() renames variables with a function specified in argume
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">cypro</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.2.0</span>
       </span>
     </div>
 
@@ -110,9 +110,26 @@ syntax. renameMetaDfWith() renames variables with a function specified in argume
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
-    <li class="dropdown-header">The cypro object</li>
+    <li class="dropdown-header">Getting started</li>
     <li>
-      <a href="../articles/getting-started.html">Experiment design and data loading</a>
+      <a href="../articles/design-experiment.html">1. Experiment design</a>
+    </li>
+    <li>
+      <a href="../articles/load-data.html">2. Data loading</a>
+    </li>
+    <li>
+      <a href="../articles/process-data.html">3. Data processing</a>
+    </li>
+    <li class="dropdown-header">Quality checks</li>
+    <li>
+      <a href="../articles/batch-effect-detection.html">Batch effect detection</a>
+    </li>
+    <li>
+      <a href="../articles/outlier-detection.html">Outlier detection</a>
+    </li>
+    <li class="dropdown-header">Around the cypro object</li>
+    <li>
+      <a href="../articles/default-setting.html">Default setting</a>
     </li>
     <li>
       <a href="../articles/subsetting.html">Create data subsets</a>
@@ -121,12 +138,15 @@ syntax. renameMetaDfWith() renames variables with a function specified in argume
       <a href="../articles/extract-data.html">Extract data and information</a>
     </li>
     <li>
+      <a href="../articles/adding.html">Add content</a>
+    </li>
+    <li>
       <a href="../articles/renaming.html">Rename content</a>
     </li>
     <li>
       <a href="../articles/variable-sets.html">Variable sets</a>
     </li>
-    <li class="dropdown-header">Analysis &amp; Profiling</li>
+    <li class="dropdown-header">Cell Profiling</li>
     <li>
       <a href="../articles/dim-red.html">Dimensionality reduction</a>
     </li>
@@ -136,12 +156,19 @@ syntax. renameMetaDfWith() renames variables with a function specified in argume
     <li>
       <a href="../articles/clustering.html">Clustering</a>
     </li>
-    <li>
-      <a href="../articles/plotting-stats.html">Statistical tests and plots</a>
-    </li>
-    <li class="dropdown-header">Modules</li>
+    <li class="dropdown-header">Analysis Modules</li>
     <li>
       <a href="../articles/module-migration.html">Migration</a>
+    </li>
+    <li>
+      <a href="../articles/module-mitosis.html">Mitosis &amp; Cell lineages</a>
+    </li>
+    <li class="dropdown-header">Visualization</li>
+    <li>
+      <a href="../articles/plotting-well-plates.html">Well plates</a>
+    </li>
+    <li>
+      <a href="../articles/plotting-stats.html">Statistical tests and plots</a>
     </li>
   </ul>
 </li>
@@ -175,8 +202,8 @@ syntax. renameMetaDfWith() renames variables with a function specified in argume
     <p>Implementations of the functions <code><a href='https://dplyr.tidyverse.org/reference/rename.html'>dplyr::rename()</a></code> and
 <code><a href='https://dplyr.tidyverse.org/reference/rename.html'>dplyr::rename_with()</a></code> that can be used to rename the variables of the cell meta
 data.frame.</p>
-<p><code>renameMetaDf()</code> changes the names of individual variables using <em>new_name</em> = <em>old_name</em>
-syntax. <code>renameMetaDfWith()</code> renames variables with a function specified in argument <code>.fn</code>.</p>
+<p><code>rename*Df()</code> changes the names of individual variables using <em>new_name</em> = <em>old_name</em>
+syntax. <code>rename*DfWith()</code> renames variables with a function specified in argument <code>.fn</code>.</p>
     </div>
 
     <div class="ref-usage sourceCode"><pre class='sourceCode r'><code><span class='fu'>renameMetaDf</span><span class='op'>(</span><span class='va'>object</span>, <span class='va'>...</span>, phase <span class='op'>=</span> <span class='cn'>NULL</span><span class='op'>)</span>
@@ -191,15 +218,15 @@ syntax. <code>renameMetaDfWith()</code> renames variables with a function specif
       <td><p>A valid cypro object.</p></td>
     </tr>
     <tr>
+      <th>...</th>
+      <td><p>Input for function <code><a href='https://dplyr.tidyverse.org/reference/rename.html'>dplyr::rename_with()</a></code>. This includes the arguments
+<code>.fn</code> and <code>.cols</code>.</p></td>
+    </tr>
+    <tr>
       <th>phase</th>
       <td><p>Character value. The ordinal value referring to the phase of interest (e.g. <em>'first'</em>, <em>'second'</em> etc.).
 referring to the phase of interest. If set to NULL takes the phase denoted as default with <code>adjustDefault()</code>.</p>
 <p>Ignored if the experiment design contains only one phase.</p></td>
-    </tr>
-    <tr>
-      <th>.fn</th>
-      <td><p>A function used to transform the variable names. Should return a character vector of the same
-length as the input. Can be specified with formula syntax.</p></td>
     </tr>
     </table>
 
@@ -208,12 +235,14 @@ length as the input. Can be specified with formula syntax.</p></td>
     <p>An updated version of the input <code>cypro</code>-object.</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>The variables <em>cell_id, cell_line</em> and <em>condition</em> are removed
-prior to the renaming as they are protected. The renaming process must not
-result in columns that carry one of these names nor in the names <em>well_plate_name,
-well_index, well_image</em> or <em>well</em>.</p>
-<p>Use <code><a href='getGroupingVariableNames.html'>getGroupingVariableNames()</a></code> to check if renaming resulted in
+    <p>Use <code><a href='getGroupingVariableNames.html'>getGroupingVariableNames()</a></code> to check if renaming resulted in
 the desired output.</p>
+    <h2 class="hasAnchor" id="note"><a class="anchor" href="#note"></a>Note</h2>
+
+    <p>Make sure not to rename protected variables. Use the function <code><a href='protectedVariables.html'>protectedVariables()</a></code>
+to obtain variable names that must not be changed and must not be added. Doing
+so will result in erroneous analysis results as many functions rely on these
+variables to carry specific meaning.</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p><code><a href='https://dplyr.tidyverse.org/reference/rename.html'>dplyr::rename()</a></code>, <code><a href='https://dplyr.tidyverse.org/reference/rename.html'>dplyr::rename_with()</a></code></p></div>

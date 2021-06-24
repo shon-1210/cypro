@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Detect outliers — detectOutliers • cypro</title>
+<title>Detect outlier cells — detectOutliers • cypro</title>
 
 
 <!-- jquery -->
@@ -39,8 +39,8 @@
 
 
 
-<meta property="og:title" content="Detect outliers — detectOutliers" />
-<meta property="og:description" content="There are several methods according to which outliers can be detected or
+<meta property="og:title" content="Detect outlier cells — detectOutliers" />
+<meta property="og:description" content="There are several methods according to which outlier cells can be detected or
 defined. Which one to use strongly depends on the researchers question at hand. See details
 for more information on which method does what exactly." />
 
@@ -83,7 +83,7 @@ for more information on which method does what exactly." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">cypro</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.2.0</span>
       </span>
     </div>
 
@@ -108,9 +108,26 @@ for more information on which method does what exactly." />
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
-    <li class="dropdown-header">The cypro object</li>
+    <li class="dropdown-header">Getting started</li>
     <li>
-      <a href="../articles/getting-started.html">Experiment design and data loading</a>
+      <a href="../articles/design-experiment.html">1. Experiment design</a>
+    </li>
+    <li>
+      <a href="../articles/load-data.html">2. Data loading</a>
+    </li>
+    <li>
+      <a href="../articles/process-data.html">3. Data processing</a>
+    </li>
+    <li class="dropdown-header">Quality checks</li>
+    <li>
+      <a href="../articles/batch-effect-detection.html">Batch effect detection</a>
+    </li>
+    <li>
+      <a href="../articles/outlier-detection.html">Outlier detection</a>
+    </li>
+    <li class="dropdown-header">Around the cypro object</li>
+    <li>
+      <a href="../articles/default-setting.html">Default setting</a>
     </li>
     <li>
       <a href="../articles/subsetting.html">Create data subsets</a>
@@ -119,12 +136,15 @@ for more information on which method does what exactly." />
       <a href="../articles/extract-data.html">Extract data and information</a>
     </li>
     <li>
+      <a href="../articles/adding.html">Add content</a>
+    </li>
+    <li>
       <a href="../articles/renaming.html">Rename content</a>
     </li>
     <li>
       <a href="../articles/variable-sets.html">Variable sets</a>
     </li>
-    <li class="dropdown-header">Analysis &amp; Profiling</li>
+    <li class="dropdown-header">Cell Profiling</li>
     <li>
       <a href="../articles/dim-red.html">Dimensionality reduction</a>
     </li>
@@ -134,12 +154,19 @@ for more information on which method does what exactly." />
     <li>
       <a href="../articles/clustering.html">Clustering</a>
     </li>
-    <li>
-      <a href="../articles/plotting-stats.html">Statistical tests and plots</a>
-    </li>
-    <li class="dropdown-header">Modules</li>
+    <li class="dropdown-header">Analysis Modules</li>
     <li>
       <a href="../articles/module-migration.html">Migration</a>
+    </li>
+    <li>
+      <a href="../articles/module-mitosis.html">Mitosis &amp; Cell lineages</a>
+    </li>
+    <li class="dropdown-header">Visualization</li>
+    <li>
+      <a href="../articles/plotting-well-plates.html">Well plates</a>
+    </li>
+    <li>
+      <a href="../articles/plotting-stats.html">Statistical tests and plots</a>
     </li>
   </ul>
 </li>
@@ -164,13 +191,13 @@ for more information on which method does what exactly." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Detect outliers</h1>
+    <h1>Detect outlier cells</h1>
     <small class="dont-index">Source: <a href='https://github.com/theMILOlab/cypro/blob/master/R/outlier-detection.R'><code>R/outlier-detection.R</code></a></small>
     <div class="hidden name"><code>detectOutliers.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>There are several methods according to which outliers can be detected or
+    <p>There are several methods according to which outlier cells can be detected or
 defined. Which one to use strongly depends on the researchers question at hand. See details
 for more information on which method does what exactly.</p>
     </div>
@@ -209,7 +236,19 @@ the computational progress will be printed.</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p>This function only detects outliers. It does not remove them from the object. Use <code><a href='removeOutliers.html'>removeOutliers()</a></code>
-for that matter.</p>
+for that matter. To get more insights in the outlier detection results before removing them
+use <code><a href='getOutlierResults.html'>getOutlierResults()</a></code>.</p>
+<p>Method: Interquartile Range (iqr)</p>
+<p>Every stat variable denoted in argument <code>variable_names</code> is screened via
+R's built in function <code><a href='https://rdrr.io/r/grDevices/boxplot.stats.html'>grDevices::boxplot.stats()</a></code>. Every ID that is
+recognized as an outlier is stored in a list slot named after the stat variable
+under which it was detected as an outlier.</p>
+<p>Method: mahalanobis</p>
+<p>Multivariate outlier detection method. Mahalanobis distance is computed including
+all stat variables denoted in argument <code>variable_names</code> via <code><a href='https://rdrr.io/r/stats/mahalanobis.html'>stats::mahalanobis()</a></code>.
+P-values are calculated via <code><a href='https://rdrr.io/r/stats/Chisquare.html'>stats::pchisq()</a></code> and cells are filtered according
+to the threshold set with argument <code>threshold_pval</code>. Cells with a mahalanobis distance
+p-value lower or equal than the threshold are defined as outliers.</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p>removeOutliers()</p></div>

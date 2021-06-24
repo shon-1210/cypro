@@ -102,9 +102,12 @@ mutateStatsDf <- function(object, ..., group_by = NULL){
 #' Protected variables such as \emph{cell_id, x_coords, y_coords} etc. 
 #' must not be changed. Attempts result in an error message.
 #' 
-#' In case of the tracks data.frame new variables must be numeric.
+#' New variables must be numeric.
 #' 
-#' Discarding variables with e.g. distance = NULL is not allowed. Use
+#' In case of multiple phase experiment design the mutation is applied 
+#' to track data.frame of all phases.
+#' 
+#' Discarding variables with e.g. \code{new_variable = NULL} is not allowed. Use
 #' the \code{discard*()}-functions for that matter.
 #'
 #' @export

@@ -3,11 +3,6 @@
 #' 
 NULL
 
-#' @include summarize-family.R
-#' 
-NULL
-
-
 # module blueprint --------------------------------------------------------
 
 # each known variable in cypro has it's own list of information & tests

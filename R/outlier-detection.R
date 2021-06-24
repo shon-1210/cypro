@@ -219,8 +219,8 @@ detect_outliers_mahalanobis <- function(object, variable_names = NULL, threshold
   }
   
   outlier_results <- 
-    purrr::map(.x = getPhases(object), # in case of non time lapse experiment phase is ignored anyway
-               .f = function(phase){
+    # iterating over phase (in non time lapse experiments phase is ignored anyway)
+    purrr::map(.x = getPhases(object), .f = function(phase){
                  
                  stat_df <-
                    getStatsDf(object, phase = phase, with_grouping = FALSE) %>% 
@@ -264,9 +264,12 @@ detect_outliers_mahalanobis <- function(object, variable_names = NULL, threshold
       variable_names = variable_names
     )
   
-  msg <- glue::glue("Found {n} {ref_outliers}.",
-                    n = base::length(getOutlierIds(object, method_outlier = "mahalanobis")), 
-                    ref_outliers = confuns::adapt_reference(getOutlierIds(object), "outlier", "outliers"))
+  msg <- 
+    glue::glue(
+      "Found {n} {ref_outliers}.",
+      n = base::length(getOutlierIds(object, method_outlier = "mahalanobis")), 
+      ref_outliers = confuns::adapt_reference(getOutlierIds(object), "outlier", "outliers")
+    )
   
   confuns::give_feedback(msg = msg, verbose = verbose)
   

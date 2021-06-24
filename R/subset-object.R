@@ -391,7 +391,7 @@ subsetByCluster <- function(object,
 #' @rdname subsetByCluster
 #' @export
 subsetByGroup <- function(object,
-                          new_name,
+                          new_name = NULL,
                           grouping_variable,
                           groups,
                           phase = NULL,
@@ -804,13 +804,14 @@ subsetByNumber <- function(object,
 
 #' @title Create data subset according to coverage quality
 #' 
-#' @description Subset functions allow to conveniently split your data. \code{subsetByQualiteCheck()}
-#' opens a shiny application in which histograms of aspects are displayed that summarise
+#' @description Subset functions allow to conveniently split your data. \code{subsetByQuality()}
+#' opens a shiny application in which histograms of aspects are displayed that summarize
 #' the quality of a cells coverage. 
 #' 
 #' See details for more information.
 #'
 #' @inherit argument_dummy params 
+#' @inherit subsetByCellId params
 #'
 #' @details Creating subsets of your data affects analysis results such as clustering and correlation which 
 #' is why these results are reset in the subsetted object and must be computed again. To prevent inadvertent overwriting 
@@ -826,13 +827,13 @@ subsetByNumber <- function(object,
 #' of your choice. Eventually cells that match all the requirements you specified 
 #' are selected and the object is subsetted by \code{subsetByCellId()}. 
 #' 
-#' Use \code{printSubsetHistory()} to have the requirements you set up printed 
-#' in the R-console.  
+#' The requirements you set up are included in the message constructed and 
+#' printed by \code{printSubsetHistory()}. 
 #'
 #' @inherit updated_object return
 #' @export
 #'
-subsetByQualityCheck <- function(object, new_name = NULL, verbose = NULL){
+subsetByQuality <- function(object, new_name = NULL, verbose = NULL){
   
   check_object(object, set_up_req = "load_data", exp_type_req = "time_lapse")
   
@@ -957,10 +958,10 @@ subsetByQualityCheck <- function(object, new_name = NULL, verbose = NULL){
 make_data_quality_reasoning <- function(reasoning){
   
   qc_subset_opts <-
-    c("skipped_meas" = "cells with 'value' skipped measurement(s).",
-      "total_meas" = "cells with a total of 'value' measurement(s).",
-      "first_meas" = "cells whose first measurement took place in frame(s) 'value'.",
-      "last_meas" = "cells whose last measurement took place in frame(s) 'value'."
+    c("skipped_meas" = "cells with 'value' skipped frames(s).",
+      "total_meas" = "cells with a total of 'value' frames(s).",
+      "first_meas" = "cells that were detected first in frame(s) 'value'.",
+      "last_meas" = "cells that were detected last in frame(s) 'value'."
     )
   
   reasoning_list <- 

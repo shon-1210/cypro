@@ -81,7 +81,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">cypro</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.2.0</span>
       </span>
     </div>
 
@@ -106,9 +106,26 @@
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
-    <li class="dropdown-header">The cypro object</li>
+    <li class="dropdown-header">Getting started</li>
     <li>
-      <a href="../articles/getting-started.html">Experiment design and data loading</a>
+      <a href="../articles/design-experiment.html">1. Experiment design</a>
+    </li>
+    <li>
+      <a href="../articles/load-data.html">2. Data loading</a>
+    </li>
+    <li>
+      <a href="../articles/process-data.html">3. Data processing</a>
+    </li>
+    <li class="dropdown-header">Quality checks</li>
+    <li>
+      <a href="../articles/batch-effect-detection.html">Batch effect detection</a>
+    </li>
+    <li>
+      <a href="../articles/outlier-detection.html">Outlier detection</a>
+    </li>
+    <li class="dropdown-header">Around the cypro object</li>
+    <li>
+      <a href="../articles/default-setting.html">Default setting</a>
     </li>
     <li>
       <a href="../articles/subsetting.html">Create data subsets</a>
@@ -117,12 +134,15 @@
       <a href="../articles/extract-data.html">Extract data and information</a>
     </li>
     <li>
+      <a href="../articles/adding.html">Add content</a>
+    </li>
+    <li>
       <a href="../articles/renaming.html">Rename content</a>
     </li>
     <li>
       <a href="../articles/variable-sets.html">Variable sets</a>
     </li>
-    <li class="dropdown-header">Analysis &amp; Profiling</li>
+    <li class="dropdown-header">Cell Profiling</li>
     <li>
       <a href="../articles/dim-red.html">Dimensionality reduction</a>
     </li>
@@ -132,12 +152,19 @@
     <li>
       <a href="../articles/clustering.html">Clustering</a>
     </li>
-    <li>
-      <a href="../articles/plotting-stats.html">Statistical tests and plots</a>
-    </li>
-    <li class="dropdown-header">Modules</li>
+    <li class="dropdown-header">Analysis Modules</li>
     <li>
       <a href="../articles/module-migration.html">Migration</a>
+    </li>
+    <li>
+      <a href="../articles/module-mitosis.html">Mitosis &amp; Cell lineages</a>
+    </li>
+    <li class="dropdown-header">Visualization</li>
+    <li>
+      <a href="../articles/plotting-well-plates.html">Well plates</a>
+    </li>
+    <li>
+      <a href="../articles/plotting-stats.html">Statistical tests and plots</a>
     </li>
   </ul>
 </li>
@@ -173,12 +200,24 @@
 
     <div class="ref-usage sourceCode"><pre class='sourceCode r'><code><span class='fu'>plotWellPlate</span><span class='op'>(</span>
   <span class='va'>object</span>,
-  well_plate <span class='op'>=</span> <span class='cn'>NULL</span>,
+  phase <span class='op'>=</span> <span class='cn'>NULL</span>,
+  well_plates <span class='op'>=</span> <span class='cn'>NULL</span>,
   color_by <span class='op'>=</span> <span class='st'>"condition"</span>,
-  size_well <span class='op'>=</span> <span class='fl'>13.5</span>,
+  summarize_with <span class='op'>=</span> <span class='st'>"median"</span>,
+  plot_type <span class='op'>=</span> <span class='st'>"well"</span>,
+  well_size <span class='op'>=</span> <span class='fl'>13.5</span>,
+  display_border <span class='op'>=</span> <span class='cn'>TRUE</span>,
+  border_clr <span class='op'>=</span> <span class='st'>"black"</span>,
+  border_size <span class='op'>=</span> <span class='fl'>1</span>,
+  display_edge <span class='op'>=</span> <span class='cn'>TRUE</span>,
+  edge_clr <span class='op'>=</span> <span class='st'>"black"</span>,
   display_labels <span class='op'>=</span> <span class='cn'>TRUE</span>,
+  alpha <span class='op'>=</span> <span class='fl'>0.9</span>,
+  clrp <span class='op'>=</span> <span class='st'>"milo"</span>,
   clrp_adjust <span class='op'>=</span> <span class='cn'>NULL</span>,
-  make_pretty <span class='op'>=</span> <span class='cn'>NULL</span>,
+  clrsp <span class='op'>=</span> <span class='st'>"Blues"</span>,
+  ncol <span class='op'>=</span> <span class='cn'>NULL</span>,
+  nrow <span class='op'>=</span> <span class='cn'>NULL</span>,
   <span class='va'>...</span>
 <span class='op'>)</span></code></pre></div>
 
@@ -190,9 +229,49 @@
       <td><p>A valid cypro object.</p></td>
     </tr>
     <tr>
-      <th>well_plate</th>
-      <td><p>Character value. The name of the well plate of interest. Valid inputs can be obtained
-via <code><a href='getWellPlateNames.html'>getWellPlateNames()</a></code>.</p></td>
+      <th>phase</th>
+      <td><p>Character value. The ordinal value referring to the phase of interest (e.g. <em>'first'</em>, <em>'second'</em> etc.).
+referring to the phase of interest. If set to NULL takes the phase denoted as default with <code>adjustDefault()</code>.</p>
+<p>Ignored if the experiment design contains only one phase.</p></td>
+    </tr>
+    <tr>
+      <th>plot_type</th>
+      <td><p>Character value. Either <em>'well'</em> or <em>'tile'</em>.
+Affects the geometry with which the wells are displayed. (Either
+with <code><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>ggplot2::geom_point()</a></code> or with <code><a href='https://ggplot2.tidyverse.org/reference/geom_tile.html'>ggplot2::geom_tile()</a></code>).</p></td>
+    </tr>
+    <tr>
+      <th>well_size</th>
+      <td><p>Numeric value. Denotes the size with which each well is plotted
+if argument <code>plot_type</code> is set to <em>'well'</em>.</p></td>
+    </tr>
+    <tr>
+      <th>display_border</th>
+      <td><p>Logical value. If set to TRUE a line is drawn around
+the geometric objects displaying the wells.</p></td>
+    </tr>
+    <tr>
+      <th>border_clr</th>
+      <td><p>Character value. Denotes the color of the wells borders.</p></td>
+    </tr>
+    <tr>
+      <th>border_size</th>
+      <td><p>Numeric value. Denotes the thickness of the wells borders.</p></td>
+    </tr>
+    <tr>
+      <th>display_edge</th>
+      <td><p>Logical value. If set to TRUE <code><a href='https://ggforce.data-imaginist.com/reference/geom_mark_rect.html'>ggforce::geom_mark_rect()</a></code>
+is used to display the edges of the well plate.</p></td>
+    </tr>
+    <tr>
+      <th>edge_clr</th>
+      <td><p>Character value. Denotes the color of the well plates edge.</p></td>
+    </tr>
+    <tr>
+      <th>clrp</th>
+      <td><p>Character value. Specifies the color palette to be used to represent
+groups of discrete variables. Run <code><a href='validAgglomerationMethods.html'>validColorPalettes()</a></code> to obtain valid
+input options.</p></td>
     </tr>
     <tr>
       <th>clrp_adjust</th>
@@ -200,6 +279,22 @@ via <code><a href='getWellPlateNames.html'>getWellPlateNames()</a></code>.</p></
 color palette that is used to represent the groups. Names of the input vector must refer
 to the group and the respective named element denotes the color with which to
 represent the group.</p></td>
+    </tr>
+    <tr>
+      <th>clrsp</th>
+      <td><p>Character value. Specifies the color spectrum to be used to represent
+continuous values of numeric variables. Run <code><a href='validAgglomerationMethods.html'>validColorSpectra()</a></code> to obtain
+valid input options.</p></td>
+    </tr>
+    <tr>
+      <th>ncol</th>
+      <td><p>Given to <code><a href='https://ggplot2.tidyverse.org/reference/facet_wrap.html'>ggplot2::facet_wrap()</a></code>. Affects the way the subplots
+are displayed.</p></td>
+    </tr>
+    <tr>
+      <th>nrow</th>
+      <td><p>Given to <code><a href='https://ggplot2.tidyverse.org/reference/facet_wrap.html'>ggplot2::facet_wrap()</a></code>. Affects the way the subplots
+are displayed.</p></td>
     </tr>
     </table>
 

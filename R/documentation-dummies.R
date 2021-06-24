@@ -53,9 +53,10 @@ dim_red_df <- function(dim_red_df){}
 #' 
 #' @inherit check_object params
 #' @inherit check_phase params
-#' @param across Character value or NULL. Specifies the grouping variable of interest.
+#' @param across Character value, character vector or NULL (see details for more).
+#' Specifies the grouping variable of interest.
 #'
-#' Use \code{getGroupingOptions()} to obtain all variable names that group the
+#' Use \code{getGroupingVariableNames()} to obtain all variable names that group the
 #' cells of your experiment in a certain manner.
 #'
 #' @param across_subset Character vector or NULL. Specifies the particular groups
@@ -165,6 +166,7 @@ dim_red_df <- function(dim_red_df){}
 #' @param smooth_method Character value. Denotes the model type used to display the line. Defaults to 
 #' \emph{'lm'} (linear model). Given to argument \code{method} of function \code{ggplot2::geom_smooth()}.
 #' @param smooth_se Logical. If set to TRUE the standard error will be displayed. 
+#' @param smooth_size Numeric value. Denotes the size of the smoothed line.
 #' @param smooth_span NUmeric value. Denotes the smoothing span used. 
 #'
 #' @param well_plate Character value. Denotes the well plate of interest. Use function \code{getWellPlateNames()}

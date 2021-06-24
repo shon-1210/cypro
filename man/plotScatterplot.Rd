@@ -14,25 +14,30 @@ plotScatterplot(
   relevel = TRUE,
   ncol = NULL,
   nrow = NULL,
+  color_aes = NULL,
+  color_by = NULL,
   scales = "fixed",
   space = "fixed",
   pt_alpha = 0.9,
-  pt_clr = "black",
-  pt_fill = "black",
-  pt_shape = 21,
-  pt_size = 1.5,
+  pt_clr = NULL,
+  pt_clrp = NULL,
+  pt_fill = NULL,
+  pt_shape = NULL,
+  pt_size = NULL,
   display_smooth = FALSE,
-  smooth_alpha = 0.9,
-  smooth_clr = "blue",
+  smooth_alpha = NULL,
+  smooth_clr = NULL,
   smooth_method = NULL,
-  smooth_se = FALSE,
+  smooth_se = NULL,
+  smooth_size = NULL,
   display_corr = FALSE,
   corr_method = "pearson",
   corr_pmin = 5e-05,
   corr_pos_x = NULL,
   corr_pos_y = NULL,
   corr_text_sep = "\\n",
-  corr_text_size = 1
+  corr_text_size = 1,
+  ...
 )
 }
 \arguments{
@@ -46,9 +51,10 @@ referring to the phase of interest. If set to NULL takes the phase denoted as de
 
 Ignored if the experiment design contains only one phase.}
 
-\item{across}{Character value or NULL. Specifies the grouping variable of interest.
+\item{across}{Character value, character vector or NULL (see details for more).
+Specifies the grouping variable of interest.
 
-Use \code{getGroupingOptions()} to obtain all variable names that group the
+Use \code{getGroupingVariableNames()} to obtain all variable names that group the
 cells of your experiment in a certain manner.}
 
 \item{across_subset}{Character vector or NULL. Specifies the particular groups
@@ -80,6 +86,9 @@ are displayed.}
 
 \item{pt_clr}{Character value. Specifies the color of all points.}
 
+\item{pt_clrp}{The color palette to be used if the specified variable displayed by
+color is categorical/discrete. Run \code{validColorPalettes()} to see valid input.}
+
 \item{pt_size}{Numeric value. Specifies the size of all points.}
 
 \item{display_smooth}{Logical value. If set to TRUE a smoothed line is displayed to emphasize
@@ -93,6 +102,8 @@ the trend is plotted.}
 
 \item{smooth_se}{Logical. If set to TRUE the standard error will be displayed.}
 
+\item{smooth_size}{Numeric value. Denotes the size of the smoothed line.}
+
 \item{display_corr}{Logical value. If set to TRUE the correlation of the x- and y-variable is calculated
 and displayed on the plot (or each subplot if \code{across} is specified.)}
 
@@ -103,7 +114,7 @@ and displayed on the plot (or each subplot if \code{across} is specified.)}
 displayed as \emph{ < \code{corr_pmin}}.}
 
 \item{corr_pos_x, corr_pos_y}{Numeric values or NULL. Specify the exact position of the text used to display the correlation
-results. If set to NULL defaults to right upper corner of the plot.}
+results. If set to NULL defaults to left upper corner of the plot.}
 
 \item{corr_text_sep}{Character value. The string that separates correlation value and respective p-value.}
 
@@ -118,6 +129,6 @@ A ggplot.
 Convenient wrapper around a variety of scatterplot functionalities. See details for more.
 }
 \details{
-Argument \code{across} can be specified of a character vector of length 2. If so, argument
-\code{across_subset} must be a list of character vectors whereby the names are equal to the input for \code{across}.
+Argument \code{across} can be specified as a character vector of length 2. If so, argument
+\code{across_subset} must be a list of character vectors whereby the names of the list correspond to the input for \code{across}.
 }

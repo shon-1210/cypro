@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">cypro</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.2.0</span>
       </span>
     </div>
 
@@ -58,9 +58,26 @@
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
-<li class="dropdown-header">The cypro object</li>
+<li class="dropdown-header">Getting started</li>
     <li>
-      <a href="../articles/getting-started.html">Experiment design and data loading</a>
+      <a href="../articles/design-experiment.html">1. Experiment design</a>
+    </li>
+    <li>
+      <a href="../articles/load-data.html">2. Data loading</a>
+    </li>
+    <li>
+      <a href="../articles/process-data.html">3. Data processing</a>
+    </li>
+    <li class="dropdown-header">Quality checks</li>
+    <li>
+      <a href="../articles/batch-effect-detection.html">Batch effect detection</a>
+    </li>
+    <li>
+      <a href="../articles/outlier-detection.html">Outlier detection</a>
+    </li>
+    <li class="dropdown-header">Around the cypro object</li>
+    <li>
+      <a href="../articles/default-setting.html">Default setting</a>
     </li>
     <li>
       <a href="../articles/subsetting.html">Create data subsets</a>
@@ -69,12 +86,15 @@
       <a href="../articles/extract-data.html">Extract data and information</a>
     </li>
     <li>
+      <a href="../articles/adding.html">Add content</a>
+    </li>
+    <li>
       <a href="../articles/renaming.html">Rename content</a>
     </li>
     <li>
       <a href="../articles/variable-sets.html">Variable sets</a>
     </li>
-    <li class="dropdown-header">Analysis &amp; Profiling</li>
+    <li class="dropdown-header">Cell Profiling</li>
     <li>
       <a href="../articles/dim-red.html">Dimensionality reduction</a>
     </li>
@@ -84,12 +104,19 @@
     <li>
       <a href="../articles/clustering.html">Clustering</a>
     </li>
-    <li>
-      <a href="../articles/plotting-stats.html">Statistical tests and plots</a>
-    </li>
-    <li class="dropdown-header">Modules</li>
+    <li class="dropdown-header">Analysis Modules</li>
     <li>
       <a href="../articles/module-migration.html">Migration</a>
+    </li>
+    <li>
+      <a href="../articles/module-mitosis.html">Mitosis &amp; Cell lineages</a>
+    </li>
+    <li class="dropdown-header">Visualization</li>
+    <li>
+      <a href="../articles/plotting-well-plates.html">Well plates</a>
+    </li>
+    <li>
+      <a href="../articles/plotting-stats.html">Statistical tests and plots</a>
     </li>
   </ul>
 </li>
@@ -155,6 +182,7 @@
 <li><code><a href="../reference/subsetByFilter.html">subsetByFilter()</a></code></li>
 <li><code><a href="../reference/subsetByCluster.html">subsetByGroup()</a></code></li>
 <li><code><a href="../reference/subsetByNumber.html">subsetByNumber()</a></code></li>
+<li><code><a href="../reference/subsetByQuality.html">subsetByQuality()</a></code></li>
 </ul>
 <p>They allow to conveniently split the data of your experiment into sub-<em>cypro</em> objects by a variety of aspects. On top of that the subsetting functions store the history of subsets in the sub-<em>cypro</em> objects. You can therefore always trace your analysis back to the original one.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
@@ -169,10 +197,12 @@
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># reduce the total number of cells to  ~ 50.000</span>
 <span class="va">object_reduced</span> <span class="op">&lt;-</span>
-  <span class="fu"><a href="../reference/subsetByNumber.html">subsetByNumber</a></span><span class="op">(</span><span class="va">object_original</span>,
-                 new_name <span class="op">=</span> <span class="st">"bids-w4-red"</span>,
-                 across <span class="op">=</span> <span class="st">"condition"</span>,
-                 n_total <span class="op">=</span> <span class="fl">50000</span><span class="op">)</span>
+  <span class="fu"><a href="../reference/subsetByNumber.html">subsetByNumber</a></span><span class="op">(</span>
+    object <span class="op">=</span> <span class="va">object_original</span>,
+    new_name <span class="op">=</span> <span class="st">"bids-w4-red"</span>,
+    across <span class="op">=</span> <span class="st">"condition"</span>,
+    n_total <span class="op">=</span> <span class="fl">50000</span>
+    <span class="op">)</span>
 
 <span class="co"># equal number of cells across conditions </span>
 <span class="fu"><a href="../reference/plotBarchart.html">plotBarchart</a></span><span class="op">(</span><span class="va">object_original</span>, variables <span class="op">=</span> <span class="st">"condition"</span>, position <span class="op">=</span> <span class="st">"stack"</span><span class="op">)</span> <span class="op">+</span> 
@@ -216,18 +246,19 @@ Figure 2.1 Adjustment of cell count as across was specified as ‘condition’
 <pre><code>##  [1] "B10" "B11" "B2"  "B3"  "B4"  "B5"  "B6"  "B7"  "B8"  "B9"</code></pre>
 </details><div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">object_bwells</span> <span class="op">&lt;-</span>
-  <span class="fu"><a href="../reference/subsetByCluster.html">subsetByGroup</a></span><span class="op">(</span><span class="va">object_reduced</span>,
-                new_name <span class="op">=</span> <span class="st">"bids-week4-red-bwells"</span>,
-                grouping_variable <span class="op">=</span> <span class="st">"well"</span>,
-                groups <span class="op">=</span> <span class="va">b_wells</span><span class="op">)</span>
+  <span class="fu"><a href="../reference/subsetByCluster.html">subsetByGroup</a></span><span class="op">(</span>
+    object <span class="op">=</span> <span class="va">object_reduced</span>,
+    grouping_variable <span class="op">=</span> <span class="st">"well"</span>,
+    groups <span class="op">=</span> <span class="va">b_wells</span>
+    <span class="op">)</span>
 
 <span class="va">object_bwells</span></code></pre></div>
 <details><p><summary>output</summary></p>
 <pre><code>## An object of class 'cypro'.
 ## 
-## Name: bids-week4-red-bwells
+## Name: bids-w4-red_subset
 ## Type: One Time Imaging
-## Number of Cells: 8107
+## Number of Cells: 8078
 ## Conditions: 'anisomycin', 'cyclohexamide', 'DMSO' and 'taxol'
 ## Cell Lines: 'MCF7'
 ## Well Plates: 'Week4_27481' and 'Week4_27801'
@@ -260,6 +291,8 @@ Figure 4.1 Difference in distribution before and after subsetting.
 ## First Subsetting:
 ## 
 ## By: Number
+## Method: n_total
+## Weighted: FALSE
 ## Across: 'condition'
 ## Parent object: bids-week4
 ## New object: bids-w4-red
@@ -273,8 +306,8 @@ Figure 4.1 Difference in distribution before and after subsetting.
 ## Grouping Name: 'well'
 ## Kept: 'B10', 'B11', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8' and 'B9'
 ## Parent object: bids-w4-red
-## New object: bids-week4-red-bwells
-## Cells remaining: 8107
+## New object: bids-w4-red_subset
+## Cells remaining: 8078
 ## 
 ## --------------------------------------------------
 ## 
@@ -283,9 +316,9 @@ Figure 4.1 Difference in distribution before and after subsetting.
 ## By: Filter
 ## Requirements:
 ##  1. AreaShape_Area&lt;20000
-## Parent object: bids-week4-red-bwells
+## Parent object: bids-w4-red_subset
 ## New object: normal-sized
-## Cells remaining: 8104</code></pre>
+## Cells remaining: 8074</code></pre>
 </div>
   </div>
 

@@ -13,11 +13,11 @@
 #' @export
 #'
 
-nCells <- function(object){
+nCells <- function(object, drop_na = FALSE){
   
   check_object(object)
   
-  getStatsDf(object) %>% 
+  getStatsDf(object, drop_na = drop_na) %>% 
     base::nrow()
   
 }

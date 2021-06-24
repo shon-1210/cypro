@@ -3,17 +3,25 @@ pkgdown: 1.6.1.9001
 pkgdown_sha: 3b870d0efcfcf92a42aa881d58c3462cdbb110a8
 articles:
   about: about.html
+  adding: adding.html
+  batch-effect-detection: batch-effect-detection.html
   clustering: clustering.html
   correlation: correlation.html
+  default-setting: default-setting.html
+  design-experiment: design-experiment.html
   dim-red: dim-red.html
   extract-data: extract-data.html
-  getting-started: getting-started.html
   installation: installation.html
+  load-data: load-data.html
   module-migration: module-migration.html
+  module-mitosis: module-mitosis.html
+  outlier-detection: outlier-detection.html
   plotting-stats: plotting-stats.html
+  plotting-well-plates: plotting-well-plates.html
+  process-data: process-data.html
   renaming: renaming.html
   subsetting: subsetting.html
   terminology: terminology.html
   variable-sets: variable-sets.html
-last_built: 2021-06-01T09:07Z
+last_built: 2021-06-24T12:05Z
 

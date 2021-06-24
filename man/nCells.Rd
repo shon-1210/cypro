@@ -6,7 +6,7 @@
 \alias{nConditions}
 \title{Number of miscellaneous content}
 \usage{
-nCells(object)
+nCells(object, drop_na = FALSE)
 
 nCellLines(object)
 

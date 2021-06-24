@@ -12,6 +12,9 @@ setStorageDirectory(object, directory)
 \item{directory}{Character value. The directory under which
 the object is supposed to be stored via \code{saveCyproObject()}.}
 }
+\value{
+An updated version of the input \code{cypro}-object.
+}
 \description{
 Set default storage directory
 }

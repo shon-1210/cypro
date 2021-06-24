@@ -40,8 +40,12 @@
 
 
 <meta property="og:title" content="Reads cell track data — read_data_files_shiny" />
-<meta property="og:description" content="A function to be used for argument .f of purrr::map_df.
-Calls the respective reading function depending on the directory's ending." />
+<meta property="og:description" content="A function to be used for argument .f of purrr::map2().
+Calls the respective reading function depending on the directory's ending.
+Makes sure that all denoted variables exist
+Makes sure that all denoted variables have valid content
+
+" />
 
 
 
@@ -82,7 +86,7 @@ Calls the respective reading function depending on the directory's ending." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">cypro</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.2.0</span>
       </span>
     </div>
 
@@ -107,9 +111,26 @@ Calls the respective reading function depending on the directory's ending." />
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
-    <li class="dropdown-header">The cypro object</li>
+    <li class="dropdown-header">Getting started</li>
     <li>
-      <a href="../articles/getting-started.html">Experiment design and data loading</a>
+      <a href="../articles/design-experiment.html">1. Experiment design</a>
+    </li>
+    <li>
+      <a href="../articles/load-data.html">2. Data loading</a>
+    </li>
+    <li>
+      <a href="../articles/process-data.html">3. Data processing</a>
+    </li>
+    <li class="dropdown-header">Quality checks</li>
+    <li>
+      <a href="../articles/batch-effect-detection.html">Batch effect detection</a>
+    </li>
+    <li>
+      <a href="../articles/outlier-detection.html">Outlier detection</a>
+    </li>
+    <li class="dropdown-header">Around the cypro object</li>
+    <li>
+      <a href="../articles/default-setting.html">Default setting</a>
     </li>
     <li>
       <a href="../articles/subsetting.html">Create data subsets</a>
@@ -118,12 +139,15 @@ Calls the respective reading function depending on the directory's ending." />
       <a href="../articles/extract-data.html">Extract data and information</a>
     </li>
     <li>
+      <a href="../articles/adding.html">Add content</a>
+    </li>
+    <li>
       <a href="../articles/renaming.html">Rename content</a>
     </li>
     <li>
       <a href="../articles/variable-sets.html">Variable sets</a>
     </li>
-    <li class="dropdown-header">Analysis &amp; Profiling</li>
+    <li class="dropdown-header">Cell Profiling</li>
     <li>
       <a href="../articles/dim-red.html">Dimensionality reduction</a>
     </li>
@@ -133,12 +157,19 @@ Calls the respective reading function depending on the directory's ending." />
     <li>
       <a href="../articles/clustering.html">Clustering</a>
     </li>
-    <li>
-      <a href="../articles/plotting-stats.html">Statistical tests and plots</a>
-    </li>
-    <li class="dropdown-header">Modules</li>
+    <li class="dropdown-header">Analysis Modules</li>
     <li>
       <a href="../articles/module-migration.html">Migration</a>
+    </li>
+    <li>
+      <a href="../articles/module-mitosis.html">Mitosis &amp; Cell lineages</a>
+    </li>
+    <li class="dropdown-header">Visualization</li>
+    <li>
+      <a href="../articles/plotting-well-plates.html">Well plates</a>
+    </li>
+    <li>
+      <a href="../articles/plotting-stats.html">Statistical tests and plots</a>
     </li>
   </ul>
 </li>
@@ -169,11 +200,23 @@ Calls the respective reading function depending on the directory's ending." />
     </div>
 
     <div class="ref-description">
-    <p>A function to be used for argument <code>.f</code> of <code><a href='https://purrr.tidyverse.org/reference/map.html'>purrr::map_df</a></code>.
-Calls the respective reading function depending on the directory's ending.</p>
+    <p>A function to be used for argument <code>.f</code> of <code><a href='https://purrr.tidyverse.org/reference/map2.html'>purrr::map2()</a></code>.</p><ol>
+<li><p>Calls the respective reading function depending on the directory's ending.</p></li>
+<li><p>Makes sure that all denoted variables exist</p></li>
+<li><p>Makes sure that all denoted variables have valid content</p></li>
+</ol>
+
     </div>
 
-    <div class="ref-usage sourceCode"><pre class='sourceCode r'><code><span class='fu'>read_data_files_shiny</span><span class='op'>(</span><span class='va'>directory</span>, <span class='va'>progress_n</span>, <span class='va'>progress</span>, <span class='va'>object</span><span class='op'>)</span></code></pre></div>
+    <div class="ref-usage sourceCode"><pre class='sourceCode r'><code><span class='fu'>read_data_files_shiny</span><span class='op'>(</span>
+  <span class='va'>directory</span>,
+  <span class='va'>progress_n</span>,
+  <span class='va'>progress</span>,
+  <span class='va'>object</span>,
+  <span class='va'>used_variable_names</span>,
+  <span class='va'>assembled_module_info_lists</span>,
+  mitosis_module_used <span class='op'>=</span> <span class='cn'>FALSE</span>
+<span class='op'>)</span></code></pre></div>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -190,6 +233,13 @@ of <code>.x</code> contains.</p></td>
     <tr>
       <th>progress</th>
       <td><p>A shiny - R6 progress object.</p></td>
+    </tr>
+    <tr>
+      <th>assembled_module_info_lists</th>
+      <td><p>A list of three slots:</p>
+<p>'identifier' = pdl_step_2_info_assembled()
+'analysis_modules' = pdl_step_3_info_assembled(),
+'additional' = pdl_step_4_info_assembled()</p></td>
     </tr>
     </table>
 

@@ -9,7 +9,6 @@ addStatVariables(
   input_df,
   variable_names,
   phase = NULL,
-  overwrite = FALSE,
   verbose = TRUE
 )
 }
@@ -26,12 +25,6 @@ and join both data.frames.}
 referring to the phase of interest. If set to NULL takes the phase denoted as default with \code{adjustDefault()}.
 
 Ignored if the experiment design contains only one phase.}
-
-\item{overwrite}{Logical value. Must be set to TRUE in case of overlapping
-variable names.
-
-(Note that overwriting stat variables leads to all analysis progress of affected
-variable sets being discarded.)}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

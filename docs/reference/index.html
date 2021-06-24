@@ -80,7 +80,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">cypro</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.2.0</span>
       </span>
     </div>
 
@@ -105,9 +105,26 @@
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
-    <li class="dropdown-header">The cypro object</li>
+    <li class="dropdown-header">Getting started</li>
     <li>
-      <a href="../articles/getting-started.html">Experiment design and data loading</a>
+      <a href="../articles/design-experiment.html">1. Experiment design</a>
+    </li>
+    <li>
+      <a href="../articles/load-data.html">2. Data loading</a>
+    </li>
+    <li>
+      <a href="../articles/process-data.html">3. Data processing</a>
+    </li>
+    <li class="dropdown-header">Quality checks</li>
+    <li>
+      <a href="../articles/batch-effect-detection.html">Batch effect detection</a>
+    </li>
+    <li>
+      <a href="../articles/outlier-detection.html">Outlier detection</a>
+    </li>
+    <li class="dropdown-header">Around the cypro object</li>
+    <li>
+      <a href="../articles/default-setting.html">Default setting</a>
     </li>
     <li>
       <a href="../articles/subsetting.html">Create data subsets</a>
@@ -116,12 +133,15 @@
       <a href="../articles/extract-data.html">Extract data and information</a>
     </li>
     <li>
+      <a href="../articles/adding.html">Add content</a>
+    </li>
+    <li>
       <a href="../articles/renaming.html">Rename content</a>
     </li>
     <li>
       <a href="../articles/variable-sets.html">Variable sets</a>
     </li>
-    <li class="dropdown-header">Analysis &amp; Profiling</li>
+    <li class="dropdown-header">Cell Profiling</li>
     <li>
       <a href="../articles/dim-red.html">Dimensionality reduction</a>
     </li>
@@ -131,12 +151,19 @@
     <li>
       <a href="../articles/clustering.html">Clustering</a>
     </li>
-    <li>
-      <a href="../articles/plotting-stats.html">Statistical tests and plots</a>
-    </li>
-    <li class="dropdown-header">Modules</li>
+    <li class="dropdown-header">Analysis Modules</li>
     <li>
       <a href="../articles/module-migration.html">Migration</a>
+    </li>
+    <li>
+      <a href="../articles/module-mitosis.html">Mitosis &amp; Cell lineages</a>
+    </li>
+    <li class="dropdown-header">Visualization</li>
+    <li>
+      <a href="../articles/plotting-well-plates.html">Well plates</a>
+    </li>
+    <li>
+      <a href="../articles/plotting-stats.html">Statistical tests and plots</a>
     </li>
   </ul>
 </li>
@@ -176,7 +203,7 @@
       <tr>
         <th colspan="2">
           <h2 id="section-object-initiation" class="hasAnchor"><a href="#section-object-initiation" class="anchor"></a>Object Initiation</h2>
-          <p class="section-desc"><p>Four functions are needed to set up a fully functional cypro object.</p></p>
+          <p class="section-desc"><p>Three functions are needed to set up a fully functional cypro object.</p></p>
         </th>
       </tr>
       
@@ -199,15 +226,9 @@
       </tr><tr>
         
         <td>
-          <p><code><a href="checkDataQuality.html">checkDataQuality()</a></code> </p>
-        </td>
-        <td><p>Object initiation: Step 3</p></td>
-      </tr><tr>
-        
-        <td>
           <p><code><a href="processData.html">processData()</a></code> </p>
         </td>
-        <td><p>Object initiation: Step 4</p></td>
+        <td><p>Object initiation: Step 3</p></td>
       </tr>
     </tbody><tbody>
       <tr>
@@ -301,6 +322,12 @@
           <p><code><a href="subsetByNumber.html">subsetByNumber()</a></code> </p>
         </td>
         <td><p>Create data subset by reducing the number of cells</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="subsetByQuality.html">subsetByQuality()</a></code> </p>
+        </td>
+        <td><p>Create data subset according to coverage quality</p></td>
       </tr>
     </tbody><tbody>
       <tr>
@@ -335,6 +362,12 @@
           <p><code><a href="setClusterConv.html">setClusterConv()</a></code> <code><a href="setClusterConv.html">setDimRedConv()</a></code> <code><a href="setClusterConv.html">setCorrConv()</a></code> </p>
         </td>
         <td><p>Set analysis objects</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="setDefaultInstructions.html">setDefaultInstructions()</a></code> </p>
+        </td>
+        <td><p>Set cypro default</p></td>
       </tr><tr>
         
         <td>
@@ -424,7 +457,7 @@
       </tr><tr>
         
         <td>
-          <p><code><a href="discardStatVariables.html">discardStatVariables()</a></code> </p>
+          <p><code><a href="discardStatVariables.html">discardStatVariables()</a></code> <code><a href="discardStatVariables.html">keepStatVariables()</a></code> </p>
         </td>
         <td><p>Discard unwanted variables from your data</p></td>
       </tr>
@@ -489,6 +522,12 @@
           <p><code><a href="renameStatsDf.html">renameStatsDf()</a></code> <code><a href="renameStatsDf.html">renameStatsDfWith()</a></code> </p>
         </td>
         <td><p>Rename statistic variables</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="renameTracksDf.html">renameTracksDf()</a></code> <code><a href="renameTracksDf.html">renameTracksDfWith()</a></code> </p>
+        </td>
+        <td><p>Rename track variables</p></td>
       </tr>
     </tbody><tbody>
       <tr>
@@ -512,6 +551,12 @@
       
       
       <tr>
+        
+        <td>
+          <p><code><a href="getBatchEffectDf.html">getBatchEffectDf()</a></code> <code><a href="getBatchEffectDf.html">getBatchEffectDist()</a></code> </p>
+        </td>
+        <td><p>Obtain batch effect computation results</p></td>
+      </tr><tr>
         
         <td>
           <p><code><a href="getGroupingDf.html">getGroupingDf()</a></code> <code><a href="getGroupingDf.html">getClusterDf()</a></code> <code><a href="getGroupingDf.html">getMetaDf()</a></code> <code><a href="getGroupingDf.html">getWellPlateDf()</a></code> </p>
@@ -547,6 +592,18 @@
           <p><code><a href="getVariableDf.html">getVariableDf()</a></code> </p>
         </td>
         <td><p>Obtain variable centered summaries</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="mutateClusterDf.html">mutateClusterDf()</a></code> <code><a href="mutateClusterDf.html">mutateMetaDf()</a></code> <code><a href="mutateClusterDf.html">mutateStatsDf()</a></code> </p>
+        </td>
+        <td><p>Create and modify data variables</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="mutateTracksDf.html">mutateTracksDf()</a></code> </p>
+        </td>
+        <td><p>Create and modify data variables</p></td>
       </tr>
     </tbody><tbody>
       
@@ -647,6 +704,12 @@
           <p><code><a href="getOutlierResults.html">getOutlierResults()</a></code> <code><a href="getOutlierResults.html">getOutlierIds()</a></code> </p>
         </td>
         <td><p>Obtain outlier detection results</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="getOutlierWells.html">getOutlierWells()</a></code> </p>
+        </td>
+        <td><p>Obtain possible outlier wells</p></td>
       </tr>
     </tbody><tbody>
       
@@ -672,6 +735,18 @@
           <p><code><a href="nFiles.html">nFiles()</a></code> </p>
         </td>
         <td><p>Number of files read in</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="nMissingValuesStats.html">nMissingValuesStats()</a></code> </p>
+        </td>
+        <td><p>Number of NAs by cell id  (in stats)</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="nMissingValuesTracks.html">nMissingValuesTracks()</a></code> </p>
+        </td>
+        <td><p>Number of NAs by cell id  (in tracks)</p></td>
       </tr>
     </tbody><tbody>
       <tr>
@@ -699,13 +774,38 @@
         <td>
           <p><code><a href="detectOutliers.html">detectOutliers()</a></code> </p>
         </td>
-        <td><p>Detect outliers</p></td>
+        <td><p>Detect outlier cells</p></td>
       </tr><tr>
         
         <td>
           <p><code><a href="removeOutliers.html">removeOutliers()</a></code> </p>
         </td>
         <td><p>Remove outliers from object</p></td>
+      </tr>
+    </tbody><tbody>
+      
+      <tr>
+        <th colspan="2">
+          <h3 id="section-batch-effect-detection" class="hasAnchor"><a href="#section-batch-effect-detection" class="anchor"></a>Batch effect detection</h3>
+          <p class="section-desc"></p>
+        </th>
+      </tr>
+      
+    </tbody><tbody>
+      
+      
+      <tr>
+        
+        <td>
+          <p><code><a href="detectBatchEffects.html">detectBatchEffects()</a></code> </p>
+        </td>
+        <td><p>Detect batch effects</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="plotBatchHeatmap.html">plotBatchHeatmap()</a></code> </p>
+        </td>
+        <td><p>Visualize possible batch effects</p></td>
       </tr>
     </tbody><tbody>
       <tr>
@@ -976,6 +1076,24 @@
           <p><code><a href="validAgglomerationMethods.html">validAgglomerationMethods()</a></code> <code><a href="validAgglomerationMethods.html">validColorPalettes()</a></code> <code><a href="validAgglomerationMethods.html">validColorSpectra()</a></code> <code><a href="validAgglomerationMethods.html">validDistanceMethods()</a></code> <code><a href="validAgglomerationMethods.html">validKmeansMethods()</a></code> </p>
         </td>
         <td><p>Valid input options</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="validate_additional_variables_shiny.html">validate_additional_variables_shiny()</a></code> </p>
+        </td>
+        <td><p>Title</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="validate_analysis_module_variables_shiny.html">validate_analysis_module_variables_shiny()</a></code> </p>
+        </td>
+        <td><p>Title</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="validate_identifier_variables_shiny.html">validate_identifier_variables_shiny()</a></code> </p>
+        </td>
+        <td><p>Title</p></td>
       </tr>
     </tbody>
     </table>

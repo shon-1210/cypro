@@ -183,7 +183,8 @@ moduleLoadDataServer <- function(id, object){
                    shiny::uiOutput(outputId = ns("ld_added_well_plates"))
                 ),
                 hs(4, 
-                   shiny::h5(shiny::strong("If ambiguous:")),
+                   shiny::h5(shiny::strong("If ambiguous:")) %>% 
+                     add_helper(content = helper_content$if_ambiguous),
                    shiny::selectInput(
                      inputId = ns("ld_keep_filetype"), 
                      label = NULL, 

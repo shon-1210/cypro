@@ -453,7 +453,7 @@ plotTsne <- function(object,
 #' @rdname plotPca
 #' @export
 plotUmap <- function(object,
-                     variable_set,
+                    variable_set,
                     phase = NULL, 
                     color_by = NULL, 
                     color_aes = "fill",

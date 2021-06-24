@@ -73,12 +73,12 @@ plotCellCount <- function(object, across, color_by = across, phase = NULL){
 #' @param corr_pmin Numeric value. The minimum p-value that is displayed as a number. Everything below it is
 #' displayed as \emph{ < \code{corr_pmin}}.
 #' @param corr_pos_x,corr_pos_y Numeric values or NULL. Specify the exact position of the text used to display the correlation 
-#' results. If set to NULL defaults to right upper corner of the plot.
+#' results. If set to NULL defaults to left upper corner of the plot.
 #' @param corr_text_sep Character value. The string that separates correlation value and respective p-value.
 #' @param corr_text_size Numeric value. The size used to print the correlation results.
 #' 
-#' @details Argument \code{across} can be specified of a character vector of length 2. If so, argument 
-#' \code{across_subset} must be a list of character vectors whereby the names are equal to the input for \code{across}. 
+#' @details Argument \code{across} can be specified as a character vector of length 2. If so, argument 
+#' \code{across_subset} must be a list of character vectors whereby the names of the list correspond to the input for \code{across}. 
 #'
 #' @inherit ggplot_family return
 #' @export
@@ -92,25 +92,30 @@ plotScatterplot <- function(object,
                             relevel = TRUE,
                             ncol = NULL,
                             nrow = NULL,
+                            color_aes = NULL, 
+                            color_by = NULL,
                             scales = "fixed",
                             space = "fixed",
                             pt_alpha = 0.9,
-                            pt_clr = "black",
-                            pt_fill = "black",
-                            pt_shape = 21,
-                            pt_size = 1.5,
+                            pt_clr = NULL,
+                            pt_clrp = NULL, 
+                            pt_fill = NULL,
+                            pt_shape = NULL,
+                            pt_size = NULL,
                             display_smooth = FALSE,
-                            smooth_alpha = 0.9,
-                            smooth_clr = "blue",
+                            smooth_alpha = NULL,
+                            smooth_clr = NULL,
                             smooth_method = NULL,
-                            smooth_se = FALSE,
+                            smooth_se = NULL,
+                            smooth_size = NULL,
                             display_corr = FALSE,
                             corr_method = "pearson",
                             corr_pmin = 5e-05,
                             corr_pos_x = NULL,
                             corr_pos_y = NULL,
                             corr_text_sep = "\n",
-                            corr_text_size = 1){
+                            corr_text_size = 1,
+                            ...){
   
   
   check_object(object)
@@ -125,6 +130,7 @@ plotScatterplot <- function(object,
       with_meta = TRUE, 
       with_cluster = TRUE,
       with_well_plate = TRUE,
+      drop_na = FALSE, 
       verbose = FALSE) %>% 
     dplyr::select(-cell_id)
   
@@ -137,10 +143,13 @@ plotScatterplot <- function(object,
     relevel = relevel,
     ncol = ncol,
     nrow = nrow,
+    clr.aes = color_aes,
+    clr.by = color_by,
     scales = scales,
     space = space,
     pt.alpha = pt_alpha,
     pt.clr = pt_clr,
+    pt.clrp = pt_clrp,
     pt.fill = pt_fill,
     pt.shape = pt_shape,
     pt.size = pt_size,
@@ -149,13 +158,15 @@ plotScatterplot <- function(object,
     smooth.clr = smooth_clr,
     smooth.method = smooth_method,
     smooth.se = smooth_se,
+    smooth.size = smooth_size,
     display.corr = display_corr,
     corr.method = corr_method,
     corr.p.min = corr_pmin,
     corr.pos.x = corr_pos_x,
     corr.pos.y = corr_pos_y,
     corr.text.sep = corr_text_sep,
-    corr.text.size = corr_text_size
+    corr.text.size = corr_text_size,
+    ...
   )
   
 }

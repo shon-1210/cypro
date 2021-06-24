@@ -16,7 +16,7 @@ subsetByCluster(
 
 subsetByGroup(
   object,
-  new_name,
+  new_name = NULL,
   grouping_variable,
   groups,
   phase = NULL,

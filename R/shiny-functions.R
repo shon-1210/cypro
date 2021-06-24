@@ -399,9 +399,11 @@ evaluate_file_availability_shiny <- function(wp_list, recursive = TRUE, keep_fil
     base::list.files(path = directory, recursive = recursive, full.names = TRUE) %>% 
     stringr::str_subset(pattern = file_regex)
   
+  assign("wp_list", value = wp_list, envir = .GlobalEnv)
+  
   if(base::isTRUE(debug_ct)){print(wp_directories)}
   
-  # get directories that are to be discarded
+  # get directories that are to be kept
   well_image_vec <-
     stringr::str_extract(string = wp_directories, pattern = file_regex) %>% 
     stringr::str_extract(pattern = well_image_regex)
@@ -421,8 +423,10 @@ evaluate_file_availability_shiny <- function(wp_list, recursive = TRUE, keep_fil
   if(base::length(ambiguous_files) != 0){
     
     ambiguous_files <-
-      purrr::map(.x = ignore_filetypes,
-                 .f = ~ stringr::str_c(ambiguous_files, .x, sep = ".")) %>% 
+      purrr::map(
+        .x = ignore_filetypes, 
+        .f = ~ stringr::str_c(ambiguous_files, .x, sep = ".")
+        ) %>% 
       purrr::flatten_chr()
     
   }

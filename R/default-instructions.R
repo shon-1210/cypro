@@ -66,7 +66,7 @@ assign_default <- function(object){
 #' 
 adjustDefaultInstructions <- function(object, ...){
   
-  input <- confuns::keep_named(c(...))
+  input <- confuns::keep_named(list(...))
   
   confuns::check_one_of(
     input = base::names(input), 
@@ -80,21 +80,25 @@ adjustDefaultInstructions <- function(object, ...){
     
     slot <- base::names(input[i])
     
-    if(slot %in% default_character_values){
+    if(slot == "phase"){
+
+      input[[i]] <- check_phase(object, phase = input[[i]], max_phases = 1)
       
-      confuns::is_value(x = input[i], mode = "character", ref = slot)
+    } else if(slot %in% default_character_values){
+      
+      confuns::is_value(x = input[[i]], mode = "character", ref = slot)
       
     } else if(slot %in% default_logical_values){
       
-      confuns::is_value(x = input[i], mode = "logical", ref = slot)
+      confuns::is_value(x = input[[i]], mode = "logical", ref = slot)
       
-    } else if(slot %in% defalt_numeric_values){
+    } else if(slot %in% default_numeric_values){
       
-      confuns::is_value(x = input[i], mode = "numeric", ref = slot)
+      confuns::is_value(x = input[[i]], mode = "numeric", ref = slot)
       
     } 
     
-    object@default[[slot]] <- base::unname(input[i])
+    object@default[[slot]] <- base::unname(input[[i]])
     
   }
   

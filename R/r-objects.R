@@ -26,8 +26,8 @@ file_regex <- "[A-Z]{1}\\d{1,2}_\\d{1}\\.(csv|xls|xlsx)$"
 
 # Column names ------------------------------------------------------------
 
-non_data_track_variables <- c("frame_itvl", "frame_num", "frame_time",
-                              "x_coords", "y_coords") # keeps cell_id!!
+non_data_track_variables <- c("frame_added", "frame_itvl", "frame_num", "frame_time",
+                              "x_coords", "y_coords")
 
 original_ct_variables <- c("y-coordinate [pixel]", "x-coordinate [pixel]", "Frame number", "Cell ID",
                            "Distance from origin", "Distance from last point", "Instantaneous speed",
@@ -74,7 +74,7 @@ default_list <-
   list(
     clrp = "milo",
     clrsp = "viridis",
-    make_pretty = TRUE, 
+    color_aes = "color",
     method_aggl = "ward.D",
     method_corr = "pearson",
     method_dist = "euclidean",
@@ -86,8 +86,13 @@ default_list <-
     pt_clrp = "milo", 
     pt_clrsp = "viridis",
     pt_fill = "black",
+    pt_shape = 19,
     pt_size = 3, 
+    smooth_alpha = 0.9,
+    smooth_clr = "blue",
     smooth_method = "lm",
+    smooth_se = FALSE,
+    smooth_size = 1,
     verbose = TRUE, 
     with_cluster = TRUE, 
     with_meta = TRUE, 
@@ -181,6 +186,13 @@ helper_content <- list(
   "If you realized that you assigned the wrong folde or that some files were
   named incorrectly you can fix what needs to be fixed and assign the directory
   again by clicking on 'Assign Folder: Browse'."), 
+  
+  if_ambiguous = c(
+  "In case of ambiguous file naming you can denote which filetype should be used.",
+  "",
+  "If the chosen filetype is not among the found files the file is considered
+  to be missing."
+  ),
   
   well_plate_status = c(
   "This table provides summary information about the file availability for all well

@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">cypro</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.2.0</span>
       </span>
     </div>
 
@@ -58,9 +58,26 @@
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
-<li class="dropdown-header">The cypro object</li>
+<li class="dropdown-header">Getting started</li>
     <li>
-      <a href="../articles/getting-started.html">Experiment design and data loading</a>
+      <a href="../articles/design-experiment.html">1. Experiment design</a>
+    </li>
+    <li>
+      <a href="../articles/load-data.html">2. Data loading</a>
+    </li>
+    <li>
+      <a href="../articles/process-data.html">3. Data processing</a>
+    </li>
+    <li class="dropdown-header">Quality checks</li>
+    <li>
+      <a href="../articles/batch-effect-detection.html">Batch effect detection</a>
+    </li>
+    <li>
+      <a href="../articles/outlier-detection.html">Outlier detection</a>
+    </li>
+    <li class="dropdown-header">Around the cypro object</li>
+    <li>
+      <a href="../articles/default-setting.html">Default setting</a>
     </li>
     <li>
       <a href="../articles/subsetting.html">Create data subsets</a>
@@ -69,12 +86,15 @@
       <a href="../articles/extract-data.html">Extract data and information</a>
     </li>
     <li>
+      <a href="../articles/adding.html">Add content</a>
+    </li>
+    <li>
       <a href="../articles/renaming.html">Rename content</a>
     </li>
     <li>
       <a href="../articles/variable-sets.html">Variable sets</a>
     </li>
-    <li class="dropdown-header">Analysis &amp; Profiling</li>
+    <li class="dropdown-header">Cell Profiling</li>
     <li>
       <a href="../articles/dim-red.html">Dimensionality reduction</a>
     </li>
@@ -84,12 +104,19 @@
     <li>
       <a href="../articles/clustering.html">Clustering</a>
     </li>
-    <li>
-      <a href="../articles/plotting-stats.html">Statistical tests and plots</a>
-    </li>
-    <li class="dropdown-header">Modules</li>
+    <li class="dropdown-header">Analysis Modules</li>
     <li>
       <a href="../articles/module-migration.html">Migration</a>
+    </li>
+    <li>
+      <a href="../articles/module-mitosis.html">Mitosis &amp; Cell lineages</a>
+    </li>
+    <li class="dropdown-header">Visualization</li>
+    <li>
+      <a href="../articles/plotting-well-plates.html">Well plates</a>
+    </li>
+    <li>
+      <a href="../articles/plotting-stats.html">Statistical tests and plots</a>
     </li>
   </ul>
 </li>
@@ -132,7 +159,7 @@
 
 <span class="co"># load object from broad institute compound profiling experiment week 4</span>
 <span class="co"># contains one time imaging data</span>
-<span class="va">object</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span>file <span class="op">=</span> <span class="st">"data/bids-week4.RDS"</span><span class="op">)</span>
+<span class="va">object_one_time</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span>file <span class="op">=</span> <span class="st">"data/bids-week4.RDS"</span><span class="op">)</span>
 
 <span class="co"># load object that contains tracking data </span>
 <span class="va">object_tracks</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span>file <span class="op">=</span> <span class="st">"data/example-tracks.RDS"</span><span class="op">)</span></code></pre></div>
@@ -140,67 +167,53 @@
 <h2 class="hasAnchor">
 <a href="#cell-data-frames" class="anchor" aria-hidden="true"></a>1. Cell data.frames</h2>
 <p>The data of your cells is stored in the <code>@cdata</code> slot in form of five data.frames.</p>
-<div id="statistic-data" class="section level3">
-<h3 class="hasAnchor">
-<a href="#statistic-data" class="anchor" aria-hidden="true"></a>1.1 Stat(istic) data</h3>
-<p>The stats data.frame (statistics data.frame) contains summary information of every cell. In case of one time imaging it resembles exactly the data you have loaded in. In case of time lapse experiments it contains mean, median, maximum etc. summaries of all variables you specified to keep. Apart from the identifier variable <em>cell_id</em> all variables in this data.frame are numeric.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">stats_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getStatsDf.html">getStatsDf</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">object</span><span class="op">)</span>
-
-<span class="co"># this data.frame can get pretty big </span>
-<span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">stats_df</span><span class="op">)</span></code></pre></div>
-<pre><code>## [1] 13000   354</code></pre>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># select only the first 25 variables</span>
-<span class="fu">select</span><span class="op">(</span><span class="va">stats_df</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">25</span><span class="op">)</span> <span class="op">%&gt;%</span> 
-  <span class="co"># print only the first 100 rows </span>
-  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span></code></pre></div>
-<pre><code>## # A tibble: 100 x 25
-##    cell_id   AreaShape_Area AreaShape_Bound~ AreaShape_Boundi~ AreaShape_Boundi~
-##    &lt;chr&gt;              &lt;dbl&gt;            &lt;dbl&gt;             &lt;dbl&gt;             &lt;dbl&gt;
-##  1 CID_1_WI~           1102             1680              1214                28
-##  2 CID_2_WI~           1370             2268              1263                36
-##  3 CID_7_WI~           3453             7298              1173                89
-##  4 CID_10_W~           5173             9548              1050                62
-##  5 CID_14_W~           3548            10088               379               100
-##  6 CID_15_W~           2723             3584              1238                85
-##  7 CID_17_W~            774             1462                43                62
-##  8 CID_20_W~           2378             4230              1060               109
-##  9 CID_21_W~           1991             4389               864                93
-## 10 CID_22_W~           4337            12180               576               149
-## # ... with 90 more rows, and 20 more variables:
-## #   AreaShape_BoundingBoxMinimum_X &lt;dbl&gt;, AreaShape_BoundingBoxMinimum_Y &lt;dbl&gt;,
-## #   AreaShape_Center_X &lt;dbl&gt;, AreaShape_Center_Y &lt;dbl&gt;,
-## #   AreaShape_Compactness &lt;dbl&gt;, AreaShape_Eccentricity &lt;dbl&gt;,
-## #   AreaShape_EquivalentDiameter &lt;dbl&gt;, AreaShape_EulerNumber &lt;dbl&gt;,
-## #   AreaShape_Extent &lt;dbl&gt;, AreaShape_FormFactor &lt;dbl&gt;,
-## #   AreaShape_MajorAxisLength &lt;dbl&gt;, AreaShape_MaxFeretDiameter &lt;dbl&gt;,
-## #   AreaShape_MaximumRadius &lt;dbl&gt;, AreaShape_MeanRadius &lt;dbl&gt;,
-## #   AreaShape_MedianRadius &lt;dbl&gt;, AreaShape_MinFeretDiameter &lt;dbl&gt;,
-## #   AreaShape_MinorAxisLength &lt;dbl&gt;, AreaShape_Orientation &lt;dbl&gt;,
-## #   AreaShape_Perimeter &lt;dbl&gt;, AreaShape_Solidity &lt;dbl&gt;</code></pre>
-<p>This data.frame serves as the basic for most of the statistical tests, dimensional reduction and machine learning techniques you can use with <code>cypro</code>. See the <a href="variable-sets.html">tutorial on variable sets</a> for functions that help dealing with the vast number of variables this data.frame can contain.</p>
-</div>
 <div id="tracking-data" class="section level3">
 <h3 class="hasAnchor">
-<a href="#tracking-data" class="anchor" aria-hidden="true"></a>1.2 Track(ing) data</h3>
-<p>The tracks data.frame contains information for every cell at a given timepoint. This data.frame only plays a significant role in timelapse experiments. Use <code><a href="../reference/getTracksDf.html">getTracksDf()</a></code> to obtain it.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<a href="#tracking-data" class="anchor" aria-hidden="true"></a>1.1 Track(ing) data</h3>
+<p>The tracks data.frame contains information for every cell at a given point of time This data.frame plays a significant role in time lapse experiments. Use <code><a href="../reference/getTracksDf.html">getTracksDf()</a></code> to obtain it.</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">tracks_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getTracksDf.html">getTracksDf</a></span><span class="op">(</span><span class="va">object_tracks</span><span class="op">)</span>
 
 <span class="co"># print first 10 rows</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">tracks_df</span><span class="op">)</span></code></pre></div>
 <pre><code>## # A tibble: 6 x 15
-##   cell_id    frame_num frame_time frame_itvl x_coords y_coords speed   dfo  dflp
-##   &lt;chr&gt;          &lt;dbl&gt;      &lt;dbl&gt; &lt;chr&gt;         &lt;dbl&gt;    &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
-## 1 CID_1_WI_~         1          3 3 hours         253      218 0       0    0   
-## 2 CID_1_WI_~         2          6 6 hours         226      211 9.30   27.9 27.9 
-## 3 CID_1_WI_~         3          9 9 hours         234      198 5.09   27.6 15.3 
-## 4 CID_1_WI_~         4         12 12 hours        231      199 1.05   29.1  3.16
-## 5 CID_1_WI_~         5         15 15 hours        229      198 0.745  31.2  2.24
-## 6 CID_1_WI_~         6         18 18 hours        229      190 2.67   36.9  8   
+##   cell_id   frame_num frame_time frame_itvl x_coords y_coords  speed   dfo  dflp
+##   &lt;chr&gt;         &lt;dbl&gt;      &lt;dbl&gt; &lt;chr&gt;         &lt;dbl&gt;    &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1 CID_1_WI~        16         48 48 hours        220      216  1.94   5.83  5.83
+## 2 CID_1_WI~        17         51 51 hours        222      215  0.745  3.61  2.24
+## 3 CID_1_WI~        18         54 54 hours        230      209  3.33   6.4  10   
+## 4 CID_1_WI~        19         57 57 hours        221      242 11.4   29.3  34.2 
+## 5 CID_1_WI~        20         60 60 hours        221      212 10      4.12 30   
+## 6 CID_1_WI~        21         63 63 hours        220      216  1.37   5.83  4.12
 ## # ... with 6 more variables: cell_line &lt;fct&gt;, condition &lt;fct&gt;,
 ## #   well_plate_name &lt;fct&gt;, well_plate_index &lt;fct&gt;, well &lt;fct&gt;, well_image &lt;fct&gt;</code></pre>
+</div>
+<div id="statistic-data" class="section level3">
+<h3 class="hasAnchor">
+<a href="#statistic-data" class="anchor" aria-hidden="true"></a>1.2 Stat(istic) data</h3>
+<p>The stats data.frame (statistics data.frame) contains summary information of every cell. In case of time lapse experiments it contains mean, median, maximum etc. summaries of all variables you specified to keep. Apart from the identifier variable <em>cell_id</em> all variables in this data.frame are numeric.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">stat_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getStatsDf.html">getStatsDf</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">object_tracks</span>, with_grouping <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>
+
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">stat_df</span>, <span class="fl">100</span><span class="op">)</span></code></pre></div>
+<pre><code>## # A tibble: 100 x 21
+##    cell_id        max_speed mean_speed median_speed min_speed sd_speed var_speed
+##    &lt;chr&gt;              &lt;dbl&gt;      &lt;dbl&gt;        &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;
+##  1 CID_1_WI_A1_1~     13.7       5.54         3.35      0.745    4.81    23.2   
+##  2 CID_1_WI_A1_2~     15.3       7.77         8.83      1.33     4.80    23.0   
+##  3 CID_1_WI_A1_3~     16.5       5.67         1.89      0.943    6.52    42.5   
+##  4 CID_1_WI_A2_2~      5.75      1.68         1.20      0.333    1.63     2.66  
+##  5 CID_1_WI_A2_3~     16.7       4.56         2.87      0.667    5.13    26.3   
+##  6 CID_1_WI_A3_1~     12.8       5.53         3.90      0.943    4.55    20.7   
+##  7 CID_1_WI_A3_2~     12.3       5.77         5.47      0.471    4.00    16.0   
+##  8 CID_1_WI_A4_1~     10.6       4.11         4.35      0.333    3.21    10.3   
+##  9 CID_1_WI_A4_2~      1         0.647        0.667     0.471    0.169    0.0285
+## 10 CID_1_WI_A5_1~     12.1       5.13         3.14      1        3.74    14.0   
+## # ... with 90 more rows, and 14 more variables: max_dfo &lt;dbl&gt;, mean_dfo &lt;dbl&gt;,
+## #   median_dfo &lt;dbl&gt;, min_dfo &lt;dbl&gt;, sd_dfo &lt;dbl&gt;, var_dfo &lt;dbl&gt;,
+## #   max_dflp &lt;dbl&gt;, mean_dflp &lt;dbl&gt;, median_dflp &lt;dbl&gt;, min_dflp &lt;dbl&gt;,
+## #   sd_dflp &lt;dbl&gt;, var_dflp &lt;dbl&gt;, total_dist &lt;dbl&gt;, mgr_eff &lt;dbl&gt;</code></pre>
+<p>This data.frame serves as the basic for most of the statistical tests, dimensional reduction and machine learning techniques you can use with <code>cypro</code>. See the <a href="variable-sets.html">tutorial on variable sets</a> for functions that help dealing with the vast number of variables this data.frame can contain.</p>
 </div>
 <div id="grouping-data" class="section level3">
 <h3 class="hasAnchor">
@@ -213,60 +226,61 @@
 </ul>
 <div id="well-plate-data-frame" class="section level4">
 <h4 class="hasAnchor">
-<a href="#well-plate-data-frame" class="anchor" aria-hidden="true"></a>Well Plate data.frame</h4>
+<a href="#well-plate-data-frame" class="anchor" aria-hidden="true"></a>1.3.1 Well Plate data.frame</h4>
 <p>Well plate variables <em>well_plate_name</em>, <em>well</em> and <em>well_image</em> specify the localisation of cells regarding the experiment design and might be used in case of quality control and removal of batch effects. The respective data.frame can be obtained via <code><a href="../reference/getGroupingDf.html">getWellPlateDf()</a></code>.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">wp_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getGroupingDf.html">getWellPlateDf</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">wp_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getGroupingDf.html">getWellPlateDf</a></span><span class="op">(</span><span class="va">object_tracks</span><span class="op">)</span>
 
 <span class="co"># print first 10 rows</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">wp_df</span>, <span class="fl">10</span><span class="op">)</span></code></pre></div>
 <pre><code>## # A tibble: 10 x 5
-##    cell_id              well_plate_name well_plate_index well  well_image
-##    &lt;chr&gt;                &lt;chr&gt;           &lt;chr&gt;            &lt;chr&gt; &lt;chr&gt;     
-##  1 CID_1_WI_B10_1_WP_1  Week4_27481     WP_1             B10   B10_1     
-##  2 CID_2_WI_B10_1_WP_1  Week4_27481     WP_1             B10   B10_1     
-##  3 CID_7_WI_B10_1_WP_1  Week4_27481     WP_1             B10   B10_1     
-##  4 CID_10_WI_B10_1_WP_1 Week4_27481     WP_1             B10   B10_1     
-##  5 CID_14_WI_B10_1_WP_1 Week4_27481     WP_1             B10   B10_1     
-##  6 CID_15_WI_B10_1_WP_1 Week4_27481     WP_1             B10   B10_1     
-##  7 CID_17_WI_B10_1_WP_1 Week4_27481     WP_1             B10   B10_1     
-##  8 CID_20_WI_B10_1_WP_1 Week4_27481     WP_1             B10   B10_1     
-##  9 CID_21_WI_B10_1_WP_1 Week4_27481     WP_1             B10   B10_1     
-## 10 CID_22_WI_B10_1_WP_1 Week4_27481     WP_1             B10   B10_1</code></pre>
+##    cell_id             well_plate_name well_plate_index well  well_image
+##    &lt;chr&gt;               &lt;fct&gt;           &lt;fct&gt;            &lt;fct&gt; &lt;fct&gt;     
+##  1 CID_1_WI_A4_1_WP_1  one             WP_1             A4    A4_1      
+##  2 CID_2_WI_A4_1_WP_1  one             WP_1             A4    A4_1      
+##  3 CID_3_WI_A4_1_WP_1  one             WP_1             A4    A4_1      
+##  4 CID_4_WI_A4_1_WP_1  one             WP_1             A4    A4_1      
+##  5 CID_5_WI_A4_1_WP_1  one             WP_1             A4    A4_1      
+##  6 CID_6_WI_A4_1_WP_1  one             WP_1             A4    A4_1      
+##  7 CID_7_WI_A4_1_WP_1  one             WP_1             A4    A4_1      
+##  8 CID_8_WI_A4_1_WP_1  one             WP_1             A4    A4_1      
+##  9 CID_9_WI_A4_1_WP_1  one             WP_1             A4    A4_1      
+## 10 CID_10_WI_A4_1_WP_1 one             WP_1             A4    A4_1</code></pre>
 </div>
 <div id="meta-data-frame" class="section level4">
 <h4 class="hasAnchor">
-<a href="#meta-data-frame" class="anchor" aria-hidden="true"></a>Meta data.frame</h4>
+<a href="#meta-data-frame" class="anchor" aria-hidden="true"></a>1.3.2 Meta data.frame</h4>
 <p>Meta variables are grouping variables such as condition and cell line. They will feature a major overlap with those from the the well plate data.frame. However, in case of timelapse experiments that include multiple phases they might differ from phase to phase which is why they are stored separately. Use <code><a href="../reference/getGroupingDf.html">getMetaDf()</a></code>to obtain the data.frame.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">meta_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getGroupingDf.html">getMetaDf</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">meta_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getGroupingDf.html">getMetaDf</a></span><span class="op">(</span><span class="va">object_tracks</span><span class="op">)</span>
 
 <span class="co"># print an example subset of every condition </span>
 <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">meta_df</span>, <span class="va">condition</span><span class="op">)</span> <span class="op">%&gt;%</span> 
   <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html" class="external-link">slice_head</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></code></pre></div>
-<pre><code>## # A tibble: 39 x 5
-## # Groups:   condition [13]
-##    cell_id         cell_line condition     concentration       moa              
-##    &lt;chr&gt;           &lt;fct&gt;     &lt;fct&gt;         &lt;fct&gt;               &lt;fct&gt;            
-##  1 CID_2_WI_G10_1~ MCF7      5-fluorourac~ 5-fluorouracil (0.~ &lt;NA&gt;             
-##  2 CID_5_WI_G10_1~ MCF7      5-fluorourac~ 5-fluorouracil (0.~ &lt;NA&gt;             
-##  3 CID_6_WI_G10_1~ MCF7      5-fluorourac~ 5-fluorouracil (0.~ &lt;NA&gt;             
-##  4 CID_2_WI_C10_1~ MCF7      AG-1478       AG-1478 (0.003)     &lt;NA&gt;             
-##  5 CID_4_WI_C10_1~ MCF7      AG-1478       AG-1478 (0.003)     &lt;NA&gt;             
-##  6 CID_8_WI_C10_1~ MCF7      AG-1478       AG-1478 (0.003)     &lt;NA&gt;             
-##  7 CID_1_WI_B10_1~ MCF7      anisomycin    anisomycin (0.003)  Protein synthesis
-##  8 CID_2_WI_B10_1~ MCF7      anisomycin    anisomycin (0.003)  Protein synthesis
-##  9 CID_7_WI_B10_1~ MCF7      anisomycin    anisomycin (0.003)  Protein synthesis
-## 10 CID_1_WI_C10_1~ MCF7      AZ258         AZ258 (0.01)        Aurora kinase in~
-## # ... with 29 more rows</code></pre>
-<p>See the tutorial on how to <a href="">add variables</a> to the <em>cto</em> object to learn how to expand this data.frame.</p>
+<pre><code>## # A tibble: 12 x 3
+## # Groups:   condition [4]
+##    cell_id            cell_line condition         
+##    &lt;chr&gt;              &lt;fct&gt;     &lt;fct&gt;             
+##  1 CID_1_WI_A4_1_WP_1 168       Ctrl              
+##  2 CID_2_WI_A4_1_WP_1 168       Ctrl              
+##  3 CID_3_WI_A4_1_WP_1 168       Ctrl              
+##  4 CID_1_WI_E4_1_WP_1 168       LY(1uM)           
+##  5 CID_2_WI_E4_1_WP_1 168       LY(1uM)           
+##  6 CID_3_WI_E4_1_WP_1 168       LY(1uM)           
+##  7 CID_1_WI_D4_1_WP_1 168       TMZ(100uM)        
+##  8 CID_2_WI_D4_1_WP_1 168       TMZ(100uM)        
+##  9 CID_3_WI_D4_1_WP_1 168       TMZ(100uM)        
+## 10 CID_1_WI_H4_1_WP_1 168       TMZ(100uM)+LY(1uM)
+## 11 CID_2_WI_H4_1_WP_1 168       TMZ(100uM)+LY(1uM)
+## 12 CID_3_WI_H4_1_WP_1 168       TMZ(100uM)+LY(1uM)</code></pre>
+<p>See the tutorial on how to <a href="">add variables</a> to the cypro object to learn how to expand this data.frame.</p>
 </div>
 <div id="cluster-data-frame" class="section level4">
 <h4 class="hasAnchor">
-<a href="#cluster-data-frame" class="anchor" aria-hidden="true"></a>Cluster data.frame</h4>
+<a href="#cluster-data-frame" class="anchor" aria-hidden="true"></a>1.3.3 Cluster data.frame</h4>
 <p>Cluster variables are the result of applied machine learning techniques such as kmeans- or hierarchical clustering. If none of these have been used the data.frame is going to be empty apart from the identifier variable <em>cell_id</em>. See the tutorial on how to <a href="clustering.html">cluster cells</a> in <code>cypro</code>. Obtain the data.frame via <code><a href="../reference/getGroupingDf.html">getClusterDf()</a></code>.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">cluster_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getGroupingDf.html">getClusterDf</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">cluster_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getGroupingDf.html">getClusterDf</a></span><span class="op">(</span><span class="va">object_one_time</span><span class="op">)</span>
 
 <span class="co"># print first 10 rows</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">cluster_df</span>, <span class="fl">100</span><span class="op">)</span></code></pre></div>
@@ -292,78 +306,84 @@
 </div>
 <div id="grouping-data-frame" class="section level4">
 <h4 class="hasAnchor">
-<a href="#grouping-data-frame" class="anchor" aria-hidden="true"></a>Grouping data.frame</h4>
+<a href="#grouping-data-frame" class="anchor" aria-hidden="true"></a>1.3.4 Grouping data.frame</h4>
 <p>All grouping variables together form the grouping data.frame. It can be extracted via <code><a href="../reference/getGroupingDf.html">getGroupingDf()</a></code> and contains all variables of the three grouping types.</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">group_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getGroupingDf.html">getGroupingDf</a></span><span class="op">(</span><span class="va">object_tracks</span><span class="op">)</span></code></pre></div>
+<pre><code>## No cluster variables have been calculated yet for second phase.</code></pre>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">group_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getGroupingDf.html">getGroupingDf</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span>
-
-<span class="co"># print first 10 rows</span>
+<code class="sourceCode R"><span class="co"># print first 10 rows</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">group_df</span><span class="op">)</span></code></pre></div>
-<pre><code>## # A tibble: 6 x 20
-##   cell_id     cell_line condition concentration  moa      `hcl_euclidean_comple~
-##   &lt;chr&gt;       &lt;fct&gt;     &lt;fct&gt;     &lt;fct&gt;          &lt;fct&gt;    &lt;fct&gt;                 
-## 1 CID_1_WI_B~ MCF7      anisomyc~ anisomycin (0~ Protein~ 1                     
-## 2 CID_2_WI_B~ MCF7      anisomyc~ anisomycin (0~ Protein~ 1                     
-## 3 CID_7_WI_B~ MCF7      anisomyc~ anisomycin (0~ Protein~ 1                     
-## 4 CID_10_WI_~ MCF7      anisomyc~ anisomycin (0~ Protein~ 1                     
-## 5 CID_14_WI_~ MCF7      anisomyc~ anisomycin (0~ Protein~ 1                     
-## 6 CID_15_WI_~ MCF7      anisomyc~ anisomycin (0~ Protein~ 1                     
-## # ... with 14 more variables: hcl_euclidean_complete_k_4_(intensity) &lt;fct&gt;,
-## #   hcl_euclidean_complete_k_5_(intensity) &lt;fct&gt;,
-## #   hcl_euclidean_ward.D_k_3_(intensity) &lt;fct&gt;,
-## #   hcl_euclidean_ward.D_k_4_(intensity) &lt;fct&gt;,
-## #   hcl_euclidean_ward.D_k_5_(intensity) &lt;fct&gt;,
-## #   kmeans_Lloyd_k_3_(intensity) &lt;fct&gt;, kmeans_Lloyd_k_4_(intensity) &lt;fct&gt;,
-## #   kmeans_Lloyd_k_5_(intensity) &lt;fct&gt;, pam_euclidean_k_4_(intensity) &lt;fct&gt;,
-## #   pam_euclidean_k_5_(intensity) &lt;fct&gt;, well_plate_name &lt;chr&gt;,
-## #   well_plate_index &lt;chr&gt;, well &lt;chr&gt;, well_image &lt;chr&gt;</code></pre>
+<pre><code>## # A tibble: 6 x 7
+##   cell_id  cell_line condition well_plate_name well_plate_index well  well_image
+##   &lt;chr&gt;    &lt;fct&gt;     &lt;fct&gt;     &lt;fct&gt;           &lt;fct&gt;            &lt;fct&gt; &lt;fct&gt;     
+## 1 CID_1_W~ 168       Ctrl      one             WP_1             A4    A4_1      
+## 2 CID_2_W~ 168       Ctrl      one             WP_1             A4    A4_1      
+## 3 CID_3_W~ 168       Ctrl      one             WP_1             A4    A4_1      
+## 4 CID_4_W~ 168       Ctrl      one             WP_1             A4    A4_1      
+## 5 CID_5_W~ 168       Ctrl      one             WP_1             A4    A4_1      
+## 6 CID_6_W~ 168       Ctrl      one             WP_1             A4    A4_1</code></pre>
 </div>
+</div>
+<div id="track-data-and-stat-data-one-time-imaging" class="section level3">
+<h3 class="hasAnchor">
+<a href="#track-data-and-stat-data-one-time-imaging" class="anchor" aria-hidden="true"></a>1.4 Track data and Stat data (One time imaging)</h3>
+<p>As mentioned <a href="terminology.html">here</a>, the difference between track data and stat data becomes obsolete in one time imaging experiments. The data type prefix track and stat are interchangeable in every function if you use them with an object that contains data from one time imaging experiments.</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">stat_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getStatsDf.html">getStatsDf</a></span><span class="op">(</span><span class="va">object_one_time</span>, with_grouping <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>
+
+<span class="va">track_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getTracksDf.html">getTracksDf</a></span><span class="op">(</span><span class="va">object_one_time</span>, with_grouping <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>
+
+<span class="fu"><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">stat_df</span>, y <span class="op">=</span> <span class="va">track_df</span><span class="op">)</span></code></pre></div>
+<pre><code>## [1] TRUE</code></pre>
+<p>This applies to every other function referring to either track or stat data (e.g. <code><a href="../reference/getStatVariableNames.html">getStatVariableNames()</a></code>, <code><a href="../reference/getStatVariableNames.html">getTrackVariableNames()</a></code>).</p>
 </div>
 </div>
 <div id="variable-data-frame" class="section level2">
 <h2 class="hasAnchor">
 <a href="#variable-data-frame" class="anchor" aria-hidden="true"></a>2. Variable data.frame</h2>
 <p>The variable data.frame focuses on the variables and provides summary statistics. It is stored in the <code>@vdata</code>slot. Use <code><a href="../reference/getVariableDf.html">getVariableDf()</a></code> to obtain it.</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">variable_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getVariableDf.html">getVariableDf</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">variable_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getVariableDf.html">getVariableDf</a></span><span class="op">(</span><span class="va">object_tracks</span><span class="op">)</span>
 
 <span class="co"># print first 10 rows</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">variable_df</span><span class="op">)</span></code></pre></div>
-<pre><code>## # A tibble: 6 x 10
-##   variable              vars     n  mean     sd   min     max  range    se   IQR
-##   &lt;chr&gt;                &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
-## 1 AreaShape_Area           1 86201 3824. 11343.   178 1307521 1.31e6 38.6   2335
-## 2 AreaShape_BoundingB~     2 86201 7073. 14789.   224 1310720 1.31e6 50.4   4572
-## 3 AreaShape_BoundingB~     3 86201  692.   375.    10    1280 1.27e3  1.28   655
-## 4 AreaShape_BoundingB~     4 86201  547.   300.     7    1024 1.02e3  1.02   527
-## 5 AreaShape_BoundingB~     5 86201  608.   375.     0    1270 1.27e3  1.28   656
-## 6 AreaShape_BoundingB~     6 86201  467.   301.     0    1015 1.01e3  1.02   527</code></pre>
+<pre><code>## # A tibble: 6 x 15
+##   variable  vars     n  mean    sd median trimmed   mad    min   max range  skew
+##   &lt;chr&gt;    &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1 max_spe~     1  7987 7.80  4.55   7.61    7.70  5.98  0.333  18.6  18.3  0.115
+## 2 mean_sp~     2  7987 3.08  2.21   2.73    2.85  2.27  0.0741 13.8  13.7  0.913
+## 3 median_~     3  7987 2.46  2.32   1.80    2.06  1.96  0      14.6  14.6  1.56 
+## 4 min_spe~     4  7987 0.598 0.787  0.333   0.458 0.494 0      10.4  10.4  3.65 
+## 5 sd_speed     5  7987 2.49  1.56   2.34    2.41  1.93  0       7.33  7.33 0.353
+## 6 var_spe~     6  7987 8.61  8.95   5.48    7.23  7.36  0      53.7  53.7  1.29 
+## # ... with 3 more variables: kurtosis &lt;dbl&gt;, se &lt;dbl&gt;, IQR &lt;dbl&gt;</code></pre>
 </div>
 <div id="set-up-data-frame" class="section level2">
 <h2 class="hasAnchor">
 <a href="#set-up-data-frame" class="anchor" aria-hidden="true"></a>3. Set Up data.frame</h2>
 <p>Several parts of the experiment design, in particular, the well plate design is stored in data.frames as well. Use <code><a href="../reference/getSetUpDf.html">getSetUpDf()</a></code> to obtain it.</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># obtain a vector of all well plate names </span>
-<span class="va">wp_names</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getWellPlateNames.html">getWellPlateNames</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span>
+<span class="va">wp_names</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getWellPlateNames.html">getWellPlateNames</a></span><span class="op">(</span><span class="va">object_tracks</span><span class="op">)</span>
 
 <span class="va">wp_names</span></code></pre></div>
-<pre><code>## [1] "Week4_27481" "Week4_27801"</code></pre>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">set_up_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getSetUpDf.html">getSetUpDf</a></span><span class="op">(</span><span class="va">object</span>, well_plate_name <span class="op">=</span> <span class="va">wp_names</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span>
+<pre><code>## [1] "one"</code></pre>
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">set_up_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getSetUpDf.html">getSetUpDf</a></span><span class="op">(</span><span class="va">object_tracks</span>, well_plate_name <span class="op">=</span> <span class="va">wp_names</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span>
 
 <span class="co"># print first 10 rows</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">set_up_df</span><span class="op">)</span></code></pre></div>
 <pre><code>## # A tibble: 6 x 16
 ## # Groups:   well [6]
-##   row_num col_num row_letter well  group    information_sta~ cell_line condition
-##     &lt;int&gt;   &lt;int&gt; &lt;chr&gt;      &lt;chr&gt; &lt;chr&gt;    &lt;fct&gt;            &lt;chr&gt;     &lt;chr&gt;    
-## 1       1       1 A          A1    well_pl~ Missing          unknown   unknown  
-## 2       1       2 A          A2    well_pl~ Missing          unknown   unknown  
-## 3       1       3 A          A3    well_pl~ Missing          unknown   unknown  
-## 4       1       4 A          A4    well_pl~ Missing          unknown   unknown  
-## 5       1       5 A          A5    well_pl~ Missing          unknown   unknown  
-## 6       1       6 A          A6    well_pl~ Missing          unknown   unknown  
+##   row_num col_num row_letter well  group   information_sta~ cell_line condition 
+##     &lt;int&gt;   &lt;int&gt; &lt;chr&gt;      &lt;chr&gt; &lt;chr&gt;   &lt;fct&gt;            &lt;chr&gt;     &lt;chr&gt;     
+## 1       1       1 A          A1    well_p~ Complete         GSC       1.Ctrl -&gt;~
+## 2       1       2 A          A2    well_p~ Complete         GSC       1.Ctrl -&gt;~
+## 3       1       3 A          A3    well_p~ Complete         GSC       1.Ctrl -&gt;~
+## 4       1       4 A          A4    well_p~ Complete         168       1.Ctrl -&gt;~
+## 5       1       5 A          A5    well_p~ Complete         168       1.Ctrl -&gt;~
+## 6       1       6 A          A6    well_p~ Complete         168       1.Ctrl -&gt;~
 ## # ... with 8 more variables: cl_condition &lt;chr&gt;, type &lt;chr&gt;,
 ## #   condition_df &lt;list&gt;, ipw &lt;int&gt;, well_files &lt;dbl&gt;, well_image_files &lt;dbl&gt;,
 ## #   ambiguous &lt;lgl&gt;, availability_status &lt;fct&gt;</code></pre>
@@ -376,351 +396,22 @@
 <h3 class="hasAnchor">
 <a href="#functions-to-extract-names" class="anchor" aria-hidden="true"></a>4.1 Functions to extract names</h3>
 <p>The <code>get*VariableNames()</code>-family of functions allows to obtain character vectors of variable names which are the column names of the respective data.frames introduced in chapter 1. Cell data.frames.</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">stat_vars</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getStatVariableNames.html">getStatVariableNames</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span>
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">stat_vars</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getStatVariableNames.html">getStatVariableNames</a></span><span class="op">(</span><span class="va">object_tracks</span><span class="op">)</span>
 
-<span class="va">wp_vars</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getGroupingVariableNames.html">getWellPlateVariableNames</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span>
+<span class="va">wp_vars</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getGroupingVariableNames.html">getWellPlateVariableNames</a></span><span class="op">(</span><span class="va">object_tracks</span><span class="op">)</span>
 
-<span class="va">meta_vars</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getGroupingVariableNames.html">getMetaVariableNames</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span>
+<span class="va">meta_vars</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getGroupingVariableNames.html">getMetaVariableNames</a></span><span class="op">(</span><span class="va">object_tracks</span><span class="op">)</span>
 
-<span class="va">cluster_vars</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getGroupingVariableNames.html">getClusterVariableNames</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span>
-
-<span class="va">stat_vars</span></code></pre></div>
+<span class="va">cluster_vars</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getGroupingVariableNames.html">getClusterVariableNames</a></span><span class="op">(</span><span class="va">object_tracks</span><span class="op">)</span></code></pre></div>
+<pre><code>## No cluster variables have been calculated yet for second phase.</code></pre>
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">stat_vars</span></code></pre></div>
 <details><p><summary>output</summary></p>
-<pre><code>##   [1] "AreaShape_Area"                                 
-##   [2] "AreaShape_BoundingBoxArea"                      
-##   [3] "AreaShape_BoundingBoxMaximum_X"                 
-##   [4] "AreaShape_BoundingBoxMaximum_Y"                 
-##   [5] "AreaShape_BoundingBoxMinimum_X"                 
-##   [6] "AreaShape_BoundingBoxMinimum_Y"                 
-##   [7] "AreaShape_Center_X"                             
-##   [8] "AreaShape_Center_Y"                             
-##   [9] "AreaShape_Compactness"                          
-##  [10] "AreaShape_Eccentricity"                         
-##  [11] "AreaShape_EquivalentDiameter"                   
-##  [12] "AreaShape_EulerNumber"                          
-##  [13] "AreaShape_Extent"                               
-##  [14] "AreaShape_FormFactor"                           
-##  [15] "AreaShape_MajorAxisLength"                      
-##  [16] "AreaShape_MaxFeretDiameter"                     
-##  [17] "AreaShape_MaximumRadius"                        
-##  [18] "AreaShape_MeanRadius"                           
-##  [19] "AreaShape_MedianRadius"                         
-##  [20] "AreaShape_MinFeretDiameter"                     
-##  [21] "AreaShape_MinorAxisLength"                      
-##  [22] "AreaShape_Orientation"                          
-##  [23] "AreaShape_Perimeter"                            
-##  [24] "AreaShape_Solidity"                             
-##  [25] "AreaShape_Zernike_0_0"                          
-##  [26] "AreaShape_Zernike_1_1"                          
-##  [27] "AreaShape_Zernike_2_0"                          
-##  [28] "AreaShape_Zernike_2_2"                          
-##  [29] "AreaShape_Zernike_3_1"                          
-##  [30] "AreaShape_Zernike_3_3"                          
-##  [31] "AreaShape_Zernike_4_0"                          
-##  [32] "AreaShape_Zernike_4_2"                          
-##  [33] "AreaShape_Zernike_4_4"                          
-##  [34] "AreaShape_Zernike_5_1"                          
-##  [35] "AreaShape_Zernike_5_3"                          
-##  [36] "AreaShape_Zernike_5_5"                          
-##  [37] "AreaShape_Zernike_6_0"                          
-##  [38] "AreaShape_Zernike_6_2"                          
-##  [39] "AreaShape_Zernike_6_4"                          
-##  [40] "AreaShape_Zernike_6_6"                          
-##  [41] "AreaShape_Zernike_7_1"                          
-##  [42] "AreaShape_Zernike_7_3"                          
-##  [43] "AreaShape_Zernike_7_5"                          
-##  [44] "AreaShape_Zernike_7_7"                          
-##  [45] "AreaShape_Zernike_8_0"                          
-##  [46] "AreaShape_Zernike_8_2"                          
-##  [47] "AreaShape_Zernike_8_4"                          
-##  [48] "AreaShape_Zernike_8_6"                          
-##  [49] "AreaShape_Zernike_8_8"                          
-##  [50] "AreaShape_Zernike_9_1"                          
-##  [51] "AreaShape_Zernike_9_3"                          
-##  [52] "AreaShape_Zernike_9_5"                          
-##  [53] "AreaShape_Zernike_9_7"                          
-##  [54] "AreaShape_Zernike_9_9"                          
-##  [55] "Children_Cytoplasm_Count"                       
-##  [56] "Granularity_10_Actin"                           
-##  [57] "Granularity_11_Actin"                           
-##  [58] "Granularity_12_Actin"                           
-##  [59] "Granularity_13_Actin"                           
-##  [60] "Granularity_14_Actin"                           
-##  [61] "Granularity_15_Actin"                           
-##  [62] "Granularity_16_Actin"                           
-##  [63] "Granularity_1_Actin"                            
-##  [64] "Granularity_2_Actin"                            
-##  [65] "Granularity_3_Actin"                            
-##  [66] "Granularity_4_Actin"                            
-##  [67] "Granularity_5_Actin"                            
-##  [68] "Granularity_6_Actin"                            
-##  [69] "Granularity_7_Actin"                            
-##  [70] "Granularity_8_Actin"                            
-##  [71] "Granularity_9_Actin"                            
-##  [72] "Intensity_IntegratedIntensityEdge_Actin"        
-##  [73] "Intensity_IntegratedIntensity_Actin"            
-##  [74] "Intensity_LowerQuartileIntensity_Actin"         
-##  [75] "Intensity_MADIntensity_Actin"                   
-##  [76] "Intensity_MassDisplacement_Actin"               
-##  [77] "Intensity_MaxIntensityEdge_Actin"               
-##  [78] "Intensity_MaxIntensity_Actin"                   
-##  [79] "Intensity_MeanIntensityEdge_Actin"              
-##  [80] "Intensity_MeanIntensity_Actin"                  
-##  [81] "Intensity_MedianIntensity_Actin"                
-##  [82] "Intensity_MinIntensityEdge_Actin"               
-##  [83] "Intensity_MinIntensity_Actin"                   
-##  [84] "Intensity_StdIntensityEdge_Actin"               
-##  [85] "Intensity_StdIntensity_Actin"                   
-##  [86] "Intensity_UpperQuartileIntensity_Actin"         
-##  [87] "Location_CenterMassIntensity_X_Actin"           
-##  [88] "Location_CenterMassIntensity_Y_Actin"           
-##  [89] "Location_MaxIntensity_X_Actin"                  
-##  [90] "Location_MaxIntensity_Y_Actin"                  
-##  [91] "Neighbors_AngleBetweenNeighbors_10"             
-##  [92] "Neighbors_AngleBetweenNeighbors_Adjacent"       
-##  [93] "Neighbors_FirstClosestDistance_10"              
-##  [94] "Neighbors_FirstClosestDistance_Adjacent"        
-##  [95] "Neighbors_FirstClosestObjectNumber_10"          
-##  [96] "Neighbors_FirstClosestObjectNumber_Adjacent"    
-##  [97] "Neighbors_NumberOfNeighbors_10"                 
-##  [98] "Neighbors_NumberOfNeighbors_Adjacent"           
-##  [99] "Neighbors_PercentTouching_10"                   
-## [100] "Neighbors_PercentTouching_Adjacent"             
-## [101] "Neighbors_SecondClosestDistance_10"             
-## [102] "Neighbors_SecondClosestDistance_Adjacent"       
-## [103] "Neighbors_SecondClosestObjectNumber_10"         
-## [104] "Neighbors_SecondClosestObjectNumber_Adjacent"   
-## [105] "Number_Object_Number"                           
-## [106] "Parent_Nuclei"                                  
-## [107] "RadialDistribution_FracAtD_Actin_1of4"          
-## [108] "RadialDistribution_FracAtD_Actin_2of4"          
-## [109] "RadialDistribution_FracAtD_Actin_3of4"          
-## [110] "RadialDistribution_FracAtD_Actin_4of4"          
-## [111] "RadialDistribution_MeanFrac_Actin_1of4"         
-## [112] "RadialDistribution_MeanFrac_Actin_2of4"         
-## [113] "RadialDistribution_MeanFrac_Actin_3of4"         
-## [114] "RadialDistribution_MeanFrac_Actin_4of4"         
-## [115] "RadialDistribution_RadialCV_Actin_1of4"         
-## [116] "RadialDistribution_RadialCV_Actin_2of4"         
-## [117] "RadialDistribution_RadialCV_Actin_3of4"         
-## [118] "RadialDistribution_RadialCV_Actin_4of4"         
-## [119] "RadialDistribution_ZernikeMagnitude_Actin_0_0"  
-## [120] "RadialDistribution_ZernikeMagnitude_Actin_1_1"  
-## [121] "RadialDistribution_ZernikeMagnitude_Actin_2_0"  
-## [122] "RadialDistribution_ZernikeMagnitude_Actin_2_2"  
-## [123] "RadialDistribution_ZernikeMagnitude_Actin_3_1"  
-## [124] "RadialDistribution_ZernikeMagnitude_Actin_3_3"  
-## [125] "RadialDistribution_ZernikeMagnitude_Actin_4_0"  
-## [126] "RadialDistribution_ZernikeMagnitude_Actin_4_2"  
-## [127] "RadialDistribution_ZernikeMagnitude_Actin_4_4"  
-## [128] "RadialDistribution_ZernikeMagnitude_Actin_5_1"  
-## [129] "RadialDistribution_ZernikeMagnitude_Actin_5_3"  
-## [130] "RadialDistribution_ZernikeMagnitude_Actin_5_5"  
-## [131] "RadialDistribution_ZernikeMagnitude_Actin_6_0"  
-## [132] "RadialDistribution_ZernikeMagnitude_Actin_6_2"  
-## [133] "RadialDistribution_ZernikeMagnitude_Actin_6_4"  
-## [134] "RadialDistribution_ZernikeMagnitude_Actin_6_6"  
-## [135] "RadialDistribution_ZernikeMagnitude_Actin_7_1"  
-## [136] "RadialDistribution_ZernikeMagnitude_Actin_7_3"  
-## [137] "RadialDistribution_ZernikeMagnitude_Actin_7_5"  
-## [138] "RadialDistribution_ZernikeMagnitude_Actin_7_7"  
-## [139] "RadialDistribution_ZernikeMagnitude_Actin_8_0"  
-## [140] "RadialDistribution_ZernikeMagnitude_Actin_8_2"  
-## [141] "RadialDistribution_ZernikeMagnitude_Actin_8_4"  
-## [142] "RadialDistribution_ZernikeMagnitude_Actin_8_6"  
-## [143] "RadialDistribution_ZernikeMagnitude_Actin_8_8"  
-## [144] "RadialDistribution_ZernikeMagnitude_Actin_9_1"  
-## [145] "RadialDistribution_ZernikeMagnitude_Actin_9_3"  
-## [146] "RadialDistribution_ZernikeMagnitude_Actin_9_5"  
-## [147] "RadialDistribution_ZernikeMagnitude_Actin_9_7"  
-## [148] "RadialDistribution_ZernikeMagnitude_Actin_9_9"  
-## [149] "RadialDistribution_ZernikePhase_Actin_0_0"      
-## [150] "RadialDistribution_ZernikePhase_Actin_1_1"      
-## [151] "RadialDistribution_ZernikePhase_Actin_2_0"      
-## [152] "RadialDistribution_ZernikePhase_Actin_2_2"      
-## [153] "RadialDistribution_ZernikePhase_Actin_3_1"      
-## [154] "RadialDistribution_ZernikePhase_Actin_3_3"      
-## [155] "RadialDistribution_ZernikePhase_Actin_4_0"      
-## [156] "RadialDistribution_ZernikePhase_Actin_4_2"      
-## [157] "RadialDistribution_ZernikePhase_Actin_4_4"      
-## [158] "RadialDistribution_ZernikePhase_Actin_5_1"      
-## [159] "RadialDistribution_ZernikePhase_Actin_5_3"      
-## [160] "RadialDistribution_ZernikePhase_Actin_5_5"      
-## [161] "RadialDistribution_ZernikePhase_Actin_6_0"      
-## [162] "RadialDistribution_ZernikePhase_Actin_6_2"      
-## [163] "RadialDistribution_ZernikePhase_Actin_6_4"      
-## [164] "RadialDistribution_ZernikePhase_Actin_6_6"      
-## [165] "RadialDistribution_ZernikePhase_Actin_7_1"      
-## [166] "RadialDistribution_ZernikePhase_Actin_7_3"      
-## [167] "RadialDistribution_ZernikePhase_Actin_7_5"      
-## [168] "RadialDistribution_ZernikePhase_Actin_7_7"      
-## [169] "RadialDistribution_ZernikePhase_Actin_8_0"      
-## [170] "RadialDistribution_ZernikePhase_Actin_8_2"      
-## [171] "RadialDistribution_ZernikePhase_Actin_8_4"      
-## [172] "RadialDistribution_ZernikePhase_Actin_8_6"      
-## [173] "RadialDistribution_ZernikePhase_Actin_8_8"      
-## [174] "RadialDistribution_ZernikePhase_Actin_9_1"      
-## [175] "RadialDistribution_ZernikePhase_Actin_9_3"      
-## [176] "RadialDistribution_ZernikePhase_Actin_9_5"      
-## [177] "RadialDistribution_ZernikePhase_Actin_9_7"      
-## [178] "RadialDistribution_ZernikePhase_Actin_9_9"      
-## [179] "Texture_AngularSecondMoment_Actin_10_00_256"    
-## [180] "Texture_AngularSecondMoment_Actin_10_01_256"    
-## [181] "Texture_AngularSecondMoment_Actin_10_02_256"    
-## [182] "Texture_AngularSecondMoment_Actin_10_03_256"    
-## [183] "Texture_AngularSecondMoment_Actin_20_00_256"    
-## [184] "Texture_AngularSecondMoment_Actin_20_01_256"    
-## [185] "Texture_AngularSecondMoment_Actin_20_02_256"    
-## [186] "Texture_AngularSecondMoment_Actin_20_03_256"    
-## [187] "Texture_AngularSecondMoment_Actin_5_00_256"     
-## [188] "Texture_AngularSecondMoment_Actin_5_01_256"     
-## [189] "Texture_AngularSecondMoment_Actin_5_02_256"     
-## [190] "Texture_AngularSecondMoment_Actin_5_03_256"     
-## [191] "Texture_Contrast_Actin_10_00_256"               
-## [192] "Texture_Contrast_Actin_10_01_256"               
-## [193] "Texture_Contrast_Actin_10_02_256"               
-## [194] "Texture_Contrast_Actin_10_03_256"               
-## [195] "Texture_Contrast_Actin_20_00_256"               
-## [196] "Texture_Contrast_Actin_20_01_256"               
-## [197] "Texture_Contrast_Actin_20_02_256"               
-## [198] "Texture_Contrast_Actin_20_03_256"               
-## [199] "Texture_Contrast_Actin_5_00_256"                
-## [200] "Texture_Contrast_Actin_5_01_256"                
-## [201] "Texture_Contrast_Actin_5_02_256"                
-## [202] "Texture_Contrast_Actin_5_03_256"                
-## [203] "Texture_Correlation_Actin_10_00_256"            
-## [204] "Texture_Correlation_Actin_10_01_256"            
-## [205] "Texture_Correlation_Actin_10_02_256"            
-## [206] "Texture_Correlation_Actin_10_03_256"            
-## [207] "Texture_Correlation_Actin_20_00_256"            
-## [208] "Texture_Correlation_Actin_20_01_256"            
-## [209] "Texture_Correlation_Actin_20_02_256"            
-## [210] "Texture_Correlation_Actin_20_03_256"            
-## [211] "Texture_Correlation_Actin_5_00_256"             
-## [212] "Texture_Correlation_Actin_5_01_256"             
-## [213] "Texture_Correlation_Actin_5_02_256"             
-## [214] "Texture_Correlation_Actin_5_03_256"             
-## [215] "Texture_DifferenceEntropy_Actin_10_00_256"      
-## [216] "Texture_DifferenceEntropy_Actin_10_01_256"      
-## [217] "Texture_DifferenceEntropy_Actin_10_02_256"      
-## [218] "Texture_DifferenceEntropy_Actin_10_03_256"      
-## [219] "Texture_DifferenceEntropy_Actin_20_00_256"      
-## [220] "Texture_DifferenceEntropy_Actin_20_01_256"      
-## [221] "Texture_DifferenceEntropy_Actin_20_02_256"      
-## [222] "Texture_DifferenceEntropy_Actin_20_03_256"      
-## [223] "Texture_DifferenceEntropy_Actin_5_00_256"       
-## [224] "Texture_DifferenceEntropy_Actin_5_01_256"       
-## [225] "Texture_DifferenceEntropy_Actin_5_02_256"       
-## [226] "Texture_DifferenceEntropy_Actin_5_03_256"       
-## [227] "Texture_DifferenceVariance_Actin_10_00_256"     
-## [228] "Texture_DifferenceVariance_Actin_10_01_256"     
-## [229] "Texture_DifferenceVariance_Actin_10_02_256"     
-## [230] "Texture_DifferenceVariance_Actin_10_03_256"     
-## [231] "Texture_DifferenceVariance_Actin_20_00_256"     
-## [232] "Texture_DifferenceVariance_Actin_20_01_256"     
-## [233] "Texture_DifferenceVariance_Actin_20_02_256"     
-## [234] "Texture_DifferenceVariance_Actin_20_03_256"     
-## [235] "Texture_DifferenceVariance_Actin_5_00_256"      
-## [236] "Texture_DifferenceVariance_Actin_5_01_256"      
-## [237] "Texture_DifferenceVariance_Actin_5_02_256"      
-## [238] "Texture_DifferenceVariance_Actin_5_03_256"      
-## [239] "Texture_Entropy_Actin_10_00_256"                
-## [240] "Texture_Entropy_Actin_10_01_256"                
-## [241] "Texture_Entropy_Actin_10_02_256"                
-## [242] "Texture_Entropy_Actin_10_03_256"                
-## [243] "Texture_Entropy_Actin_20_00_256"                
-## [244] "Texture_Entropy_Actin_20_01_256"                
-## [245] "Texture_Entropy_Actin_20_02_256"                
-## [246] "Texture_Entropy_Actin_20_03_256"                
-## [247] "Texture_Entropy_Actin_5_00_256"                 
-## [248] "Texture_Entropy_Actin_5_01_256"                 
-## [249] "Texture_Entropy_Actin_5_02_256"                 
-## [250] "Texture_Entropy_Actin_5_03_256"                 
-## [251] "Texture_InfoMeas1_Actin_10_00_256"              
-## [252] "Texture_InfoMeas1_Actin_10_01_256"              
-## [253] "Texture_InfoMeas1_Actin_10_02_256"              
-## [254] "Texture_InfoMeas1_Actin_10_03_256"              
-## [255] "Texture_InfoMeas1_Actin_20_00_256"              
-## [256] "Texture_InfoMeas1_Actin_20_01_256"              
-## [257] "Texture_InfoMeas1_Actin_20_02_256"              
-## [258] "Texture_InfoMeas1_Actin_20_03_256"              
-## [259] "Texture_InfoMeas1_Actin_5_00_256"               
-## [260] "Texture_InfoMeas1_Actin_5_01_256"               
-## [261] "Texture_InfoMeas1_Actin_5_02_256"               
-## [262] "Texture_InfoMeas1_Actin_5_03_256"               
-## [263] "Texture_InfoMeas2_Actin_10_00_256"              
-## [264] "Texture_InfoMeas2_Actin_10_01_256"              
-## [265] "Texture_InfoMeas2_Actin_10_02_256"              
-## [266] "Texture_InfoMeas2_Actin_10_03_256"              
-## [267] "Texture_InfoMeas2_Actin_20_00_256"              
-## [268] "Texture_InfoMeas2_Actin_20_01_256"              
-## [269] "Texture_InfoMeas2_Actin_20_02_256"              
-## [270] "Texture_InfoMeas2_Actin_20_03_256"              
-## [271] "Texture_InfoMeas2_Actin_5_00_256"               
-## [272] "Texture_InfoMeas2_Actin_5_01_256"               
-## [273] "Texture_InfoMeas2_Actin_5_02_256"               
-## [274] "Texture_InfoMeas2_Actin_5_03_256"               
-## [275] "Texture_InverseDifferenceMoment_Actin_10_00_256"
-## [276] "Texture_InverseDifferenceMoment_Actin_10_01_256"
-## [277] "Texture_InverseDifferenceMoment_Actin_10_02_256"
-## [278] "Texture_InverseDifferenceMoment_Actin_10_03_256"
-## [279] "Texture_InverseDifferenceMoment_Actin_20_00_256"
-## [280] "Texture_InverseDifferenceMoment_Actin_20_01_256"
-## [281] "Texture_InverseDifferenceMoment_Actin_20_02_256"
-## [282] "Texture_InverseDifferenceMoment_Actin_20_03_256"
-## [283] "Texture_InverseDifferenceMoment_Actin_5_00_256" 
-## [284] "Texture_InverseDifferenceMoment_Actin_5_01_256" 
-## [285] "Texture_InverseDifferenceMoment_Actin_5_02_256" 
-## [286] "Texture_InverseDifferenceMoment_Actin_5_03_256" 
-## [287] "Texture_SumAverage_Actin_10_00_256"             
-## [288] "Texture_SumAverage_Actin_10_01_256"             
-## [289] "Texture_SumAverage_Actin_10_02_256"             
-## [290] "Texture_SumAverage_Actin_10_03_256"             
-## [291] "Texture_SumAverage_Actin_20_00_256"             
-## [292] "Texture_SumAverage_Actin_20_01_256"             
-## [293] "Texture_SumAverage_Actin_20_02_256"             
-## [294] "Texture_SumAverage_Actin_20_03_256"             
-## [295] "Texture_SumAverage_Actin_5_00_256"              
-## [296] "Texture_SumAverage_Actin_5_01_256"              
-## [297] "Texture_SumAverage_Actin_5_02_256"              
-## [298] "Texture_SumAverage_Actin_5_03_256"              
-## [299] "Texture_SumEntropy_Actin_10_00_256"             
-## [300] "Texture_SumEntropy_Actin_10_01_256"             
-## [301] "Texture_SumEntropy_Actin_10_02_256"             
-## [302] "Texture_SumEntropy_Actin_10_03_256"             
-## [303] "Texture_SumEntropy_Actin_20_00_256"             
-## [304] "Texture_SumEntropy_Actin_20_01_256"             
-## [305] "Texture_SumEntropy_Actin_20_02_256"             
-## [306] "Texture_SumEntropy_Actin_20_03_256"             
-## [307] "Texture_SumEntropy_Actin_5_00_256"              
-## [308] "Texture_SumEntropy_Actin_5_01_256"              
-## [309] "Texture_SumEntropy_Actin_5_02_256"              
-## [310] "Texture_SumEntropy_Actin_5_03_256"              
-## [311] "Texture_SumVariance_Actin_10_00_256"            
-## [312] "Texture_SumVariance_Actin_10_01_256"            
-## [313] "Texture_SumVariance_Actin_10_02_256"            
-## [314] "Texture_SumVariance_Actin_10_03_256"            
-## [315] "Texture_SumVariance_Actin_20_00_256"            
-## [316] "Texture_SumVariance_Actin_20_01_256"            
-## [317] "Texture_SumVariance_Actin_20_02_256"            
-## [318] "Texture_SumVariance_Actin_20_03_256"            
-## [319] "Texture_SumVariance_Actin_5_00_256"             
-## [320] "Texture_SumVariance_Actin_5_01_256"             
-## [321] "Texture_SumVariance_Actin_5_02_256"             
-## [322] "Texture_SumVariance_Actin_5_03_256"             
-## [323] "Texture_Variance_Actin_10_00_256"               
-## [324] "Texture_Variance_Actin_10_01_256"               
-## [325] "Texture_Variance_Actin_10_02_256"               
-## [326] "Texture_Variance_Actin_10_03_256"               
-## [327] "Texture_Variance_Actin_20_00_256"               
-## [328] "Texture_Variance_Actin_20_01_256"               
-## [329] "Texture_Variance_Actin_20_02_256"               
-## [330] "Texture_Variance_Actin_20_03_256"               
-## [331] "Texture_Variance_Actin_5_00_256"                
-## [332] "Texture_Variance_Actin_5_01_256"                
-## [333] "Texture_Variance_Actin_5_02_256"                
-## [334] "Texture_Variance_Actin_5_03_256"</code></pre>
+<pre><code>##  [1] "max_speed"    "mean_speed"   "median_speed" "min_speed"    "sd_speed"    
+##  [6] "var_speed"    "max_dfo"      "mean_dfo"     "median_dfo"   "min_dfo"     
+## [11] "sd_dfo"       "var_dfo"      "max_dflp"     "mean_dflp"    "median_dflp" 
+## [16] "min_dflp"     "sd_dflp"      "var_dflp"     "total_dist"   "mgr_eff"</code></pre>
 </details>
 </div>
 <div id="functions-to-select-the-right-names" class="section level3">
@@ -734,9 +425,9 @@
 <li><code><a href="../reference/starts_with.html">matches()</a></code></li>
 </ul>
 <p>(Check out a more detailed description on how they work by either following this <a href="https://tidyselect.r-lib.org/reference/language.html" class="external-link">link</a> or running <code><a href="../reference/starts_with.html">?starts_with</a></code> in your R console.)</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># obtain only variables that describe the cells area  </span>
-<span class="va">area_names</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getStatVariableNames.html">getStatVariableNames</a></span><span class="op">(</span><span class="va">object</span>, <span class="fu"><a href="../reference/starts_with.html">starts_with</a></span><span class="op">(</span><span class="st">"AreaShape"</span><span class="op">)</span><span class="op">)</span>
+<span class="va">area_names</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getStatVariableNames.html">getStatVariableNames</a></span><span class="op">(</span><span class="va">object_one_time</span>, <span class="fu"><a href="../reference/starts_with.html">starts_with</a></span><span class="op">(</span><span class="st">"AreaShape"</span><span class="op">)</span><span class="op">)</span>
 
 <span class="va">area_names</span></code></pre></div>
 <details><p><summary>output</summary></p>
@@ -772,9 +463,9 @@
 <div id="examples" class="section level3">
 <h3 class="hasAnchor">
 <a href="#examples" class="anchor" aria-hidden="true"></a>4.3 Examples</h3>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># only zernike features </span>
-<span class="va">zernike_vars</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getStatVariableNames.html">getStatVariableNames</a></span><span class="op">(</span><span class="va">object</span>, <span class="fu"><a href="../reference/starts_with.html">contains</a></span><span class="op">(</span><span class="st">"Zernike"</span><span class="op">)</span><span class="op">)</span>
+<span class="va">zernike_vars</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getStatVariableNames.html">getStatVariableNames</a></span><span class="op">(</span><span class="va">object_one_time</span>, <span class="fu"><a href="../reference/starts_with.html">contains</a></span><span class="op">(</span><span class="st">"Zernike"</span><span class="op">)</span><span class="op">)</span>
 
 <span class="va">zernike_vars</span></code></pre></div>
 <details><p><summary>output</summary></p>
@@ -868,9 +559,9 @@
 ## [88] "RadialDistribution_ZernikePhase_Actin_9_5"    
 ## [89] "RadialDistribution_ZernikePhase_Actin_9_7"    
 ## [90] "RadialDistribution_ZernikePhase_Actin_9_9"</code></pre>
-</details><div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+</details><div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># only zernike features that derived from shape analysis</span>
-<span class="va">area_zernike_vars</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getStatVariableNames.html">getStatVariableNames</a></span><span class="op">(</span><span class="va">object</span>, <span class="fu"><a href="../reference/starts_with.html">starts_with</a></span><span class="op">(</span><span class="st">"AreaShape"</span><span class="op">)</span> <span class="op">&amp;</span> <span class="fu"><a href="../reference/starts_with.html">contains</a></span><span class="op">(</span><span class="st">"Zernike"</span><span class="op">)</span><span class="op">)</span> 
+<span class="va">area_zernike_vars</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getStatVariableNames.html">getStatVariableNames</a></span><span class="op">(</span><span class="va">object_one_time</span>, <span class="fu"><a href="../reference/starts_with.html">starts_with</a></span><span class="op">(</span><span class="st">"AreaShape"</span><span class="op">)</span> <span class="op">&amp;</span> <span class="fu"><a href="../reference/starts_with.html">contains</a></span><span class="op">(</span><span class="st">"Zernike"</span><span class="op">)</span><span class="op">)</span> 
 
 <span class="va">area_zernike_vars</span></code></pre></div>
 <details><p><summary>output</summary></p>
@@ -884,9 +575,9 @@
 ## [22] "AreaShape_Zernike_8_2" "AreaShape_Zernike_8_4" "AreaShape_Zernike_8_6"
 ## [25] "AreaShape_Zernike_8_8" "AreaShape_Zernike_9_1" "AreaShape_Zernike_9_3"
 ## [28] "AreaShape_Zernike_9_5" "AreaShape_Zernike_9_7" "AreaShape_Zernike_9_9"</code></pre>
-</details><div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+</details><div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># only cluster variables with k = 4</span>
-<span class="va">k_4_cluster</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getGroupingVariableNames.html">getClusterVariableNames</a></span><span class="op">(</span><span class="va">object</span>, <span class="fu"><a href="../reference/starts_with.html">contains</a></span><span class="op">(</span><span class="st">"k_4"</span><span class="op">)</span><span class="op">)</span>
+<span class="va">k_4_cluster</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getGroupingVariableNames.html">getClusterVariableNames</a></span><span class="op">(</span><span class="va">object_one_time</span>, <span class="fu"><a href="../reference/starts_with.html">contains</a></span><span class="op">(</span><span class="st">"k_4"</span><span class="op">)</span><span class="op">)</span>
 
 <span class="va">k_4_cluster</span></code></pre></div>
 <details><p><summary>output</summary></p>
@@ -894,9 +585,9 @@
 ## [2] "hcl_euclidean_ward.D_k_4_(intensity)"  
 ## [3] "kmeans_Lloyd_k_4_(intensity)"          
 ## [4] "pam_euclidean_k_4_(intensity)"</code></pre>
-</details><div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+</details><div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># only cluster variables with k = 4 (without hierarchical algorithm)</span>
-<span class="va">k_4_cluster2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getGroupingVariableNames.html">getClusterVariableNames</a></span><span class="op">(</span><span class="va">object</span>, <span class="fu"><a href="../reference/starts_with.html">contains</a></span><span class="op">(</span><span class="st">"k_4"</span><span class="op">)</span> <span class="op">&amp;</span> <span class="op">-</span><span class="fu"><a href="../reference/starts_with.html">starts_with</a></span><span class="op">(</span><span class="st">"hcl"</span><span class="op">)</span><span class="op">)</span>
+<span class="va">k_4_cluster2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getGroupingVariableNames.html">getClusterVariableNames</a></span><span class="op">(</span><span class="va">object_one_time</span>, <span class="fu"><a href="../reference/starts_with.html">contains</a></span><span class="op">(</span><span class="st">"k_4"</span><span class="op">)</span> <span class="op">&amp;</span> <span class="op">-</span><span class="fu"><a href="../reference/starts_with.html">starts_with</a></span><span class="op">(</span><span class="st">"hcl"</span><span class="op">)</span><span class="op">)</span>
 
 <span class="va">k_4_cluster2</span></code></pre></div>
 <details><p><summary>output</summary></p>
@@ -908,11 +599,11 @@
 <h2 class="hasAnchor">
 <a href="#group-names" class="anchor" aria-hidden="true"></a>5. Group names</h2>
 <p>Grouping variables contain information on how to group cells encoded in the group names. In several cases you might want to specify specific groups. To obtain the respective names make use of <code><a href="../reference/getGroupNames.html">getGroupNames()</a></code> or its wrapper <code><a href="../reference/getCellLines.html">getConditions()</a></code>, <code><a href="../reference/getCellLines.html">getCellLines()</a></code>.</p>
-<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># two ways to obtain condition names</span>
-<span class="va">conditions_1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getGroupNames.html">getGroupNames</a></span><span class="op">(</span><span class="va">object</span>, grouping_variable <span class="op">=</span> <span class="st">"condition"</span><span class="op">)</span>
+<span class="va">conditions_1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getGroupNames.html">getGroupNames</a></span><span class="op">(</span><span class="va">object_one_time</span>, grouping_variable <span class="op">=</span> <span class="st">"condition"</span><span class="op">)</span>
 
-<span class="va">conditions_2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getCellLines.html">getConditions</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span>
+<span class="va">conditions_2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getCellLines.html">getConditions</a></span><span class="op">(</span><span class="va">object_one_time</span><span class="op">)</span>
 
 <span class="va">conditions_1</span></code></pre></div>
 <pre><code>##  [1] "5-fluorouracil"           "AG-1478"                 
@@ -922,7 +613,7 @@
 ##  [9] "mitomycin C"              "neomycin"                
 ## [11] "olomoucine"               "taxol"                   
 ## [13] "tunicamycin"</code></pre>
-<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">conditions_2</span></code></pre></div>
 <pre><code>##  [1] "5-fluorouracil"           "AG-1478"                 
 ##  [3] "anisomycin"               "AZ258"                   
@@ -932,20 +623,24 @@
 ## [11] "olomoucine"               "taxol"                   
 ## [13] "tunicamycin"</code></pre>
 <p>The use of <code><a href="../reference/getGroupNames.html">getGroupNames()</a></code> to obtain cluster names becomes useful once you have <a href="renaming.html">renamed</a> clusters as they are initially encoded in numbers. The tidyselect helpers introduced in section 4. Variable names can be used within <code><a href="../reference/getGroupNames.html">getGroupNames()</a></code>as well.</p>
-<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># all cluster names</span>
 <span class="va">hcl5_all</span> <span class="op">&lt;-</span>
-  <span class="fu"><a href="../reference/getGroupNames.html">getGroupNames</a></span><span class="op">(</span><span class="va">object</span>,
-                grouping_variable <span class="op">=</span> <span class="st">"hcl_euclidean_ward.D_k_5_(intensity)"</span><span class="op">)</span>
+  <span class="fu"><a href="../reference/getGroupNames.html">getGroupNames</a></span><span class="op">(</span>
+    object <span class="op">=</span> <span class="va">object_one_time</span>,
+    grouping_variable <span class="op">=</span> <span class="st">"hcl_euclidean_ward.D_k_5_(intensity)"</span>
+    <span class="op">)</span>
 
 <span class="va">hcl5_all</span></code></pre></div>
 <pre><code>## [1] "low"        "low-medium" "medium"     "medium-low" "high"</code></pre>
-<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># medium cluster names</span>
 <span class="va">hcl5_medium</span> <span class="op">&lt;-</span>
-  <span class="fu"><a href="../reference/getGroupNames.html">getGroupNames</a></span><span class="op">(</span><span class="va">object</span>,
-                grouping_variable <span class="op">=</span> <span class="st">"hcl_euclidean_ward.D_k_5_(intensity)"</span>,
-                <span class="fu"><a href="../reference/starts_with.html">contains</a></span><span class="op">(</span><span class="st">"medium"</span><span class="op">)</span><span class="op">)</span>
+  <span class="fu"><a href="../reference/getGroupNames.html">getGroupNames</a></span><span class="op">(</span>
+    object <span class="op">=</span> <span class="va">object_one_time</span>,
+    grouping_variable <span class="op">=</span> <span class="st">"hcl_euclidean_ward.D_k_5_(intensity)"</span>,
+    <span class="fu"><a href="../reference/starts_with.html">contains</a></span><span class="op">(</span><span class="st">"medium"</span><span class="op">)</span>
+    <span class="op">)</span>
 
 <span class="va">hcl5_medium</span></code></pre></div>
 <pre><code>## [1] "low-medium" "medium"     "medium-low"</code></pre>
