@@ -9,8 +9,10 @@ nMissingValuesTracks(object, variable_names, phase = NULL, verbose = NULL)
 \arguments{
 \item{object}{A valid cypro object.}
 
-\item{phase}{Character value. The ordinal value referring to the phase of interest (e.g. \emph{'first'}, \emph{'second'} etc.).
-referring to the phase of interest. If set to NULL takes the phase denoted as default with \code{adjustDefault()}.
+\item{phase}{Character or numeric. If character, the ordinal value referring to the phase of interest (e.g. \emph{'first'}, \emph{'second'} etc.).
+referring to the phase of interest or \emph{'all'}. If numeric, the number referring to the phase.
+
+If set to NULL takes the phase denoted as default with \code{adjustDefault()}.
 
 Ignored if the experiment design contains only one phase.}
 

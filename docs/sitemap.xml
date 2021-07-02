@@ -7,10 +7,22 @@
     <loc>/articles/about.html</loc>
   </url>
   <url>
+    <loc>/articles/adding.html</loc>
+  </url>
+  <url>
+    <loc>/articles/batch-effect-detection.html</loc>
+  </url>
+  <url>
     <loc>/articles/clustering.html</loc>
   </url>
   <url>
     <loc>/articles/correlation.html</loc>
+  </url>
+  <url>
+    <loc>/articles/default-setting.html</loc>
+  </url>
+  <url>
+    <loc>/articles/design-experiment.html</loc>
   </url>
   <url>
     <loc>/articles/dim-red.html</loc>
@@ -28,10 +40,25 @@
     <loc>/articles/installation.html</loc>
   </url>
   <url>
+    <loc>/articles/load-data.html</loc>
+  </url>
+  <url>
     <loc>/articles/module-migration.html</loc>
   </url>
   <url>
+    <loc>/articles/module-mitosis.html</loc>
+  </url>
+  <url>
+    <loc>/articles/outlier-detection.html</loc>
+  </url>
+  <url>
     <loc>/articles/plotting-stats.html</loc>
+  </url>
+  <url>
+    <loc>/articles/plotting-well-plates.html</loc>
+  </url>
+  <url>
+    <loc>/articles/process-data.html</loc>
   </url>
   <url>
     <loc>/articles/renaming.html</loc>
@@ -76,6 +103,9 @@
     <loc>/reference/add_helper.html</loc>
   </url>
   <url>
+    <loc>/reference/add_vardenotation_to_cypro_object_shiny.html</loc>
+  </url>
+  <url>
     <loc>/reference/adjustableDefaultInstructions.html</loc>
   </url>
   <url>
@@ -83,6 +113,9 @@
   </url>
   <url>
     <loc>/reference/agglomerateHierarchicalCluster.html</loc>
+  </url>
+  <url>
+    <loc>/reference/allColorpalettes.html</loc>
   </url>
   <url>
     <loc>/reference/allColorpanels.html</loc>
@@ -97,7 +130,22 @@
     <loc>/reference/argument_dummy.html</loc>
   </url>
   <url>
+    <loc>/reference/assemble_additional_data_variables_module_info_shiny.html</loc>
+  </url>
+  <url>
+    <loc>/reference/assemble_analysis_module_info_shiny.html</loc>
+  </url>
+  <url>
+    <loc>/reference/assemble_id_module_info_shiny.html</loc>
+  </url>
+  <url>
     <loc>/reference/assemble_stat_list_shiny.html</loc>
+  </url>
+  <url>
+    <loc>/reference/assemble_tracks_one_time_imaging_shiny.html</loc>
+  </url>
+  <url>
+    <loc>/reference/assemble_tracks_time_lapse_shiny.html</loc>
   </url>
   <url>
     <loc>/reference/assemble_track_list_shiny.html</loc>
@@ -133,6 +181,9 @@
     <loc>/reference/check_set_up_progress.html</loc>
   </url>
   <url>
+    <loc>/reference/check_summarize_with.html</loc>
+  </url>
+  <url>
     <loc>/reference/check_track_df.html</loc>
   </url>
   <url>
@@ -146,6 +197,9 @@
   </url>
   <url>
     <loc>/reference/cluster_df_descr.html</loc>
+  </url>
+  <url>
+    <loc>/reference/complete_tracks.html</loc>
   </url>
   <url>
     <loc>/reference/computeDistanceMatrices.html</loc>
@@ -169,10 +223,22 @@
     <loc>/reference/compute_migration_efficiency.html</loc>
   </url>
   <url>
+    <loc>/reference/compute_module_variables.html</loc>
+  </url>
+  <url>
+    <loc>/reference/compute_n_missing_values.html</loc>
+  </url>
+  <url>
     <loc>/reference/correlateAll.html</loc>
   </url>
   <url>
+    <loc>/reference/css_status.html</loc>
+  </url>
+  <url>
     <loc>/reference/designExperiment.html</loc>
+  </url>
+  <url>
+    <loc>/reference/detectBatchEffects.html</loc>
   </url>
   <url>
     <loc>/reference/detectOutliers.html</loc>
@@ -203,6 +269,9 @@
   </url>
   <url>
     <loc>/reference/filterTracks.html</loc>
+  </url>
+  <url>
+    <loc>/reference/getBatchEffectDf.html</loc>
   </url>
   <url>
     <loc>/reference/getCategoricalVariablesNames.html</loc>
@@ -245,6 +314,9 @@
   </url>
   <url>
     <loc>/reference/getOutlierResults.html</loc>
+  </url>
+  <url>
+    <loc>/reference/getOutlierWells.html</loc>
   </url>
   <url>
     <loc>/reference/getPcaConv.html</loc>
@@ -292,6 +364,9 @@
     <loc>/reference/hlpr_add_data_to_cluster_object.html</loc>
   </url>
   <url>
+    <loc>/reference/hlpr_add_variable_specific_args.html</loc>
+  </url>
+  <url>
     <loc>/reference/hlpr_add_vset_suffix.html</loc>
   </url>
   <url>
@@ -316,10 +391,16 @@
     <loc>/reference/hlpr_glue_phase.html</loc>
   </url>
   <url>
+    <loc>/reference/hlpr_keep_messages.html</loc>
+  </url>
+  <url>
     <loc>/reference/hlpr_max_track_na_count.html</loc>
   </url>
   <url>
     <loc>/reference/hlpr_merge_conditions.html</loc>
+  </url>
+  <url>
+    <loc>/reference/hlpr_module_name_pairs.html</loc>
   </url>
   <url>
     <loc>/reference/hlpr_order_input.html</loc>
@@ -367,6 +448,9 @@
     <loc>/reference/input_df.html</loc>
   </url>
   <url>
+    <loc>/reference/is_modified_wp_df.html</loc>
+  </url>
+  <url>
     <loc>/reference/labelsXrotate.html</loc>
   </url>
   <url>
@@ -400,10 +484,22 @@
     <loc>/reference/moduleQualityCheckUI.html</loc>
   </url>
   <url>
+    <loc>/reference/mutateClusterDf.html</loc>
+  </url>
+  <url>
+    <loc>/reference/mutateTracksDf.html</loc>
+  </url>
+  <url>
     <loc>/reference/nCells.html</loc>
   </url>
   <url>
     <loc>/reference/nFiles.html</loc>
+  </url>
+  <url>
+    <loc>/reference/nMissingValuesStats.html</loc>
+  </url>
+  <url>
+    <loc>/reference/nMissingValuesTracks.html</loc>
   </url>
   <url>
     <loc>/reference/plotAllTracks.html</loc>
@@ -413,6 +509,9 @@
   </url>
   <url>
     <loc>/reference/plotBarchart.html</loc>
+  </url>
+  <url>
+    <loc>/reference/plotBatchHeatmap.html</loc>
   </url>
   <url>
     <loc>/reference/plotBoxplot.html</loc>
@@ -490,10 +589,16 @@
     <loc>/reference/processData.html</loc>
   </url>
   <url>
+    <loc>/reference/protectedVariables.html</loc>
+  </url>
+  <url>
     <loc>/reference/quality_check_summary_shiny.html</loc>
   </url>
   <url>
     <loc>/reference/read_data_files_shiny.html</loc>
+  </url>
+  <url>
+    <loc>/reference/read_example_file_shiny.html</loc>
   </url>
   <url>
     <loc>/reference/removeOutliers.html</loc>
@@ -511,6 +616,9 @@
     <loc>/reference/renameStatsDf.html</loc>
   </url>
   <url>
+    <loc>/reference/renameTracksDf.html</loc>
+  </url>
+  <url>
     <loc>/reference/runPca.html</loc>
   </url>
   <url>
@@ -524,6 +632,9 @@
   </url>
   <url>
     <loc>/reference/setClusterConv.html</loc>
+  </url>
+  <url>
+    <loc>/reference/setDefaultInstructions.html</loc>
   </url>
   <url>
     <loc>/reference/setGroupingDf.html</loc>
@@ -562,6 +673,12 @@
     <loc>/reference/subsetByNumber.html</loc>
   </url>
   <url>
+    <loc>/reference/subsetByQuality.html</loc>
+  </url>
+  <url>
+    <loc>/reference/summarizeTrackDfWith.html</loc>
+  </url>
+  <url>
     <loc>/reference/updateCyproObject.html</loc>
   </url>
   <url>
@@ -571,7 +688,19 @@
     <loc>/reference/update_condition.html</loc>
   </url>
   <url>
+    <loc>/reference/used_variable_names_shiny.html</loc>
+  </url>
+  <url>
     <loc>/reference/validAgglomerationMethods.html</loc>
+  </url>
+  <url>
+    <loc>/reference/validate_additional_variables_shiny.html</loc>
+  </url>
+  <url>
+    <loc>/reference/validate_analysis_module_variables_shiny.html</loc>
+  </url>
+  <url>
+    <loc>/reference/validate_identifier_variables_shiny.html</loc>
   </url>
   <url>
     <loc>/reference/valid_example_cols.html</loc>

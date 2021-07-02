@@ -722,7 +722,7 @@ moduleLoadDataServer <- function(id, object){
         shinyFiles::shinyDirChoose(input = input, 
                                    id = "pdl_example_dir", 
                                    session = session, 
-                                   roots = dir_roots()
+                                   roots = dir_roots
         )
         
         shinyFiles::shinyDirChoose(input = input, 

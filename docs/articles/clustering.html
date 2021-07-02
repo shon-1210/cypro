@@ -189,11 +189,25 @@
 <li>Cut the hierarchical tree at a certain height or with a certain predefined value for k.</li>
 </ol></li>
 </ul>
-<p><code>Cypro</code> implements these four steps with four functions.</p>
+<p>The <code>cypro</code> package implements these four steps with four functions.</p>
+<ul>
+<li><ol style="list-style-type: decimal">
+<li><code><a href="../reference/initiateHierarchicalClustering.html">initiateHierarchicalClustering()</a></code></li>
+</ol></li>
+<li><ol start="2" style="list-style-type: decimal">
+<li><code><a href="../reference/computeDistanceMatrices.html">computeDistanceMatrices()</a></code></li>
+</ol></li>
+<li><ol start="3" style="list-style-type: decimal">
+<li><code><a href="../reference/agglomerateHierarchicalCluster.html">agglomerateHierarchicalCluster()</a></code></li>
+</ol></li>
+<li><ol start="4" style="list-style-type: decimal">
+<li><code><a href="../reference/addHierarchicalClusterVariables.html">addHierarchicalClusterVariables()</a></code></li>
+</ol></li>
+</ul>
 <div id="initiation" class="section level3">
 <h3 class="hasAnchor">
 <a href="#initiation" class="anchor" aria-hidden="true"></a>2.1 Initiation</h3>
-<p>To initiate hierarchical clustering means to set up the respective S4 object in your <em>cypro</em> object by determining the variables on which you want to base the clustering. This is done with ’cypro’s variable set functionality.</p>
+<p>To initiate hierarchical clustering means to set up the respective S4 object in your <em>cypro</em> object by determining the variables on which you want to base the clustering. This is done with <code>cypros</code> variable set functionality.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># show variables of a previously defined variable set</span>
 <span class="fu"><a href="../reference/getVariableSet.html">getVariableSet</a></span><span class="op">(</span><span class="va">object</span>, variable_set <span class="op">=</span> <span class="st">"intensity"</span><span class="op">)</span></code></pre></div>
@@ -209,7 +223,7 @@
 ##  [9] "Intensity_MinIntensityEdge_Actin"      
 ## [10] "Intensity_MinIntensity_Actin"          
 ## [11] "Intensity_UpperQuartileIntensity_Actin"</code></pre>
-</details><p>The function <code><a href="../reference/initiateHierarchicalClustering.html">initiateHierarchicalClustering()</a></code> sets up the necessary object within the <em>cypro</em> object.</p>
+</details><p>The function <code><a href="../reference/initiateHierarchicalClustering.html">initiateHierarchicalClustering()</a></code> prepares the clustering within the <em>cypro</em> object.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">object</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/initiateHierarchicalClustering.html">initiateHierarchicalClustering</a></span><span class="op">(</span><span class="va">object</span>, variable_set <span class="op">=</span> <span class="st">"intensity"</span><span class="op">)</span></code></pre></div>
 </div>
@@ -220,7 +234,7 @@
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/validAgglomerationMethods.html">validDistanceMethods</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
 <pre><code>## [1] "euclidean" "maximum"   "manhattan" "canberra"  "binary"    "minkowski"</code></pre>
-<p>While you can specify the distance methods one by one, a more convenient approach would be to tell <code>cypro</code> all distance metrics of interest and then let it do the computation for each one respectively in one function call. Luckily, this is exactly what makes <code>cypro</code> so convenient.</p>
+<p>While you can specify the distance methods one by one, a more convenient approach would be to tell <code>cypro</code> all distance metrics of interest and then let it do the computation for each one respectively in one function call.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">distance_methods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"euclidean"</span>, <span class="st">"manhattan"</span><span class="op">)</span>
 
@@ -239,10 +253,13 @@
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">aggl_methods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"complete"</span>, <span class="st">"ward.D"</span><span class="op">)</span>
 
-<span class="va">object</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/agglomerateHierarchicalCluster.html">agglomerateHierarchicalCluster</a></span><span class="op">(</span><span class="va">object</span>,
-                                         variable_set <span class="op">=</span> <span class="st">"intensity"</span>,
-                                         method_dist <span class="op">=</span> <span class="va">distance_methods</span>, 
-                                         method_aggl <span class="op">=</span> <span class="va">aggl_methods</span><span class="op">)</span></code></pre></div>
+<span class="va">object</span> <span class="op">&lt;-</span> 
+  <span class="fu"><a href="../reference/agglomerateHierarchicalCluster.html">agglomerateHierarchicalCluster</a></span><span class="op">(</span>
+    object <span class="op">=</span> <span class="va">object</span>,
+    variable_set <span class="op">=</span> <span class="st">"intensity"</span>,
+    method_dist <span class="op">=</span> <span class="va">distance_methods</span>,
+    method_aggl <span class="op">=</span> <span class="va">aggl_methods</span>
+    <span class="op">)</span></code></pre></div>
 <p>The function <code><a href="../reference/plotDendrogram.html">plotDendrogram()</a></code> allows to visualize cluster agglomeration with a variety of options. Check out its documentation with <code><a href="../reference/plotDendrogram.html">?plotDendrogram</a></code>.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/plotDendrogram.html">plotDendrogram</a></span><span class="op">(</span><span class="va">object</span>, variable_set <span class="op">=</span> <span class="st">"intensity"</span>, method_dist <span class="op">=</span> <span class="st">"euclidean"</span>, method_aggl <span class="op">=</span> <span class="st">"ward.D"</span>, k <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></code></pre></div>
@@ -262,11 +279,14 @@ Figure 1.1 Dendrogram visualizing one of the distance-agglomeration options
 <pre><code>## character(0)</code></pre>
 <p>Adding clustering variables can be done conveniently via <code><a href="../reference/addHierarchicalClusterVariables.html">addHierarchicalClusterVariables()</a></code>. Specify distance methods, agglomeration methods and all ways according to which you want to cut the trees. All valid combinations are added to the cell cluster data and are made available for arguments like <code>across</code> or <code>grouping_variable</code>.</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">object</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/addHierarchicalClusterVariables.html">addHierarchicalClusterVariables</a></span><span class="op">(</span><span class="va">object</span>, variable_set <span class="op">=</span> <span class="st">"intensity"</span>, 
-                                          method_dist <span class="op">=</span> <span class="st">"euclidean"</span>, 
-                                          method_aggl <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"complete"</span>, <span class="st">"ward.D"</span><span class="op">)</span>, 
-                                          k <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>,<span class="fl">4</span>,<span class="fl">5</span><span class="op">)</span>
-                                          <span class="op">)</span>
+<code class="sourceCode R"><span class="va">object</span> <span class="op">&lt;-</span> 
+  <span class="fu"><a href="../reference/addHierarchicalClusterVariables.html">addHierarchicalClusterVariables</a></span><span class="op">(</span>
+    object <span class="op">=</span> <span class="va">object</span>,
+    variable_set <span class="op">=</span> <span class="st">"intensity"</span>,
+    method_dist <span class="op">=</span> <span class="st">"euclidean"</span>,
+    method_aggl <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"complete"</span>, <span class="st">"ward.D"</span><span class="op">)</span>,
+    k <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>,<span class="fl">4</span>,<span class="fl">5</span><span class="op">)</span>
+    <span class="op">)</span>
 
 <span class="fu"><a href="../reference/getGroupingVariableNames.html">getClusterVariableNames</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span></code></pre></div>
 <pre><code>## [1] "hcl_euclidean_complete_k_3_(intensity)"
@@ -290,7 +310,7 @@ Figure 1.1 Dendrogram visualizing one of the distance-agglomeration options
 
 <span class="fu">pryr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/pryr/man/object_size.html" class="external-link">object_size</a></span><span class="op">(</span><span class="va">euclidean_dist_mtr</span><span class="op">)</span></code></pre></div>
 <pre><code>## 677 MB</code></pre>
-<p>Fortunately, the computation of distance matrices and the agglomeration of hierarchical cluster are separated processes. Once cluster have been aggregated based on a distance matrix, the latter is not needed any longer. You can therefore discard them, even before adding the cluster variables to the cell data.</p>
+<p>Fortunately, the computation of distance matrices and the agglomeration of hierarchical cluster are separated processes. Once the hierarchical tree has been agglomerated based on a distance matrix, the latter is not needed any longer. You can therefore discard distance matrices, even before adding the cluster variables to the cell data.</p>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">object</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/discardDistanceMatrix.html">discardDistanceMatrix</a></span><span class="op">(</span><span class="va">object</span>, variable_set <span class="op">=</span> <span class="st">"intensity"</span>, method_dist <span class="op">=</span> <span class="st">"euclidean"</span><span class="op">)</span>
 
@@ -328,16 +348,16 @@ Figure 1.1 Dendrogram visualizing one of the distance-agglomeration options
 <div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">kmeans_methods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Hartigan-Wong"</span>, <span class="st">"Lloyd"</span><span class="op">)</span>
 
-<span class="va">object</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/computeKmeansCluster.html">computeKmeansCluster</a></span><span class="op">(</span><span class="va">object</span>,
-                               variable_set <span class="op">=</span> <span class="st">"intensity"</span>,
-                               k <span class="op">=</span> <span class="fl">2</span><span class="op">:</span><span class="fl">10</span>, <span class="co"># compute clustering for values k = 2, k = 3, ... k = 10</span>
-                               method_kmeans <span class="op">=</span> <span class="va">kmeans_methods</span><span class="op">)</span></code></pre></div>
+<span class="va">object</span> <span class="op">&lt;-</span> 
+  <span class="fu"><a href="../reference/computeKmeansCluster.html">computeKmeansCluster</a></span><span class="op">(</span>
+    object <span class="op">=</span> <span class="va">object</span>,
+    variable_set <span class="op">=</span> <span class="st">"intensity"</span>,
+    k <span class="op">=</span> <span class="fl">2</span><span class="op">:</span><span class="fl">10</span>, <span class="co"># compute clustering for values k = 2, k = 3, ... k = 10</span>
+    method_kmeans <span class="op">=</span> <span class="va">kmeans_methods</span>
+    <span class="op">)</span></code></pre></div>
 <p>To assess clustering quality and optimal inputs for <code>k</code> use <code><a href="../reference/plotScreeplot.html">plotScreeplot()</a></code>. Based on it’s output you can decide with which clustering results you want to proceed.</p>
 <div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/plotScreeplot.html">plotScreeplot</a></span><span class="op">(</span><span class="va">object</span>,
-              variable_set <span class="op">=</span> <span class="st">"intensity"</span>, 
-              k <span class="op">=</span> <span class="fl">2</span><span class="op">:</span><span class="fl">10</span>, 
-              method_kmeans <span class="op">=</span> <span class="va">kmeans_methods</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="fu"><a href="../reference/plotScreeplot.html">plotScreeplot</a></span><span class="op">(</span><span class="va">object</span>, variable_set <span class="op">=</span> <span class="st">"intensity"</span>, k <span class="op">=</span> <span class="fl">2</span><span class="op">:</span><span class="fl">10</span>, method_kmeans <span class="op">=</span> <span class="va">kmeans_methods</span><span class="op">)</span></code></pre></div>
 <div class="figure">
 <img src="clustering_files/figure-html/kmeans-screeplot-1.png" alt="Figure 3.1 Screeplots can be used to determine optimal value for k" width="100%"><p class="caption">
 Figure 3.1 Screeplots can be used to determine optimal value for k
@@ -359,11 +379,11 @@ Figure 3.1 Screeplots can be used to determine optimal value for k
 <div id="partitioning-around-medoids-pam" class="section level2">
 <h2 class="hasAnchor">
 <a href="#partitioning-around-medoids-pam" class="anchor" aria-hidden="true"></a>4. Partitioning around medoids (PAM)</h2>
-<p>The PAM algorigthm works very similar to kmeans although it is a bit more robust and comes with an additional metric, <em>silhouette width</em>, to assess cluster quality. A major drawback of this algorithm is, that it is way slower than kmeans. A recommended approach is to conduct kmeans clustering first to narrow down the values for argument <code>k</code> that come into question. Apart from that the PAM clustering workflow is equal to the one of kmeans.</p>
+<p>The PAM algorigthm works very similar to kmeans although it is a bit more robust and comes with an additional metric, <em>silhouette width</em>, to assess cluster quality. A major drawback of this algorithm: It is way slower than kmeans. A recommended approach is to conduct kmeans clustering first to narrow down the values for argument <code>k</code> that come into question. Apart from that the PAM clustering workflow is equal to the one of kmeans.</p>
 <div id="initiate-pam-clustering" class="section level3">
 <h3 class="hasAnchor">
 <a href="#initiate-pam-clustering" class="anchor" aria-hidden="true"></a>4.1 Initiate PAM clustering</h3>
-<p>Use the function <code><a href="../reference/initiateHierarchicalClustering.html">initiatePamClustering()</a></code> to set up the analysis pipeline.</p>
+<p>Use the function <code><a href="../reference/initiateHierarchicalClustering.html">initiatePamClustering()</a></code> to set up the analysis pipeline with the set of data variables you want to base the clustering on.</p>
 <div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">object</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/initiateHierarchicalClustering.html">initiatePamClustering</a></span><span class="op">(</span><span class="va">object</span>, variable_set <span class="op">=</span> <span class="st">"intensity"</span><span class="op">)</span></code></pre></div>
 </div>
@@ -401,9 +421,54 @@ Figure 4.2 Silhouette width plot.
 <pre><code>## [1] "pam_euclidean_k_4_(intensity)" "pam_euclidean_k_5_(intensity)"</code></pre>
 </div>
 </div>
+<div id="multiple-clustering-results" class="section level2">
+<h2 class="hasAnchor">
+<a href="#multiple-clustering-results" class="anchor" aria-hidden="true"></a>5. Multiple clustering results</h2>
+<p>This example uses the variable set <em>intensity</em> defined in a similar fashion as shown in this [tutorial]. Since every cluster initiation gets its own slot clustering for as many variable sets as desired can coexist in the cypro object.</p>
+<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="../reference/printSummary.html">printAnalysisSummary</a></span><span class="op">(</span><span class="va">object</span>, slots <span class="op">=</span> <span class="st">"clustering"</span><span class="op">)</span></code></pre></div>
+<pre><code>## 
+## --------------------------------------------------
+## 
+## Conducted analysis:
+## 
+## 
+## 
+## 
+## |clustering |intensity |area |
+## |:----------|:---------|:----|
+## |hclust     |Yes       |No   |
+## |kmeans     |Yes       |No   |
+## |pam        |Yes       |No   |
+## 
+## 
+## 
+## --------------------------------------------------</code></pre>
+<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">object</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/initiateHierarchicalClustering.html">initiateHierarchicalClustering</a></span><span class="op">(</span><span class="va">object</span>, variable_set <span class="op">=</span> <span class="st">"area"</span><span class="op">)</span>
+
+<span class="fu"><a href="../reference/printSummary.html">printAnalysisSummary</a></span><span class="op">(</span><span class="va">object</span>, slots <span class="op">=</span> <span class="st">"clustering"</span><span class="op">)</span></code></pre></div>
+<pre><code>## 
+## --------------------------------------------------
+## 
+## Conducted analysis:
+## 
+## 
+## 
+## 
+## |clustering |intensity |area |
+## |:----------|:---------|:----|
+## |hclust     |Yes       |Yes  |
+## |kmeans     |Yes       |No   |
+## |pam        |Yes       |No   |
+## 
+## 
+## 
+## --------------------------------------------------</code></pre>
+</div>
 <div id="renaming-cluster-variables-and-cluster-groups" class="section level2">
 <h2 class="hasAnchor">
-<a href="#renaming-cluster-variables-and-cluster-groups" class="anchor" aria-hidden="true"></a>Renaming cluster variables and cluster groups</h2>
+<a href="#renaming-cluster-variables-and-cluster-groups" class="anchor" aria-hidden="true"></a>6. Renaming cluster variables and cluster groups</h2>
 <p>To ensure unambiguous naming with respect to algorithm, variable set, methods etc. the initial clustering names are somewhat bulky. In addition to that are cluster named by number which is barely informative. In case you want to rename cluster variables or single cluster groups of a variable have a look at the tutorial about how to <a href="renaming.html">rename content</a> in <code>cypro</code>.</p>
 </div>
   </div>

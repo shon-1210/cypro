@@ -50,7 +50,7 @@ initiateCorrelation <- function(object,
   if(base::class(corr_object) != "corr_conv" | base::isTRUE(force)){
 
     df <- 
-      getStatsOrTracksDf(object = object, phase = phase) %>% 
+      getStatsDf(object = object, phase = phase) %>% 
       dplyr::select(cell_id, dplyr::all_of(variables))
     
     corr_object <-
@@ -151,7 +151,8 @@ correlateAcross <- function(object,
                             phase = NULL, 
                             across = NULL, 
                             method_corr = NULL, 
-                            verbose = NULL){
+                            verbose = NULL,
+                            print_errors = TRUE){
   
   check_object(object)
   assign_default(object)
@@ -171,7 +172,7 @@ correlateAcross <- function(object,
       across = across, 
       methods.corr = method_corr, 
       verbose = verbose, 
-      print.errors = TRUE
+      print.errors = print_errors
     )
   
   object <-

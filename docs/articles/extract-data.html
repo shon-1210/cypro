@@ -309,10 +309,9 @@
 <a href="#grouping-data-frame" class="anchor" aria-hidden="true"></a>1.3.4 Grouping data.frame</h4>
 <p>All grouping variables together form the grouping data.frame. It can be extracted via <code><a href="../reference/getGroupingDf.html">getGroupingDf()</a></code> and contains all variables of the three grouping types.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">group_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getGroupingDf.html">getGroupingDf</a></span><span class="op">(</span><span class="va">object_tracks</span><span class="op">)</span></code></pre></div>
-<pre><code>## No cluster variables have been calculated yet for second phase.</code></pre>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># print first 10 rows</span>
+<code class="sourceCode R"><span class="va">group_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getGroupingDf.html">getGroupingDf</a></span><span class="op">(</span><span class="va">object_tracks</span><span class="op">)</span>
+
+<span class="co"># print first 10 rows</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">group_df</span><span class="op">)</span></code></pre></div>
 <pre><code>## # A tibble: 6 x 7
 ##   cell_id  cell_line condition well_plate_name well_plate_index well  well_image
@@ -329,7 +328,7 @@
 <h3 class="hasAnchor">
 <a href="#track-data-and-stat-data-one-time-imaging" class="anchor" aria-hidden="true"></a>1.4 Track data and Stat data (One time imaging)</h3>
 <p>As mentioned <a href="terminology.html">here</a>, the difference between track data and stat data becomes obsolete in one time imaging experiments. The data type prefix track and stat are interchangeable in every function if you use them with an object that contains data from one time imaging experiments.</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">stat_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getStatsDf.html">getStatsDf</a></span><span class="op">(</span><span class="va">object_one_time</span>, with_grouping <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>
 
 <span class="va">track_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getTracksDf.html">getTracksDf</a></span><span class="op">(</span><span class="va">object_one_time</span>, with_grouping <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>
@@ -343,7 +342,7 @@
 <h2 class="hasAnchor">
 <a href="#variable-data-frame" class="anchor" aria-hidden="true"></a>2. Variable data.frame</h2>
 <p>The variable data.frame focuses on the variables and provides summary statistics. It is stored in the <code>@vdata</code>slot. Use <code><a href="../reference/getVariableDf.html">getVariableDf()</a></code> to obtain it.</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">variable_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getVariableDf.html">getVariableDf</a></span><span class="op">(</span><span class="va">object_tracks</span><span class="op">)</span>
 
 <span class="co"># print first 10 rows</span>
@@ -363,13 +362,13 @@
 <h2 class="hasAnchor">
 <a href="#set-up-data-frame" class="anchor" aria-hidden="true"></a>3. Set Up data.frame</h2>
 <p>Several parts of the experiment design, in particular, the well plate design is stored in data.frames as well. Use <code><a href="../reference/getSetUpDf.html">getSetUpDf()</a></code> to obtain it.</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># obtain a vector of all well plate names </span>
 <span class="va">wp_names</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getWellPlateNames.html">getWellPlateNames</a></span><span class="op">(</span><span class="va">object_tracks</span><span class="op">)</span>
 
 <span class="va">wp_names</span></code></pre></div>
 <pre><code>## [1] "one"</code></pre>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">set_up_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getSetUpDf.html">getSetUpDf</a></span><span class="op">(</span><span class="va">object_tracks</span>, well_plate_name <span class="op">=</span> <span class="va">wp_names</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span>
 
 <span class="co"># print first 10 rows</span>
@@ -396,17 +395,16 @@
 <h3 class="hasAnchor">
 <a href="#functions-to-extract-names" class="anchor" aria-hidden="true"></a>4.1 Functions to extract names</h3>
 <p>The <code>get*VariableNames()</code>-family of functions allows to obtain character vectors of variable names which are the column names of the respective data.frames introduced in chapter 1. Cell data.frames.</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">stat_vars</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getStatVariableNames.html">getStatVariableNames</a></span><span class="op">(</span><span class="va">object_tracks</span><span class="op">)</span>
 
 <span class="va">wp_vars</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getGroupingVariableNames.html">getWellPlateVariableNames</a></span><span class="op">(</span><span class="va">object_tracks</span><span class="op">)</span>
 
 <span class="va">meta_vars</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getGroupingVariableNames.html">getMetaVariableNames</a></span><span class="op">(</span><span class="va">object_tracks</span><span class="op">)</span>
 
-<span class="va">cluster_vars</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getGroupingVariableNames.html">getClusterVariableNames</a></span><span class="op">(</span><span class="va">object_tracks</span><span class="op">)</span></code></pre></div>
-<pre><code>## No cluster variables have been calculated yet for second phase.</code></pre>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">stat_vars</span></code></pre></div>
+<span class="va">cluster_vars</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getGroupingVariableNames.html">getClusterVariableNames</a></span><span class="op">(</span><span class="va">object_tracks</span><span class="op">)</span>
+
+<span class="va">stat_vars</span></code></pre></div>
 <details><p><summary>output</summary></p>
 <pre><code>##  [1] "max_speed"    "mean_speed"   "median_speed" "min_speed"    "sd_speed"    
 ##  [6] "var_speed"    "max_dfo"      "mean_dfo"     "median_dfo"   "min_dfo"     
@@ -425,7 +423,7 @@
 <li><code><a href="../reference/starts_with.html">matches()</a></code></li>
 </ul>
 <p>(Check out a more detailed description on how they work by either following this <a href="https://tidyselect.r-lib.org/reference/language.html" class="external-link">link</a> or running <code><a href="../reference/starts_with.html">?starts_with</a></code> in your R console.)</p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># obtain only variables that describe the cells area  </span>
 <span class="va">area_names</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getStatVariableNames.html">getStatVariableNames</a></span><span class="op">(</span><span class="va">object_one_time</span>, <span class="fu"><a href="../reference/starts_with.html">starts_with</a></span><span class="op">(</span><span class="st">"AreaShape"</span><span class="op">)</span><span class="op">)</span>
 
@@ -463,7 +461,7 @@
 <div id="examples" class="section level3">
 <h3 class="hasAnchor">
 <a href="#examples" class="anchor" aria-hidden="true"></a>4.3 Examples</h3>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># only zernike features </span>
 <span class="va">zernike_vars</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getStatVariableNames.html">getStatVariableNames</a></span><span class="op">(</span><span class="va">object_one_time</span>, <span class="fu"><a href="../reference/starts_with.html">contains</a></span><span class="op">(</span><span class="st">"Zernike"</span><span class="op">)</span><span class="op">)</span>
 
@@ -559,7 +557,7 @@
 ## [88] "RadialDistribution_ZernikePhase_Actin_9_5"    
 ## [89] "RadialDistribution_ZernikePhase_Actin_9_7"    
 ## [90] "RadialDistribution_ZernikePhase_Actin_9_9"</code></pre>
-</details><div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+</details><div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># only zernike features that derived from shape analysis</span>
 <span class="va">area_zernike_vars</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getStatVariableNames.html">getStatVariableNames</a></span><span class="op">(</span><span class="va">object_one_time</span>, <span class="fu"><a href="../reference/starts_with.html">starts_with</a></span><span class="op">(</span><span class="st">"AreaShape"</span><span class="op">)</span> <span class="op">&amp;</span> <span class="fu"><a href="../reference/starts_with.html">contains</a></span><span class="op">(</span><span class="st">"Zernike"</span><span class="op">)</span><span class="op">)</span> 
 
@@ -575,7 +573,7 @@
 ## [22] "AreaShape_Zernike_8_2" "AreaShape_Zernike_8_4" "AreaShape_Zernike_8_6"
 ## [25] "AreaShape_Zernike_8_8" "AreaShape_Zernike_9_1" "AreaShape_Zernike_9_3"
 ## [28] "AreaShape_Zernike_9_5" "AreaShape_Zernike_9_7" "AreaShape_Zernike_9_9"</code></pre>
-</details><div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+</details><div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># only cluster variables with k = 4</span>
 <span class="va">k_4_cluster</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getGroupingVariableNames.html">getClusterVariableNames</a></span><span class="op">(</span><span class="va">object_one_time</span>, <span class="fu"><a href="../reference/starts_with.html">contains</a></span><span class="op">(</span><span class="st">"k_4"</span><span class="op">)</span><span class="op">)</span>
 
@@ -585,7 +583,7 @@
 ## [2] "hcl_euclidean_ward.D_k_4_(intensity)"  
 ## [3] "kmeans_Lloyd_k_4_(intensity)"          
 ## [4] "pam_euclidean_k_4_(intensity)"</code></pre>
-</details><div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
+</details><div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># only cluster variables with k = 4 (without hierarchical algorithm)</span>
 <span class="va">k_4_cluster2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getGroupingVariableNames.html">getClusterVariableNames</a></span><span class="op">(</span><span class="va">object_one_time</span>, <span class="fu"><a href="../reference/starts_with.html">contains</a></span><span class="op">(</span><span class="st">"k_4"</span><span class="op">)</span> <span class="op">&amp;</span> <span class="op">-</span><span class="fu"><a href="../reference/starts_with.html">starts_with</a></span><span class="op">(</span><span class="st">"hcl"</span><span class="op">)</span><span class="op">)</span>
 
@@ -599,7 +597,7 @@
 <h2 class="hasAnchor">
 <a href="#group-names" class="anchor" aria-hidden="true"></a>5. Group names</h2>
 <p>Grouping variables contain information on how to group cells encoded in the group names. In several cases you might want to specify specific groups. To obtain the respective names make use of <code><a href="../reference/getGroupNames.html">getGroupNames()</a></code> or its wrapper <code><a href="../reference/getCellLines.html">getConditions()</a></code>, <code><a href="../reference/getCellLines.html">getCellLines()</a></code>.</p>
-<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># two ways to obtain condition names</span>
 <span class="va">conditions_1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getGroupNames.html">getGroupNames</a></span><span class="op">(</span><span class="va">object_one_time</span>, grouping_variable <span class="op">=</span> <span class="st">"condition"</span><span class="op">)</span>
 
@@ -613,7 +611,7 @@
 ##  [9] "mitomycin C"              "neomycin"                
 ## [11] "olomoucine"               "taxol"                   
 ## [13] "tunicamycin"</code></pre>
-<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">conditions_2</span></code></pre></div>
 <pre><code>##  [1] "5-fluorouracil"           "AG-1478"                 
 ##  [3] "anisomycin"               "AZ258"                   
@@ -623,7 +621,7 @@
 ## [11] "olomoucine"               "taxol"                   
 ## [13] "tunicamycin"</code></pre>
 <p>The use of <code><a href="../reference/getGroupNames.html">getGroupNames()</a></code> to obtain cluster names becomes useful once you have <a href="renaming.html">renamed</a> clusters as they are initially encoded in numbers. The tidyselect helpers introduced in section 4. Variable names can be used within <code><a href="../reference/getGroupNames.html">getGroupNames()</a></code>as well.</p>
-<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># all cluster names</span>
 <span class="va">hcl5_all</span> <span class="op">&lt;-</span>
   <span class="fu"><a href="../reference/getGroupNames.html">getGroupNames</a></span><span class="op">(</span>
@@ -633,7 +631,7 @@
 
 <span class="va">hcl5_all</span></code></pre></div>
 <pre><code>## [1] "low"        "low-medium" "medium"     "medium-low" "high"</code></pre>
-<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># medium cluster names</span>
 <span class="va">hcl5_medium</span> <span class="op">&lt;-</span>
   <span class="fu"><a href="../reference/getGroupNames.html">getGroupNames</a></span><span class="op">(</span>
