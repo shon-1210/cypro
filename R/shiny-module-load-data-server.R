@@ -705,32 +705,36 @@ moduleLoadDataServer <- function(id, object){
       
       if(sysname == "Windows"){
         
-        shinyFiles::shinyDirChoose(input = input, 
-                                   id = "pdl_example_dir", 
-                                   session = session, 
-                                   roots = dir_roots()
+        shinyFiles::shinyDirChoose(
+          input = input, 
+          id = "pdl_example_dir", 
+          session = session, 
+          roots = dir_roots()
         )
         
-        shinyFiles::shinyDirChoose(input = input, 
-                                   id = "ld_well_plate_dir", 
-                                   session = session, 
-                                   roots = dir_roots()
+        shinyFiles::shinyDirChoose(
+          input = input, 
+          id = "ld_well_plate_dir", 
+          session = session, 
+          roots = dir_roots()
         )
         
       } else {
         
-        shinyFiles::shinyDirChoose(input = input, 
-                                   id = "pdl_example_dir", 
-                                   session = session, 
-                                   roots = dir_roots
+        shinyFiles::shinyDirChoose(
+          input = input, 
+          id = "pdl_example_dir", 
+          session = session, 
+          roots = dir_roots
         )
         
-        shinyFiles::shinyDirChoose(input = input, 
-                                   id = "ld_well_plate_dir", 
-                                   session = session, 
-                                   roots = dir_roots, 
-                                   restrictions = base::system.file(package = "base")
-                                   )
+        shinyFiles::shinyDirChoose(
+          input = input, 
+          id = "ld_well_plate_dir", 
+          session = session, 
+          roots = dir_roots, 
+          restrictions = base::system.file(package = "base")
+        )
         
       }
       
@@ -738,8 +742,10 @@ moduleLoadDataServer <- function(id, object){
       well_plate_dir_string <- shiny::reactive({ 
         
         shiny::validate(
-          shiny::need(expr = base::is.list(x = input$ld_well_plate_dir), 
-                      message = "No folder chosen.")
+          shiny::need(
+            expr = base::is.list(x = input$ld_well_plate_dir),
+            message = "No folder chosen."
+            )
         )
         
         if(sysname == "Windows"){
@@ -824,13 +830,14 @@ moduleLoadDataServer <- function(id, object){
       # well plate plot visualizes the file availability
       well_plate_plot <- shiny::reactive({
         
-        plot_well_plate_shiny(wp_df = evaluated_wp_df(), 
-                              selected_wells_df = NULL, 
-                              aes_fill = "availability_status", 
-                              aes_color = "availability_status", 
-                              fill_guide = TRUE,
-                              fill_values = ggplot2::alpha(status_colors, .5),
-                              color_values = ggplot2::alpha(status_colors, .5)
+        plot_well_plate_shiny(
+          wp_df = evaluated_wp_df(), 
+          selected_wells_df = NULL, 
+          aes_fill = "availability_status", 
+          aes_color = "availability_status", 
+          fill_guide = TRUE,
+          fill_values = ggplot2::alpha(status_colors, .5),
+          color_values = ggplot2::alpha(status_colors, .5)
         ) + 
           ggplot2::labs(fill = "File Availability") + 
           ggplot2::guides(color = FALSE)

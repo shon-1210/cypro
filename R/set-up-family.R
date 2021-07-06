@@ -140,7 +140,7 @@ set_up_cdata_tracks <- function(object, verbose = TRUE){
   return(object)
 }
 
-
+#' @export
 set_up_cdata_stats <- function(object, summarize_with, verbose = TRUE){
   
   confuns::give_feedback(
@@ -169,14 +169,14 @@ set_up_cdata_stats <- function(object, summarize_with, verbose = TRUE){
   } else {
     
     object@cdata$stats <- 
-      purrr::map_df(
-        .x = object@cdata$tracks,
-        .f = complete_stats,
-        phase = "first",
-        object = object, 
-        summarize_with = summarize_with, 
-        verbose = verbose
-      )
+      complete_stats(
+        track_df = object@cdata$tracks,
+        summarize_with = summarize_with,
+        phase = NULL, 
+        verbose = verbose, 
+        object = object
+        )
+    
     
   }
   

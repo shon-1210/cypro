@@ -1427,6 +1427,8 @@ getConditions <- function(object, phase = NULL){
 #' 
 #' @return Character value. 
 #' 
+#' @export
+#' 
 getStorageDirectory <- function(object){
   
   check_object(object, set_up_req = "experiment_design")
