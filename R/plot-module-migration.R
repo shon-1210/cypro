@@ -8,6 +8,8 @@
 #' paths start from the same position.
 #'
 #' @inherit argument_dummy params
+#' @param display_annotation Logical. If set to TRUE the number of cells (input
+#' for argument \code{n_cells}) is displayed in the right upper corner of each plot.
 #' 
 #' @inherit ggplot_return return
 #' @export
@@ -22,7 +24,8 @@ plotAllTracks <- function(object,
                           color_by = across, 
                           linetype = "solid", 
                           linesize = 0.75,
-                          clrp = "milo", 
+                          clrp = "milo",
+                          display_annotation = TRUE,
                           ...,
                           verbose = TRUE){
   
@@ -115,12 +118,30 @@ plotAllTracks <- function(object,
     
   }
   
+  if(base::isTRUE(display_annotation)){
+    
+    annotation_add_on <-
+      ggplot2::geom_text(
+        data = annotation_df,
+        x = Inf,
+        y = Inf,
+        vjust = 1,
+        hjust = 1,
+        mapping = ggplot2::aes(label = label),
+        size = 3
+        )
+    
+  } else {
+    
+    annotation_add_on <- list()
+    
+  }
+  
   ggplot2::ggplot(data = plot_df, mapping = ggplot2::aes(x = x_coords, y = y_coords)) + 
     ggplot2::geom_vline(xintercept = 0, linetype = "dashed", color = "lightgrey") +
     ggplot2::geom_hline(yintercept = 0, linetype = "dashed", color = "lightgrey") +
     ggplot2::geom_path(mapping = mapping, linetype = linetype, size = linesize) + 
-    ggplot2::geom_text(data = annotation_df, x = Inf, y = Inf, vjust = 1, hjust = 1,
-                       mapping = ggplot2::aes(label = label), size = 3) +
+    annotation_add_on +
     ggplot2::scale_x_continuous(limits = c(-mxm, mxm)) +
     ggplot2::scale_y_continuous(limits = c(-mxm, mxm)) +
     ggplot2::theme_bw() + 

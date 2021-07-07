@@ -15,6 +15,7 @@ plotAllTracks(
   linetype = "solid",
   linesize = 0.75,
   clrp = "milo",
+  display_annotation = TRUE,
   ...,
   verbose = TRUE
 )
@@ -55,6 +56,9 @@ and \emph{'dotdash'}.}
 \item{clrp}{Character value. Specifies the color palette to be used to represent
 groups of discrete variables. Run \code{validColorPalettes()} to obtain valid
 input options.}
+
+\item{display_annotation}{Logical. If set to TRUE the number of cells (input
+for argument \code{n_cells}) is displayed in the right upper corner of each plot.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
