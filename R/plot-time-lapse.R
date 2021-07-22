@@ -24,6 +24,7 @@ plotTimeLineplot <- function(object,
                              variables,
                              across = "condition", 
                              across_subset = NULL, 
+                             relevel = NULL, 
                              summarize_with = "mean",
                              phase = NULL,
                              linesize = 1,
@@ -138,6 +139,7 @@ plotTimeHeatmap <- function(object,
                             variable,
                             across = "condition",
                             across_subset = NULL,
+                            relevel = NULL, 
                             phase = "all",
                             n_cells = 100,
                             color = NA,
@@ -203,7 +205,8 @@ plotTimeHeatmap <- function(object,
     confuns::check_across_subset(
       df = ., 
       across = across, 
-      across.subset = across_subset
+      across.subset = across_subset,
+      relevel = relevel,
     ) %>% 
     tidyr::pivot_wider(
       data = ., 
@@ -219,7 +222,7 @@ plotTimeHeatmap <- function(object,
     speed_df <-
       dplyr::group_modify(
         .data = speed_df,
-        .f =  ~ confuns::arrange_rows(df = .x, according.to = "maxima", verbose = FALSE)
+        .f =  ~ confuns::arrange_rows(df = .x, according.to = arrange_rows, verbose = FALSE)
       )
     
   }

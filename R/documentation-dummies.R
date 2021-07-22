@@ -153,7 +153,7 @@ dim_red_df <- function(dim_red_df){}
 #' 
 #' @param relevel Logical value. If set to TRUE the input order of \code{across_subset}
 #' determines the order in which the groups of interest are displayed. Groups that
-#' are not included are dropped which affects the colors with which they are displayed.
+#' are not included are dropped which affects the choice of color.
 #' 
 #' @param scales,space,ncol,nrow Given to \code{ggplot2::facet_wrap()}. Affects the way the subplots
 #' are displayed.

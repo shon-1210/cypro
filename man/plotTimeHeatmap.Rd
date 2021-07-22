@@ -9,6 +9,7 @@ plotTimeHeatmap(
   variable,
   across = "condition",
   across_subset = NULL,
+  relevel = NULL,
   phase = "all",
   n_cells = 100,
   color = NA,
@@ -38,6 +39,10 @@ with a \emph{'-'}. (Saves writing if there are more groups you are interested in
 than groups you are not interested in.)
 
 Use \code{getGroupNames()} to obtain all valid input options.}
+
+\item{relevel}{Logical value. If set to TRUE the input order of \code{across_subset}
+determines the order in which the groups of interest are displayed. Groups that
+are not included are dropped which affects the choice of color.}
 
 \item{phase}{Character or numeric. If character, the ordinal value referring to the phase of interest (e.g. \emph{'first'}, \emph{'second'} etc.).
 referring to the phase of interest or \emph{'all'}. If numeric, the number referring to the phase.

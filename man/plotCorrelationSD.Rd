@@ -36,7 +36,7 @@ Ignored if the experiment design contains only one phase.}
 
 \item{relevel}{Logical value. If set to TRUE the input order of \code{across_subset}
 determines the order in which the groups of interest are displayed. Groups that
-are not included are dropped which affects the colors with which they are displayed.}
+are not included are dropped which affects the choice of color.}
 
 \item{variables_subset}{Character vector or NULL. Specifies the numeric variables you
 want to be included in the correlation plot.
