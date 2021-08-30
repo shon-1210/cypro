@@ -32,19 +32,21 @@ checkpoint(
     "Please choose a folder in which to store the cypro object and name the experiment.",
     no_well_plates_added = "No well plates have been added yet.", no_well_plate_chosen =
     "Please choose a well plate first.",      no_wells_chosen =
-    "Could not save well information. Please select at least one well.", no_example_df =
+    "Could not save well information. Please select at least one well.", no_file_input =
+    "Please select an input file first.", no_input_file_check =
+    "Please assign the experiment design variables first.", no_example_df =
     "No example file has been loaded yet.", no_id_vars =
     "No identifier variables have been denoted yet.", no_module_vars =
     "No module variables have been denoted yet.", no_add_vars =
     "No additional variables haven been denoted yet.", incomplete_vardenotation =
-    "You need to complete the variable denotation first.", no_set_up_saved =
+    "You need to complete the variable denotation first.",      no_set_up_saved =
     "No experiment set up has been saved yet.", well_plates_not_ready =
-    "There are still well plates left that do not match the requirements to be loaded.", 
-        no_data_read_in = "No files have been loaded yet.", no_cells_remaining =
+    "There are still well plates left that do not match the requirements to be loaded.",
+    no_data_read_in = "No files have been loaded yet.", no_cells_remaining =
     "The filter criteria discard all cells. At least one cell must remain.", errors_left
     =
     "Trying to load some files resulted in errors. To proceed without them enable 'Ignore Errors'. If you want the files to be included fix the error and load the files again.",
-    no_qc_data =
+         no_qc_data =
     "Data has to undergo quality check first before the cell tracer object can be returned.",
     no_features_selected = "Please selecte at least one feature."),
   warning_notifications = list(),

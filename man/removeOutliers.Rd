@@ -4,7 +4,12 @@
 \alias{removeOutliers}
 \title{Remove outliers from object}
 \usage{
-removeOutliers(object, method_outlier = NULL, verbose = NULL)
+removeOutliers(
+  object,
+  method_outlier,
+  new_name = "outlier_removed",
+  verbose = NULL
+)
 }
 \arguments{
 \item{object}{A valid cypro object.}

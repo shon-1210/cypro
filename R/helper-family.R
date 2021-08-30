@@ -111,8 +111,8 @@ hlpr_assemble_df <- function(track_df, wp_data, wp_index, wp_name){
   
   result_df <- 
     dplyr::mutate(.data = track_df,
-        cell_id = stringr::str_c("CID", cell_id,"WI", well_image,"WP", wp_index,sep = "_"),
-        well = stringr::str_extract(string = well_image, pattern = well_regex), 
+        cell_id = stringr::str_c("CID", cell_id,"WROI", well_roi,"WP", wp_index,sep = "_"),
+        well = stringr::str_extract(string = well_roi, pattern = well_regex), 
         well_plate_index = stringr::str_c("WP", wp_index, sep = "_"), 
         well_plate_name = {{wp_name}}
     ) %>% 
@@ -328,7 +328,7 @@ hlpr_merge_conditions <- function(track_df, phase, across, verbose = TRUE){
     track_df <- 
       dplyr::group_by(track_df, cell_id) %>% 
       dplyr::mutate(
-        condition = hlpr_merge_condition_by_id(condition)
+        condition = hlpr_merge_condition_by_id(condition) %>% base::as.factor()
       ) %>% 
       dplyr::ungroup()
     
@@ -706,9 +706,9 @@ hlpr_wp_exp_file_number <- function(wp_list){
     dplyr::filter(wp_list$wp_df, information_status == "Complete") %>% 
     base::nrow()
   
-  n_ipw <- wp_list$wp_df$ipw %>% base::unique()
+  n_rois_per_well <- wp_list$wp_df$rois_per_well %>% base::unique()
   
-  base::return(n_wells * n_ipw)
+  base::return(n_wells * n_rois_per_well)
     
 }
 

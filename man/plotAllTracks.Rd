@@ -8,6 +8,7 @@ plotAllTracks(
   object,
   across = "condition",
   across_subset = NULL,
+  relevel = NULL,
   time_subset = NULL,
   phase = NULL,
   n_cells = 100,
@@ -15,7 +16,9 @@ plotAllTracks(
   linetype = "solid",
   linesize = 0.75,
   clrp = "milo",
+  clrp_adjust = NULL,
   display_annotation = TRUE,
+  set_seed = NULL,
   ...,
   verbose = TRUE
 )
@@ -38,6 +41,10 @@ than groups you are not interested in.)
 
 Use \code{getGroupNames()} to obtain all valid input options.}
 
+\item{relevel}{Logical value. If set to TRUE the input order of \code{across_subset}
+determines the order in which the groups of interest are displayed. Groups that
+are not included are dropped which affects the choice of color.}
+
 \item{phase}{Character or numeric. If character, the ordinal value referring to the phase of interest (e.g. \emph{'first'}, \emph{'second'} etc.).
 referring to the phase of interest or \emph{'all'}. If numeric, the number referring to the phase.
 
@@ -56,6 +63,11 @@ and \emph{'dotdash'}.}
 \item{clrp}{Character value. Specifies the color palette to be used to represent
 groups of discrete variables. Run \code{validColorPalettes()} to obtain valid
 input options.}
+
+\item{clrp_adjust}{Named character vector or NULL. If character, it adjusts the
+color palette that is used to represent the groups. Names of the input vector must refer
+to the group and the respective named element denotes the color with which to
+represent the group.}
 
 \item{display_annotation}{Logical. If set to TRUE the number of cells (input
 for argument \code{n_cells}) is displayed in the right upper corner of each plot.}

@@ -21,6 +21,7 @@ addMetaVariables(
   variable_names,
   phase = NULL,
   overwrite = FALSE,
+  with_well_plate = FALSE,
   by = "cell_id",
   verbose = TRUE
 )

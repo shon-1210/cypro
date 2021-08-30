@@ -42,7 +42,7 @@ add_vardenotation_to_cypro_object_shiny <- function(object, amils){
 #' the example data.frame
 #' @export
 #'
-assemble_id_module_info_shiny <- function(input_list, object){
+assemble_id_module_info_shiny <- function(input_list, object, example_df = NULL, ed_vars = NULL){
   
   if(isTimeLapseExp(object)){
     
@@ -72,6 +72,57 @@ assemble_id_module_info_shiny <- function(input_list, object){
       return(var_info)
       
     })
+  
+  n_obs <- base::nrow(example_df)
+  
+  cell_id_var <- identification_module$variables$cell_id$name_in_example
+  
+  if(isTimeLapseExp(object)){
+    
+    frame_num_var <- identification_module$variables$frame_num$name_in_example
+    
+    if(base::is.character(ed_vars)){
+    
+      ed_vars <- ed_vars %>% confuns::vselect(-none)  
+      
+    }
+    
+    n_unique_obs <- 
+      example_df[,c(ed_vars, cell_id_var, frame_num_var)] %>% 
+      dplyr::distinct() %>% 
+      base::nrow()
+    
+    if(n_unique_obs < n_obs){
+      
+      msg  <- 
+        glue::glue(
+          "Frame-variable '{frame_num_var}' and Cell ID-variable '{cell_id_var}' do not ", 
+          "uniquely identify each observation. Invalid variable assignment."
+        )
+      
+      shiny_fdb(ui = msg, type = "error", duration = 20)
+      shiny::req(FALSE)
+      
+    }
+    
+  } else {
+    
+    n_unique_obs <- dplyr::n_distinct(example_df[[cell_id_var]])
+    
+    if(n_unique_obs < n_obs){
+      
+      msg  <- 
+        glue::glue(
+          "Cell ID-variable {cell_id_var} does not ", 
+          "uniquely identify each observation. Invalid variable assignment."
+        )
+      
+      shiny_fdb(ui = msg, type = "error", duration = 20)
+      shiny::req(FALSE)
+      
+    }
+    
+  }
   
   return(identification_module)
   
@@ -348,9 +399,7 @@ assemble_tracks_time_lapse_shiny <- function(track_data_list, well_plate_list, o
 
 #' @title Return css status
 #' 
-css_status <- function(evaluate,
-                       case_true = "success",
-                       case_false = "warning"){
+css_status <- function(evaluate, case_true = "success", case_false = "warning"){
   
   if(base::isTRUE(evaluate)){
     
@@ -392,7 +441,7 @@ evaluate_file_availability_shiny <- function(wp_list, recursive = TRUE, keep_fil
   
   ignore_filetypes <- filetypes[filetypes != keep_filetype]
   
-  ipw <- wp_df$ipw %>% base::unique()
+  rois_per_well <- wp_df$rois_per_well %>% base::unique()
   
   # filter all subsequent directories for the 'file_regex' pattern
   wp_directories <-
@@ -404,21 +453,21 @@ evaluate_file_availability_shiny <- function(wp_list, recursive = TRUE, keep_fil
   if(base::isTRUE(debug_ct)){print(wp_directories)}
   
   # get directories that are to be kept
-  well_image_vec <-
+  well_roi_vec <-
     stringr::str_extract(string = wp_directories, pattern = file_regex) %>% 
-    stringr::str_extract(pattern = well_image_regex)
+    stringr::str_extract(pattern = well_roi_regex)
   
-  well_image_vec_unique <- base::unique(well_image_vec)
+  well_roi_vec_unique <- base::unique(well_roi_vec)
   
-  well_image_df <- 
-    base::data.frame("well_image" = well_image_vec, stringsAsFactors = FALSE)
+  well_roi_df <- 
+    base::data.frame("well_roi" = well_roi_vec, stringsAsFactors = FALSE)
   
   # count well images, extract ambiguous ones and create the respective 
   ambiguous_files <- 
-    dplyr::group_by(.data = well_image_df, well_image) %>% 
+    dplyr::group_by(.data = well_roi_df, well_roi) %>% 
     dplyr::tally() %>% 
     dplyr::filter(n > 1) %>% 
-    dplyr::pull(var = "well_image")
+    dplyr::pull(var = "well_roi")
   
   if(base::length(ambiguous_files) != 0){
     
@@ -466,7 +515,7 @@ evaluate_file_availability_shiny <- function(wp_list, recursive = TRUE, keep_fil
     stringr::str_c("(", ., ")")
   
   relevant_pattern <- 
-    stringr::str_c(1:ipw, collapse = "|") %>% 
+    stringr::str_c(1:rois_per_well, collapse = "|") %>% 
     stringr::str_c("(", ., ")") %>% 
     stringr::str_c(wells, "_", ., "\\.(csv|xls|xlsx)$")
   
@@ -480,37 +529,37 @@ evaluate_file_availability_shiny <- function(wp_list, recursive = TRUE, keep_fil
     ) %>%
     tibble::as_tibble() %>% 
     tidyr::separate(col = files, into = c("well", "image", "file_type"), sep = "_|\\.") %>% 
-    tidyr::unite(col = "well_image", well, image, sep = "_", remove = FALSE) %>% 
+    tidyr::unite(col = "well_roi", well, image, sep = "_", remove = FALSE) %>% 
     dplyr::group_by(well) %>% 
     dplyr::mutate(well_files = dplyr::n()) %>% 
-    dplyr::group_by(well_image) %>% 
-    dplyr::mutate(well_image_files = dplyr::n()) %>% 
+    dplyr::group_by(well_roi) %>% 
+    dplyr::mutate(well_roi_files = dplyr::n()) %>% 
     dplyr::ungroup() %>% 
-    dplyr::select(well, well_files, well_image_files)
+    dplyr::select(well, well_files, well_roi_files)
   
   missing_files <- 
     dplyr::pull(.data = relevant_wp_df, var = "well") %>% 
-    tidyr::expand_grid(well = ., image = 1:ipw) %>% 
+    tidyr::expand_grid(well = ., image = 1:rois_per_well) %>% 
     dplyr::mutate(
-      well_image = stringr::str_c(well, image, sep = "_"), 
-      missing = !well_image %in% {{well_image_vec_unique}}
+      well_roi = stringr::str_c(well, image, sep = "_"), 
+      missing = !well_roi %in% {{well_roi_vec_unique}}
     ) %>% 
     dplyr::filter(missing) %>% 
-    dplyr::pull(var = "well_image")
+    dplyr::pull(var = "well_roi")
   
   # evaluate file availability in a joined data.frame  
   eval_df <- 
     dplyr::left_join(x = wp_df, y = file_availability, by = "well") %>% 
-    tidyr::replace_na(replace = list(well_files = 0, well_image_files = 0)) %>% 
+    tidyr::replace_na(replace = list(well_files = 0, well_roi_files = 0)) %>% 
     dplyr::group_by(well) %>% 
     dplyr::mutate(
-      ambiguous = dplyr::if_else(base::any(well_image_files > 1), true = TRUE, false = FALSE),
+      ambiguous = dplyr::if_else(base::any(well_roi_files > 1), true = TRUE, false = FALSE),
       availability_status = dplyr::case_when(
         information_status != "Complete" ~ "Dismissed", 
         ambiguous ~ "Ambiguous",
         well_files == 0 ~ "Missing", 
-        well_files < ipw ~ "Incomplete", 
-        well_files >= ipw ~ "Complete"
+        well_files < rois_per_well ~ "Incomplete", 
+        well_files >= rois_per_well ~ "Complete"
       ), 
       availability_status = base::factor(x = availability_status, levels = c("Complete", "Incomplete", "Missing", "Ambiguous", "Dismissed"))
     ) %>% 
@@ -533,28 +582,33 @@ evaluate_file_availability_shiny <- function(wp_list, recursive = TRUE, keep_fil
       stringr::str_remove(pattern = directory) %>% 
       stringr::str_c("~", ., sep = "")
     
-    ambiguous_well_images <- 
-      stringr::str_extract(string = ambiguous_directories, pattern = well_image_regex)
+    ambiguous_well_rois <- 
+      stringr::str_extract(string = ambiguous_directories, pattern = well_roi_regex)
     
     ambiguous_list <-
-      base::vector(mode = "list", length = dplyr::n_distinct(ambiguous_well_images)) %>% 
-      magrittr::set_names(value = base::unique(ambiguous_well_images))
+      base::vector(mode = "list", length = dplyr::n_distinct(ambiguous_well_rois)) %>% 
+      magrittr::set_names(value = base::unique(ambiguous_well_rois))
     
     for(i in base::seq_along(ambiguous_directories)){
       
-      aw <- ambiguous_well_images[i]
+      aw <- ambiguous_well_rois[i]
       
       if(stringr::str_detect(ambiguous_directories[i], pattern = aw)){
         
-        ambiguous_list[[aw]] <- base::append(x = ambiguous_list[[aw]], 
-                                             value = ambiguous_directories[i])
+        ambiguous_list[[aw]] <-
+          base::append(
+            x = ambiguous_list[[aw]],
+            value = ambiguous_directories[i]
+            )
         
       } 
       
     }
     
     rows <- base::names(ambiguous_list)
-    cols <- purrr::map_int(.x = ambiguous_list, .f = base::length) %>% base::max()
+    cols <- 
+      purrr::map_int(.x = ambiguous_list, .f = base::length) %>%
+      base::max()
     
     mtr <- base::matrix(data = NA, nrow = base::length(rows), ncol = cols)
     
@@ -563,11 +617,11 @@ evaluate_file_availability_shiny <- function(wp_list, recursive = TRUE, keep_fil
     
     for(i in base::seq_along(ambiguous_list)){
       
-      well_image <- ambiguous_list[[i]]
+      well_roi <- ambiguous_list[[i]]
       
-      for(d in base::seq_along(well_image)){
+      for(d in base::seq_along(well_roi)){
         
-        mtr[i,d] <- well_image[d]
+        mtr[i,d] <- well_roi[d]
         
       }
       
@@ -591,6 +645,187 @@ evaluate_file_availability_shiny <- function(wp_list, recursive = TRUE, keep_fil
   base::return(wp_list)
   
 }
+
+
+#' @rdname evaluate_file_availability_shiny
+evaluate_file_content_shiny <- function(var_name_well_plate = "none",
+                                        var_name_well = "Metadata_Well",
+                                        var_name_roi = "Metadata_ROI",
+                                        wp_list, 
+                                        df,
+                                        dir,
+                                        ...){
+  
+  # make sure that well variables exist in the right format
+  
+  df_clean <- 
+    dplyr::rename(.data = df,
+      well := {{var_name_well}},
+      roi := {{var_name_roi}}
+    ) %>% 
+    dplyr::mutate(
+      well_letter = stringr::str_extract(string = well, pattern = "^[A-Z]"), 
+      well_number = stringr::str_extract(string = well, pattern = "\\d{1,2}$") %>% stringr::str_remove(pattern = "^0"),
+      well = stringr::str_c(well_letter, well_number, sep = ""), 
+      well_roi = stringr::str_c(well, roi, sep = "_"),
+      well_letter = NULL, 
+      well_number = NULL
+    ) %>% 
+    tibble::as_tibble()
+  
+  # check if all well plates exist
+  
+  if(var_name_well_plate != "none"){
+    
+    # make sure that well plate name variable exists
+    df_clean <- dplyr::rename(df_clean, well_plate_name := {{var_name_well_plate}})
+    
+  } 
+  
+  well_plate_names <- base::names(wp_list)
+  n_well_plates <- base::length(well_plate_names)
+  
+  if(var_name_well_plate == "none"){
+    
+    if(n_well_plates > 1){
+      
+      shiny_fdb(
+        ui = "The experiment design contains more than one well plate. Please denote a well plate variable.", 
+        type = "error",
+        duration = 15
+      )
+      
+      shiny::req(FALSE)
+      
+    } else {
+      
+      # make sure that well plate name variable exists
+      df_clean$well_plate_name <- well_plate_names
+      
+    }
+    
+    missing_well_plates <- NULL
+    
+  } else {
+    
+    wp_var <- df_clean[[var_name_well_plate]]
+    
+    well_plates_found <- base::unique(wp_var)
+    
+    missing_well_plates <- well_plate_names[!well_plate_names %in% well_plates_found]
+    
+    if(base::length(missing_well_plates) == base::length(well_plate_names)){
+      
+      msg <- 
+        glue::glue(
+          "The file '{dir}' does not contain data of any of the well plates designed '{well_plate_names}'.", 
+          well_plate_names = confuns::scollapse(missing_well_plates)
+        )
+      
+      shiny_fdb(ui = msg, type = "error", duration = 15)
+      
+      shiny::req(FALSE)
+      
+    }
+    
+  }
+  
+  wp_list_new <-
+    purrr::imap(.x = wp_list, .f = function(wp_slot, wp_name){
+      
+      wp_df <- wp_slot[["wp_df"]]
+      
+      wp_df$well_plate_name <- wp_name
+      
+      wp_df <- 
+        dplyr::select(.data = wp_df,
+                      dplyr::any_of("well_plate_name"),
+                      well,
+                      dplyr::everything()
+        )
+      
+      # get total number of rois per well
+      n_rois <- wp_df$rois_per_well %>% base::unique()
+      
+      # create vector of valid rois 
+      all_rois <- 1:n_rois 
+      
+      df_count <- 
+        dplyr::filter(df_clean, well_plate_name == {{wp_name}}) %>% 
+        dplyr::select(well, roi) %>% 
+        dplyr::filter(roi %in% {{all_rois}}) %>% 
+        dplyr::distinct() %>% 
+        dplyr::group_by(well) %>% 
+        dplyr::tally(name = "well_files") 
+      
+      wp_df_eval <- 
+        dplyr::left_join(x = wp_df, y = df_count, by = c("well")) %>%
+        dplyr::mutate(
+          well_files = tidyr::replace_na(data = well_files, replace = 0), 
+          ambiguous = FALSE, 
+          availability_status = dplyr::case_when(
+            information_status != "Complete" ~ "Dismissed", 
+            well_files == 0 ~ "Missing", 
+            well_files < rois_per_well ~ "Incomplete", 
+            well_files >= rois_per_well ~ "Complete"
+          )
+        ) %>% 
+        dplyr::distinct()
+      
+      wp_slot$wp_df_eval <- wp_df_eval 
+      wp_slot$directory <- dir
+      wp_slot$valid_directories <- NULL
+      wp_slot$missing_files <- NULL
+      wp_slot$ambiguous_directories <- NULL
+      
+      return(wp_slot)
+      
+    })
+  
+  
+  if(base::length(missing_well_plates) >= 1){
+    
+    msg <- 
+      glue::glue(
+        "The file '{dir}' does not contain data for {ref_wp} '{ref_missing_wp}'.", 
+        ref_wp = confuns::adapt_reference(missing_well_plates, "well_plate"), 
+        ref_missing_wp = confuns::scollapse(missing_well_plates)
+      )
+    
+    shiny_fdb(ui = msg, type = "warning")
+    
+  }
+  
+  n_data <- 
+    purrr::map_df(.x = wp_list_new, .f = ~ .x$wp_df_eval) %>% 
+    dplyr::filter(information_status == "Complete") %>% 
+    dplyr::pull(well_files) %>% 
+    base::unique()
+  
+  if(base::all(n_data == 0)){
+    
+    msg <- 
+      glue::glue(
+        "Variable assignemnt resulted in no data found for any well. Please make sure to assign ",
+        "the correct experiment design variables."
+        )
+    
+    shiny_fdb(ui = msg, type = "error")
+    
+    shiny::req(FALSE)
+    
+  }
+  
+  return(list(wp_list_new = wp_list_new, df_clean = df_clean))
+  
+}
+
+
+
+
+
+
+
 
 
 
@@ -643,7 +878,7 @@ load_data_files_shiny <- function(wp_list,
   
   directories <- wp_list$valid_directories
   
-  well_image_files <-
+  well_roi_files <-
     stringr::str_extract(string = directories, pattern = file_regex)
   
   n_files <- base::length(directories)
@@ -664,7 +899,7 @@ load_data_files_shiny <- function(wp_list,
                 assembled_module_info_lists = assembled_module_info_lists,
                 used_variable_names = used_variable_names,
                 mitosis_module_used = mitosis_module_used) %>% 
-    purrr::set_names(nm = well_image_files)
+    purrr::set_names(nm = well_roi_files)
   
   # sort successfull and failed loading 
   output_data_list <- 
@@ -753,6 +988,7 @@ plot_well_plate_shiny <- function(wp_df,
                                   fill_guide = FALSE,
                                   aes_color,
                                   color_values,
+                                  color_guide = TRUE,
                                   pt_size = 13.5,
                                   pt_stroke = 2,
                                   border = 0.75){
@@ -791,11 +1027,19 @@ plot_well_plate_shiny <- function(wp_df,
     
   }
   
+  if(base::isTRUE(color_guide)){
+    
+    color_guide <- ggplot2::guide_legend(override.aes = list(size = 15, shape = 21))
+    
+  } 
+  
   if(base::isTRUE(fill_guide)){
     
     fill_guide <- ggplot2::guide_legend(override.aes = list(size = 15, shape = 21))
     
   } 
+  
+  
   
   
   # plot output
@@ -818,7 +1062,7 @@ plot_well_plate_shiny <- function(wp_df,
     confuns::scale_color_add_on(aes = "color", variable = wp_df[[aes_color]], clrp.adjust = color_values, clrp = "milo") + 
     fill_add_on +
     ggplot2::guides(
-      color = ggplot2::guide_legend(override.aes = list(size = 15, shape = 21)), 
+      color = color_guide, 
       fill = fill_guide
     )
   
@@ -923,6 +1167,13 @@ read_example_file_shiny <- function(directory){
     
   }
   
+  if(stringr::str_detect(string = directory, pattern = ".txt")){
+    
+    df <- utils::read.delim(file = directory, header = TRUE)
+    
+  }
+  
+  print(head(df))
   
   if(tibble::has_rownames(df)){
     
@@ -953,7 +1204,7 @@ read_example_file_shiny <- function(directory){
 #' 'analysis_modules' = pdl_step_3_info_assembled(),
 #' 'additional' = pdl_step_4_info_assembled()
 #'
-#' @return The read in data.frame with three additional informative columns: \emph{well_image, condition}
+#' @return The read in data.frame with three additional informative columns: \emph{well_roi, condition}
 #' and \emph{cell_line}.
 
 read_data_files_shiny <- function(directory,
@@ -966,7 +1217,7 @@ read_data_files_shiny <- function(directory,
 
   amils <- assembled_module_info_lists
 
-  assign("amils", value = amils, envir = .GlobalEnv)
+  #assign("amils", value = amils, envir = .GlobalEnv)
   
   # 1. Checkpoint: Reading  -------------------------------------------------
       
@@ -1024,9 +1275,9 @@ read_data_files_shiny <- function(directory,
       
       feedback_messages <- NULL
       
-      well_image <-
+      well_roi <-
         stringr::str_extract(string = directory, pattern = file_regex) %>% 
-        stringr::str_extract(pattern = well_image_regex)
+        stringr::str_extract(pattern = well_roi_regex)
       
       variable_names <- used_variable_names
       
@@ -1149,7 +1400,7 @@ read_data_files_shiny <- function(directory,
         # assemble to data.frame
         final_df <-
           purrr::map_df(data_list, .f = ~ .x) %>% 
-          dplyr::mutate(well_image = {{well_image}}) %>% 
+          dplyr::mutate(well_roi = {{well_roi}}) %>% 
           dplyr::rename(!!!id_name_pairs) %>% 
           dplyr::rename(!!!analysis_module_name_pairs)
         
@@ -1160,7 +1411,45 @@ read_data_files_shiny <- function(directory,
   }
 }
 
-
+#' wrapper around several table reading functions
+read_table_shiny <- function(directory, ...){
+  
+  if(stringr::str_detect(string = directory, pattern = ".csv$")){
+    
+    df <- 
+      base::suppressMessages({
+        
+        base::suppressWarnings({
+          
+          readr::read_csv(file = directory, ...)
+          
+        })
+        
+      })
+    
+  }
+  
+  if(stringr::str_detect(string = directory, pattern = ".xlsx$")){
+    
+    df <- readxl::read_xlsx(path = directory, sheet = 1, ...)
+    
+  }
+  
+  if(stringr::str_detect(string = directory, pattern = ".xls$")){
+    
+    df <- readxl::read_xls(path = directory, sheet = 1, ...)
+    
+  }
+  
+  if(stringr::str_detect(string = directory, pattern = ".txt$")){
+    
+    df <- utils::read.delim(file = dir, header = TRUE, ...)
+    
+  }
+  
+  return(df)
+  
+}
 
 #' @title Show shiny - notifications
 #'

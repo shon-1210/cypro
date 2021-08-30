@@ -248,7 +248,6 @@ plotWellPlate <- function(object,
   
   stat_fun <- stat_funs[[summarize_with]]
   
-  
   # prepare well plate set up data.frame  
   wp_df <-
     purrr::imap_dfr(

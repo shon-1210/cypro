@@ -12,6 +12,7 @@ run_dim_red <- function(object,
                         phase = NULL,
                         method_dim_red = "pca",
                         force = FALSE,
+                        set_seed = NULL, 
                         verbose = NULL,
                         ...){
   
@@ -32,13 +33,15 @@ run_dim_red <- function(object,
     
   }
   
-  
   if(base::class(dim_red_obj) != "dim_red_conv" | base::isTRUE(force)){
     
-    stat_df <- getStatsDf(object = object, 
-                          phase = phase,
-                          with_cluster = FALSE, 
-                          with_meta = FALSE) %>% 
+    stat_df <- 
+      getStatsDf(
+        object = object,
+        phase = phase,
+        with_cluster = FALSE,
+        with_meta = FALSE
+        ) %>% 
       dplyr::select(cell_id, dplyr::all_of(variables))
     
     cell_ids <- stat_df$cell_id
@@ -52,12 +55,18 @@ run_dim_red <- function(object,
         data = stat_df, 
         key.name = "cell_id", 
         method.dim.red = method_dim_red, 
+        seed = set_seed, 
         ...
       )
     
-    msg <- glue::glue("Successfully calculated dimensional reduction (method = {method_dim_red}){ref_phase}with '{variable_set}'-variables: '{variables}'", 
-                      variables = glue::glue_collapse(x = variables, sep = "', '", last = "' and '", width = 100), 
-                      ref_phase = hlpr_glue_phase(object, phase))
+    msg <- 
+      glue::glue(
+        "Successfully calculated dimensional reduction",
+        "(method = {method_dim_red}){ref_phase}with '{variable_set}'-variables:",
+        "'{variables}'",
+        variables = glue::glue_collapse(x = variables, sep = "', '", last = "' and '", width = 100),
+        ref_phase = hlpr_glue_phase(object, phase)
+        )
     
     # remove data to prevent the object from becoming to big
     dim_red_obj@data <- base::matrix()
@@ -67,18 +76,26 @@ run_dim_red <- function(object,
     
   } else {
     
-    msg <- glue::glue("Dimensional reduction (method = {method_dim_red}) of variable set '{variable_set}'{ref_phase}already exists. Set argument 'force' to TRUE in order to overwrite it.", 
-                      ref_phase = hlpr_glue_phase(object, phase))
+    msg <-
+      glue::glue(
+        "Dimensional reduction (method = {method_dim_red}) of variable set",
+        "'{variable_set}'{ref_phase}already exists. Set argument 'force' to",
+        "TRUE in order to overwrite it.", 
+        ref_phase = hlpr_glue_phase(object, phase)
+        )
     
     confuns::give_feedback(msg = msg, fdb.fn = "stop", with.time = FALSE)
     
   }
   
-  object <- setDimRedConv(object = object, 
-                          dim_red_object = dim_red_obj, 
-                          method = method_dim_red, 
-                          phase = phase, 
-                          variable_set = variable_set)
+  object <- 
+    setDimRedConv(
+      object = object,
+      dim_red_object = dim_red_obj,
+      method = method_dim_red,
+      phase = phase,
+      variable_set = variable_set
+      )
   
   base::return(object)
   
@@ -193,6 +210,7 @@ plot_dim_red <- function(object,
     pt.shape = base::ifelse(color_aes == "fill", 21, 19), 
     pt.size = pt_size ,
     add.ons = add_ons,
+    clrp.adjust = clrp_adjust, 
     ...
   )
   
@@ -226,6 +244,7 @@ runPca <- function(object,
                    variable_set, 
                    phase = NULL,
                    force = FALSE,
+                   set_seed = NULL, 
                    verbose = NULL,
                    ...){
   
@@ -237,6 +256,7 @@ runPca <- function(object,
                         phase = phase, 
                         method_dim_red = "pca",
                         force = force, 
+                        set_seed = set_seed, 
                         verbose = verbose, 
                         ...)
 
@@ -251,6 +271,7 @@ runTsne <- function(object,
                     variable_set,
                     phase = NULL,
                     force = FALSE,
+                    set_seed = NULL, 
                     verbose = NULL,
                     ...){
   
@@ -262,6 +283,7 @@ runTsne <- function(object,
                         phase = phase, 
                         method_dim_red = "tsne",
                         force = force, 
+                        set_seed = set_seed, 
                         verbose = verbose, 
                         ...)
   
@@ -275,6 +297,7 @@ runUmap <- function(object,
                     variable_set,
                     phase = NULL,
                     force = FALSE,
+                    set_seed = NULL, 
                     verbose = NULL,
                     ...){
   
@@ -286,6 +309,7 @@ runUmap <- function(object,
                         phase = phase, 
                         method_dim_red = "umap",
                         force = force, 
+                        set_seed = set_seed, 
                         verbose = verbose, 
                         ...)
   

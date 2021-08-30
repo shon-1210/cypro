@@ -79,7 +79,7 @@ detectOutliers <- function(object,
 #' @seealso detectOutliers()
 #' @export
 
-removeOutliers <- function(object, method_outlier = NULL, verbose = NULL){
+removeOutliers <- function(object, method_outlier, new_name = "outlier_removed", verbose = NULL){
   
   check_object(object)
   assign_default(object)
@@ -107,11 +107,16 @@ removeOutliers <- function(object, method_outlier = NULL, verbose = NULL){
     
     confuns::give_feedback(msg = msg, verbose = verbose)
     
+    reasoning <- 
+      glue::glue("Outlier removal. Methods: '{scollapse(method_outlier)}'") %>%
+      base::as.character()
+    
     object <-
       subsetByCellId(
         object = object,
+        new_name = new_name,
         cell_ids = keep_ids,
-        reasoning = glue::glue("Outlier removal. Methods: '{scollapse(method_outlier)}'"),
+        reasoning = reasoning,
         verbose = verbose)
     
     object@analysis <- list()

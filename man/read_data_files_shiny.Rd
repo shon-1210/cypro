@@ -29,7 +29,7 @@ of \code{.x} contains.}
 'additional' = pdl_step_4_info_assembled()}
 }
 \value{
-The read in data.frame with three additional informative columns: \emph{well_image, condition}
+The read in data.frame with three additional informative columns: \emph{well_roi, condition}
 and \emph{cell_line}.
 }
 \description{

@@ -225,6 +225,56 @@ check_df_variables <- function(variable_name, df){
 
 find_missing_variables_shiny <- check_df_variables
 
+
+#' @title Detect poorly added variables 
+#' 
+#' @description Makes sure that the data.frame that is added to the cypro object
+#' after a call to add*Variables() contains as many rows as there are cells
+#' in the cypro object. 
+#' 
+check_nrow <- function(df, n_rows, ref){
+  
+  df_n_rows <- base::nrow(df)
+  
+  if(df_n_rows != n_rows){
+    
+    msg <- 
+      glue::glue(
+        "Number of rows of new {ref} data.frame ({df_n_rows}) does not correspond to number",
+        "of cells in cypro-object ({n_rows}). Attempting to fix with 'dplyr::distinct()'."
+      )
+    
+    confuns::give_feedback(msg = msg, verbose = TRUE)
+    
+    df_new <- dplyr::distinct(.data = df)
+    
+    df_new_n_rows <- base::nrow(df_new)
+    
+    if(df_new_n_rows != n_rows){
+      
+      msg <- 
+        glue::glue(
+          "Number of rows of new {ref} data.frame ({df_new_n_rows}) still does not correspond to number",
+          "of cells in cypro-object ({n_rows}). Please adjust argument in put of the the add*()-function",
+          "that you used."
+        )
+      
+      confuns::give_feedback(msg = msg, fdb.fn = "stop")
+      
+    } else {
+      
+      confuns::give_feedback(msg = glue::glue("Number of rows fit. Adding {ref} data.frame to cypro-object."), verbose = TRUE)
+      
+      df <- df_new
+      
+    }
+    
+  }
+  
+  return(df)
+  
+}
+
 #' @title Detect protected variables
 #' @description Makes sure that renaming variables does not conflict with 
 #' protected variable names,

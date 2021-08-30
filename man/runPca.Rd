@@ -6,11 +6,35 @@
 \alias{runUmap}
 \title{Compute dimensional reductions}
 \usage{
-runPca(object, variable_set, phase = NULL, force = FALSE, verbose = NULL, ...)
+runPca(
+  object,
+  variable_set,
+  phase = NULL,
+  force = FALSE,
+  set_seed = NULL,
+  verbose = NULL,
+  ...
+)
 
-runTsne(object, variable_set, phase = NULL, force = FALSE, verbose = NULL, ...)
+runTsne(
+  object,
+  variable_set,
+  phase = NULL,
+  force = FALSE,
+  set_seed = NULL,
+  verbose = NULL,
+  ...
+)
 
-runUmap(object, variable_set, phase = NULL, force = FALSE, verbose = NULL, ...)
+runUmap(
+  object,
+  variable_set,
+  phase = NULL,
+  force = FALSE,
+  set_seed = NULL,
+  verbose = NULL,
+  ...
+)
 }
 \arguments{
 \item{object}{A valid cypro object.}

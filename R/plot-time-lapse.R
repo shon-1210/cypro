@@ -142,11 +142,14 @@ plotTimeHeatmap <- function(object,
                             relevel = NULL, 
                             phase = "all",
                             n_cells = 100,
+                            clrp = NULL,
+                            clrp_adjust = NULL, 
                             color = NA,
                             colors = viridis::viridis(15),
                             smooth = TRUE,
                             smooth_span = 0.25,
                             arrange_rows = "maxima",
+                            set_seed = NULL, 
                             verbose = TRUE,
                             ...,
                             in_shiny = FALSE){
@@ -187,7 +190,16 @@ plotTimeHeatmap <- function(object,
   }
   
   # the speed data shifted and sliced
-  speed_df <- 
+  
+  if(base::is.numeric(set_seed)){
+    
+    confuns::give_feedback(msg = glue::glue("Setting seed: {set_seed}"), verbose = verbose)
+    
+    base::set.seed(set_seed)
+    
+  }
+  
+  time_df <- 
     getTracksDf(
       object,
       phase = phase,
@@ -219,32 +231,32 @@ plotTimeHeatmap <- function(object,
   
   if(arrange_rows %in% c("maxima", "minima")){
     
-    speed_df <-
+    time_df <-
       dplyr::group_modify(
-        .data = speed_df,
+        .data = time_df,
         .f =  ~ confuns::arrange_rows(df = .x, according.to = arrange_rows, verbose = FALSE)
       )
     
   }
   
   # the speed data as a numeric matrix (rownames = cell_ids)
-  speed_mtr <- 
-    tibble::column_to_rownames(.data = speed_df, var = "cell_id") %>% 
+  time_mtr <- 
+    tibble::column_to_rownames(.data = time_df, var = "cell_id") %>% 
     dplyr::select(-dplyr::all_of(x = c(across))) %>% 
     base::as.matrix()
   
-  cell_ids <- base::rownames(speed_mtr)
+  cell_ids <- base::rownames(time_mtr)
   
   # a vector splicing the heatmap 
   gaps_row <- 
-    dplyr::group_by(.data = speed_df, !!rlang::sym(across)) %>% 
+    dplyr::group_by(.data = time_df, !!rlang::sym(across)) %>% 
     dplyr::summarise(count = dplyr::n()) %>% 
     dplyr::mutate(positions = base::cumsum(x = count)) %>% 
     dplyr::pull(var = "positions")
   
   # a data.frame annotating the heatmap indicating the group belonging of the cell ids
   annotation_row <- 
-    dplyr::select(.data = speed_df, !!rlang::sym(across)) %>% 
+    dplyr::select(.data = time_df, !!rlang::sym(across)) %>% 
     base::as.data.frame() %>% 
     magrittr::set_rownames(value = cell_ids)
   
@@ -270,20 +282,20 @@ plotTimeHeatmap <- function(object,
       
     }
     
-    time_seq <- base::seq_along(base::colnames(speed_mtr))
+    time_seq <- base::seq_along(base::colnames(time_mtr))
     
     smooth_length <- base::length(time_seq) * 10
     predict_seq <- base::seq(1, base::max(time_seq), length.out = smooth_length)
     
     plot_mtr <-
-      base::matrix(nrow = base::nrow(speed_mtr), ncol = smooth_length) %>%
+      base::matrix(nrow = base::nrow(time_mtr), ncol = smooth_length) %>%
       magrittr::set_rownames(value = cell_ids)
     
-    for(cell in base::rownames(speed_mtr)){
+    for(cell in base::rownames(time_mtr)){
       
       if(base::isTRUE(verbose)){ pb$tick() }
       
-      speed <- speed_mtr[cell, ]
+      speed <- time_mtr[cell, ]
       
       speed_loess <- stats::loess(formula = speed ~ time_seq, span = smooth_span)
       
@@ -294,7 +306,53 @@ plotTimeHeatmap <- function(object,
     
   } else {
     
-    plot_mtr <- speed_mtr
+    plot_mtr <- time_mtr
+    
+  }
+  
+  # -----
+  
+  
+
+  # annotation colors -------------------------------------------------------
+
+  grouping_var <- time_df[[across]]
+  
+  if(base::is.character(grouping_var)){
+    
+    color_levels <- base::unique(grouping_var)
+    
+  } else if(base::is.factor(grouping_var)){
+    
+    color_levels <- base::levels(grouping_var)
+    
+  }
+    
+  if(clrp == "default"){
+    
+    color_vec <- NA
+    
+  } else {
+    
+    color_vec <-
+      confuns::color_vector(
+        clrp = clrp, 
+        names = color_levels, 
+        clrp.adjust = clrp_adjust
+        )
+    
+  }
+  
+  if(!base::all(base::is.na(color_vec))){
+    
+    discrete_colors <- color_vec[base::seq_along(color_levels)]
+    
+    annotation_colors <-
+      purrr::set_names(x = list(discrete_colors), nm = across) 
+    
+  } else {
+    
+    annotation_colors <- NA
     
   }
   
@@ -305,6 +363,7 @@ plotTimeHeatmap <- function(object,
   velocity_heatmap <- 
     pheatmap::pheatmap(
       mat = plot_mtr, 
+      annotation_colors = annotation_colors,
       annotation_row = annotation_row,
       annotation_names_row = FALSE, 
       gaps_row = gaps_row,

@@ -4,7 +4,12 @@
 \alias{assemble_id_module_info_shiny}
 \title{Title}
 \usage{
-assemble_id_module_info_shiny(input_list, object)
+assemble_id_module_info_shiny(
+  input_list,
+  object,
+  example_df = NULL,
+  ed_vars = NULL
+)
 }
 \arguments{
 \item{input_list}{shiny server input list.}

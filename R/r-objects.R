@@ -19,7 +19,7 @@ well_plate_info <-
 # Regular expressions -----------------------------------------------------
 
 well_regex <- "[A-Z]{1}\\d{1,2}"
-well_image_regex <- "[A-Z]{1}\\d{1,2}_\\d{1}"
+well_roi_regex <- "[A-Z]{1}\\d{1,2}_\\d{1}"
 file_regex <- "[A-Z]{1}\\d{1,2}_\\d{1}\\.(csv|xls|xlsx)$"
 
 # -----
@@ -33,7 +33,7 @@ original_ct_variables <- c("y-coordinate [pixel]", "x-coordinate [pixel]", "Fram
                            "Distance from origin", "Distance from last point", "Instantaneous speed",
                            "Angle from origin", "Angle from last point")
 
-short_ct_variables <- c("well_image", "condition", "cell_line", "cell_id", "x_coords",
+short_ct_variables <- c("well_roi", "condition", "cell_line", "cell_id", "x_coords",
                         "y_coords", "frame", "dfo", "dflp", "speed", "afo", "aflp")
 
 # -----
@@ -143,7 +143,7 @@ helper_content <- list(
     below."
   ),
   
-  images_per_well = 
+  rois_per_well = 
     c("E.g. if your data contains the files A1_1.csv, A1_2.csv and A1_3.csv
        there are 3 images/image stacks per well.",
       "",
@@ -152,6 +152,19 @@ helper_content <- list(
       ),
 
   
+  # loadDataFile()
+  well_plate_var = c(
+    "Choose the variable that contains information about the well plate name.", 
+    "If the experiment design contains only one well plate. You can specify 'none'."
+  ),
+  
+  well_var = c(
+    "Choose the variable that contains information about the well."
+  ), 
+  
+  roi_var = c(
+    "Choose the variable that contains information about the region of interest (roi)."
+  ),
   
   # loadData()
   assign_folder = c(
@@ -233,14 +246,14 @@ imp_filter_criteria <- c("total_meas", "skipped_meas", "first_meas", "last_meas"
 
 interval_options <- c("weeks", "days", "hours", "minutes", "seconds", "miliseconds")
 
-invalid_groups <- c("cell_id", "well_plate_name", "well_plate_index", "well", "well_image")
+invalid_groups <- c("cell_id", "well_plate_name", "well_plate_index", "well", "well_roi")
 
 legend_titles <- c("ambiguity_status" = "Ambiguity Status", 
                    "cl_condition" = "Cell Line & Condition", 
                    "condition" = "Condition", 
                    "cell_line" = "Cell Line")
 
-meta_variables <- c("cell_id", "well_plate_name", "well_plate_index", "well", "well_image")
+meta_variables <- c("cell_id", "well_plate_name", "well_plate_index", "well", "well_roi")
 
 new_slots <- c("analysis", "compatibility", "default", "information", "name", "well_plates", "version")
 
@@ -253,7 +266,7 @@ object_class <- "cypro"
 base::attr(object_class, which = "package") <- "cypro"
 
 protected_vars <- c("cell_id", "cell_line", "condition",
-                    "well_plate_name", "well_plate_index", "well",  "well_image", 
+                    "well_plate_name", "well_plate_index", "well",  "well_roi", 
                     "x_coords", "y_coords", 
                     "frame_itvl", "frame_num", "frame_time", 
                     "imputed")
@@ -319,7 +332,7 @@ variable_relevance_descr <-
   )
 
 
-well_plate_vars <- c("well_plate_name", "well_plate_index", "well",  "well_image")
+well_plate_vars <- c("well_plate_name", "well_plate_index", "well",  "well_roi")
 
 
 
@@ -385,7 +398,7 @@ pretty_wp_variables_list <-
   list("WP Name" = "well_plate_name", 
        "WP Index" = "well_plate_index", 
        "Well" = "well", 
-       "Well-Image" = "well_image")
+       "Well-Image" = "well_roi")
 
 pretty_wp_variables_vec <- 
   purrr::imap_chr(.x = pretty_wp_variables_list, 

@@ -12,11 +12,14 @@ plotTimeHeatmap(
   relevel = NULL,
   phase = "all",
   n_cells = 100,
+  clrp = NULL,
+  clrp_adjust = NULL,
   color = NA,
   colors = viridis::viridis(15),
   smooth = TRUE,
   smooth_span = 0.25,
   arrange_rows = "maxima",
+  set_seed = NULL,
   verbose = TRUE,
   ...,
   in_shiny = FALSE
@@ -53,6 +56,15 @@ Ignored if the experiment design contains only one phase.}
 
 \item{n_cells}{Numeric calue. Determines the number of cells that are randomly chosen from
 every group to be displayed. Useful to keep plots insightful and aesthetically pleasing.}
+
+\item{clrp}{Character value. Specifies the color palette to be used to represent
+groups of discrete variables. Run \code{validColorPalettes()} to obtain valid
+input options.}
+
+\item{clrp_adjust}{Named character vector or NULL. If character, it adjusts the
+color palette that is used to represent the groups. Names of the input vector must refer
+to the group and the respective named element denotes the color with which to
+represent the group.}
 
 \item{colors}{A vector of colors that is used as the heatmap's color spectrum.}
 

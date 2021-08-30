@@ -18,6 +18,7 @@
 plotAllTracks <- function(object,
                           across = "condition",
                           across_subset = NULL,
+                          relevel = NULL, 
                           time_subset = NULL,
                           phase = NULL,
                           n_cells = 100,
@@ -25,7 +26,9 @@ plotAllTracks <- function(object,
                           linetype = "solid", 
                           linesize = 0.75,
                           clrp = "milo",
+                          clrp_adjust = NULL, 
                           display_annotation = TRUE,
+                          set_seed = NULL, 
                           ...,
                           verbose = TRUE){
   
@@ -69,8 +72,17 @@ plotAllTracks <- function(object,
     confuns::check_across_subset(
       df = ., 
       across = across, 
-      across.subset = across_subset
+      across.subset = across_subset,
+      relevel = relevel 
     ) 
+  
+  if(base::is.numeric(set_seed)){
+    
+    confuns::give_feedback(msg = glue::glue("Setting seed: {set_seed}."), verbose = verbose)
+    
+    base::set.seed(seed = set_seed)
+    
+  }
   
   cell_id_df <- 
     dplyr::select(track_df, dplyr::all_of(x = c("cell_id", across))) %>% 
@@ -154,7 +166,10 @@ plotAllTracks <- function(object,
     ggplot2::labs(x = NULL, y = NULL, color = across,
                   subtitle = glue::glue("Time: {time_subset} {getIntervalUnit(object)}")) + 
     hlpr_caption_add_on(object = object, phase = phase) + 
-    confuns::scale_color_add_on(variable = "discrete", clrp = clrp)
+    confuns::scale_color_add_on(
+      variable = plot_df[[across]],
+      clrp = clrp,
+      clrp.adjust = clrp_adjust)
   
 }
 

@@ -138,13 +138,13 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
                 placeholder = "well plate name")), 
             shiny::column(
               width = 2,
-              shiny::h5(shiny::strong("Images per Well:")) %>% 
+              shiny::h5(shiny::strong("ROIS per Well:")) %>% 
                 add_helper(
-                  content = helper_content$images_per_well,
+                  content = helper_content$rois_per_well,
                   title = "In how many fields of view has each well been divided?"
                   ), 
               shiny::numericInput(
-                inputId = ns("ed_images_per_well"),
+                inputId = ns("ed_rois_per_well"),
                 min = 0, value = 0, step = 1,
                 label = NULL))
           ),
@@ -692,7 +692,7 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
     
     # check input frame number per well
     checkpoint(
-      evaluate = input$ed_images_per_well != 0,
+      evaluate = input$ed_rois_per_well != 0,
       case_false = "invalid_image_number"
       )
     
@@ -956,7 +956,7 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
     checkpoint(evaluate = base::sum(all_wells()$information_status == "Complete") >= 1, 
                case_false = "empty_well_plate")
     
-    wp_df <- dplyr::mutate(.data = all_wells(), ipw = input$ed_images_per_well)
+    wp_df <- dplyr::mutate(.data = all_wells(), rois_per_well = input$ed_rois_per_well)
     
     # check information status
     if(base::isFALSE(input$ed_dismiss_unknown)){
@@ -1405,14 +1405,13 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
     
   })
   
-  
   output$ed_well_plate_folders <- DT::renderDataTable({
     
     df <- 
       data.frame(
         "Name" = base::names(well_plate_list()),
         "Type" = purrr::map_chr(.x = well_plate_list(), ~ base::unique(.x[["wp_df"]][["type"]])), 
-        "Images per Well" = purrr::map_dbl(.x = well_plate_list(), ~ base::unique(.x[["wp_df"]][["ipw"]]))
+        "ROIS per Well" = purrr::map_dbl(.x = well_plate_list(), ~ base::unique(.x[["wp_df"]][["rois_per_well"]]))
       )
     
     base::rownames(df) <- NULL

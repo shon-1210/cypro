@@ -62,6 +62,19 @@ addVariableSet <- function(object, variable_names, set_name, overwrite = FALSE){
   
   object@variable_sets[[set_name]] <- variable_names
   
+  # reset variable set based analysis results
+  for(slot in c("dim_red", "clustering")){
+    
+    for(method in analysis_methods[[slot]]){
+      
+      object@analysis[[slot]][[method]][[set_name]] <- NULL
+      
+    }
+    
+  }
+  
+  object@analysis$correlation[[set_name]] <- NULL
+  
   base::return(object)
   
 }
@@ -147,6 +160,7 @@ addMetaVariables <- function(object,
                              variable_names,
                              phase = NULL,
                              overwrite = FALSE,
+                             with_well_plate = FALSE,
                              by = "cell_id",
                              verbose = TRUE){
   
@@ -170,6 +184,17 @@ addMetaVariables <- function(object,
                   
   old_group_df <- getMetaDf(object, phase = phase)
   
+  if(base::isTRUE(with_well_plate)){
+    
+    old_group_df <- 
+      dplyr::left_join(
+        x = old_group_df, 
+        y = getWellPlateDf(object), 
+        by = "cell_id"
+      )
+    
+  }
+  
   updated_group_df <- 
     confuns::join_safely(
       old.df = old_group_df, 
@@ -181,6 +206,30 @@ addMetaVariables <- function(object,
       overwrite = overwrite, 
       verbose = verbose
     )
+  
+  updated_group_df <- 
+    check_nrow(
+      df = updated_group_df, 
+      n_rows = nCells(object), 
+      ref = "meta"
+    )
+  
+  if(base::isTRUE(with_well_plate)){
+    
+    updated_group_df <- 
+      dplyr::select(updated_group_df, -dplyr::any_of(well_plate_vars))
+    
+  }
+  
+  updated_group_df <- 
+    dplyr::mutate(
+      updated_group_df,
+      dplyr::across(
+        .cols = -cell_id & where(base::is.character), 
+        .fns = base::as.factor
+      )
+    ) %>% 
+    dplyr::mutate_if(.predicate = base::is.factor, .funs = base::droplevels)
   
   object <- setCellDf(object, slot = "meta", df = updated_group_df, phase = phase)
   

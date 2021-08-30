@@ -13,7 +13,7 @@ NULL
 
 existOutlierResults <- function(object){
   
-  outlier_results <- object@analysis$outlier_detection
+  outlier_results <- object@qcheck$outlier_detection
   
   res <- !base::identical(outlier_results, y = base::list()) & !base::is.null(outlier_results)
   

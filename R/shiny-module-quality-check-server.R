@@ -18,13 +18,17 @@ moduleQualityCheckServer <- function(id, object){
 # Reactive values ---------------------------------------------------------
       
       
-      phase_max_frames <- 
-        shiny::reactiveVal(
-          value = purrr::map(
-            .x = object@cdata$tracks,
-            .f = ~ base::max(.x[["frame_num"]])
+      if(multiplePhases(object)){
+        
+        phase_max_frames <- 
+          shiny::reactiveVal(
+            value = purrr::map(
+              .x = object@cdata$tracks,
+              .f = ~ base::max(.x[["frame_num"]])
             )
           )
+        
+      } 
       
       track_df <- 
         shiny::reactiveVal(value = getTracksDf(object, phase = "all", with_meta = TRUE))

@@ -246,10 +246,15 @@ compute_n_missing_values <- function(object, phase = NULL, verbose = NULL){
   
   # summarise how many missing values every cell id has across all variables
   na_df <- 
-    dplyr::select(df, cell_id, frame_num, dplyr::all_of(variable_names)) %>% 
+    dplyr::select(df, dplyr::any_of(x = c("cell_id", "frame_num")), dplyr::all_of(variable_names)) %>% 
     dplyr::group_by(cell_id) %>% 
-    dplyr::summarise_all(.funs = function(var){ base::is.na(var) %>% base::sum()}) %>% 
-    dplyr::select(-frame_num)
+    dplyr::summarise_all(.funs = function(var){ base::is.na(var) %>% base::sum()})
+  
+  if(isTimeLapseExp(object)){
+    
+    na_df <- dplyr::select(na_df, -frame_num)
+    
+  }
   
   return(na_df)
   

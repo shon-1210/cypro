@@ -418,7 +418,8 @@ moduleLoadDataServer <- function(id, object){
         res_info <- 
           assemble_id_module_info_shiny(
             input_list = shiny::reactiveValuesToList(input), 
-            object = object
+            object = object, 
+            example_df = example_df()
           )
         
         used_id_names <- 
@@ -644,6 +645,8 @@ moduleLoadDataServer <- function(id, object){
                       session = session)
         
         shiny::showNotification(ui = "Reading done.", type = "message")
+        
+        assign("data_list", data_list, envir = .GlobalEnv)
         
         # update read_in_data
         read_in_data(data_list)
@@ -911,6 +914,8 @@ moduleLoadDataServer <- function(id, object){
             )
           
         }
+        
+        assign("track_list", track_list, envir = .GlobalEnv)
         
         base::return(track_list)
         

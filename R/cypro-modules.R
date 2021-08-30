@@ -635,8 +635,7 @@ module_identification_time_lapse <-
 cypro_modules <- 
   list(
     localisation = module_localisation,
-    migration = module_migration,
-    mitosis = module_mitosis
+    migration = module_migration
   )
 
 all_module_names <- base::names(cypro_modules)

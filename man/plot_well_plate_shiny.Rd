@@ -12,6 +12,7 @@ plot_well_plate_shiny(
   fill_guide = FALSE,
   aes_color,
   color_values,
+  color_guide = TRUE,
   pt_size = 13.5,
   pt_stroke = 2,
   border = 0.75

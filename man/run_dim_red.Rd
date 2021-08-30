@@ -10,6 +10,7 @@ run_dim_red(
   phase = NULL,
   method_dim_red = "pca",
   force = FALSE,
+  set_seed = NULL,
   verbose = NULL,
   ...
 )

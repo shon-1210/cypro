@@ -41,6 +41,10 @@ checkpoint <- function(evaluate = TRUE,
                          "no_well_plate_chosen" = "Please choose a well plate first.",
                          "no_wells_chosen" = "Could not save well information. Please select at least one well.",
                          
+                         # load data file
+                         "no_file_input" = "Please select an input file first.",
+                         "no_input_file_check" = "Please assign the experiment design variables first.",
+                         
                          # prepare data loading
                          "no_example_df" = "No example file has been loaded yet.",
                          "no_id_vars" = "No identifier variables have been denoted yet.",

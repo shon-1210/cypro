@@ -2,12 +2,23 @@
 % Please edit documentation in R/shiny-functions.R
 \name{evaluate_file_availability_shiny}
 \alias{evaluate_file_availability_shiny}
+\alias{evaluate_file_content_shiny}
 \title{Evaluate the availability of files}
 \usage{
 evaluate_file_availability_shiny(
   wp_list,
   recursive = TRUE,
   keep_filetype = "csv$"
+)
+
+evaluate_file_content_shiny(
+  var_name_well_plate = "none",
+  var_name_well = "Metadata_Well",
+  var_name_roi = "Metadata_ROI",
+  wp_list,
+  df,
+  dir,
+  ...
 )
 }
 \arguments{
