@@ -183,10 +183,13 @@ plotSilhouetteWidths <- function(object,
 plotPamMedoids <- function(object, 
                            variable_set,
                            k, 
+                           facet_by = "cluster",
+                           color_by = "variables",
                            method_pam = NULL, 
                            phase = NULL, 
                            clrp = NULL, 
-                           verbose = NULL){
+                           verbose = NULL, 
+                           ...){
   
   check_object(object)
   assign_default(object)
@@ -207,7 +210,10 @@ plotPamMedoids <- function(object,
     pam.obj = cluster_object, 
     metric.pam = method_pam,
     k = k, 
-    verbose = verbose
+    verbose = verbose, 
+    facet.by = facet_by, 
+    clr.by = color_by, 
+    ...
   )
   
 }

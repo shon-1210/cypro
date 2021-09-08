@@ -901,11 +901,17 @@ getMissingValuesDf <- function(object, phase = NULL){
 #' by at least one method.
 #' @export
 #'
-getOutlierResults <- function(object, method_outlier = NULL, check = TRUE){
+getOutlierResults <- function(object,
+                              method_outlier = NULL,
+                              check = TRUE,
+                              phase = NULL,
+                              verbose = NULL){
   
   check_object(object)
   assign_default(object)
-  
+
+  phase <- check_phase(object, phase = phase, max_phases = 1)
+    
   if(base::isTRUE(check)){
     
     if(!existOutlierResults(object)){
@@ -916,8 +922,38 @@ getOutlierResults <- function(object, method_outlier = NULL, check = TRUE){
     
   }
   
-  outlier_list <- object@qcheck$outlier_detection
+  if(multiplePhases(object)){
+    
+    outlier_list <- 
+      purrr::map(
+        .x = object@qcheck$outlier_detection, 
+        .f = ~ .x[[phase]]
+      ) %>% 
+      purrr::discard(.p = base::is.null)
+    
+    if(base::length(outlier_list) == 0){
+      
+      msg <- 
+        glue::glue("Did not find any outlier detection results for {phase} phase.")
+      
+      confuns::give_feedback(msg = msg, fdb.fn = "stop", with.time = FALSE)
+      
+    }
+    
+    confuns::give_feedback(
+      msg = glue::glue("Returning outlier detection results for {phase} phase."), 
+      verbose = verbose, 
+      with.time = FALSE
+    )
+    
+  } else {
+    
+    outlier_list <- 
+      purrr::discard(.x = object@qcheck$outlier_detection, .p = base::is.null)
+    
+  }
   
+  # subset by method
   if(base::is.character(method_outlier)){
     
     confuns::check_vector(
@@ -925,9 +961,16 @@ getOutlierResults <- function(object, method_outlier = NULL, check = TRUE){
       against = base::names(outlier_list), 
       ref.input = "input for argument 'method_outlier'", 
       ref.against = "methods with which outliers have been detected", 
-      fdb.fn = "stop")
+      fdb.fn = "stop"
+      )
     
-    outlier_list <- outlier_list[[method_outlier]]
+    outlier_list <- outlier_list[method_outlier]
+    
+    if(base::length(method_outlier) == 1){
+      
+      outlier_list <- outlier_list[[1]]
+      
+    }
     
   }
   
@@ -937,7 +980,16 @@ getOutlierResults <- function(object, method_outlier = NULL, check = TRUE){
 
 #' @rdname getOutlierResults
 #' @export
-getOutlierIds <- function(object, method_outlier = NULL, check = FALSE, flatten = TRUE){
+getOutlierIds <- function(object,
+                          method_outlier = NULL,
+                          check = FALSE,
+                          flatten = TRUE, 
+                          phase = NULL){
+  
+  check_object(object)
+  assign_default(object)
+  
+  phase <- check_phase(object, phase = phase, max_phase = 1)
   
   if(base::is.null(method_outlier)){
     
@@ -949,18 +1001,32 @@ getOutlierIds <- function(object, method_outlier = NULL, check = FALSE, flatten 
   
   if("iqr" %in% method_outlier){
     
-    outlier_list <- getOutlierResults(object, check = check, method_outlier = "iqr")
+    outlier_list <-
+      getOutlierResults(
+        object = object,
+        check = check,
+        verbose = FALSE,
+        method_outlier = "iqr", 
+        phase = phase
+        )
     
     outlier_ids$iqr <-  
-      purrr::flatten(outlier_list) %>% 
-      purrr::flatten_chr() %>% 
+      purrr::flatten(outlier_list$ids) %>% # flatten groups
+      purrr::flatten_chr() %>% # flatten stat vars
       base::unique()
     
   }
   
   if("mahalanobis" %in% method_outlier){
     
-    outlier_list <- getOutlierResults(object, check = check, method_outlier = "mahalanobis")
+    outlier_list <- 
+      getOutlierResults(
+        object = object,
+        check = check,
+        verbose = FALSE,
+        method_outlier = "mahalanobis", 
+        phase = phase
+      )
   
     outlier_ids$mahalanobis <- 
       outlier_list$outlier_ids
@@ -971,7 +1037,7 @@ getOutlierIds <- function(object, method_outlier = NULL, check = FALSE, flatten 
   if(base::isTRUE(flatten)){
     
     outlier_ids <- 
-      purrr::flatten_chr(.x = outlier_ids) %>% 
+      purrr::flatten_chr(.x = outlier_ids) %>% # flatten outlier methods
       base::unique()
     
   }
@@ -1105,7 +1171,8 @@ getGroupingVariableNames <- function(object, ..., named = FALSE, phase = NULL, v
     
     sources <- base::vector("character", base::length(all_var_names))
     
-    cluster_names <- getClusterVariableNames(object, phase = phase)
+    cluster_names <-
+      getClusterVariableNames(object, phase = phase, verbose = verbose)
     
     meta_names <- getMetaVariableNames(object, phase = phase)
     
@@ -1141,14 +1208,14 @@ getGroupingVariableNames <- function(object, ..., named = FALSE, phase = NULL, v
 
 #' @rdname getGroupingVariableNames
 #' @export
-getClusterVariableNames <- function(object, ..., phase = NULL){
+getClusterVariableNames <- function(object, ..., phase = NULL, verbose = NULL){
   
   check_object(object)
   
   assign_default(object)
   
   cluster_df <- 
-    getClusterDf(object, phase = phase) %>% 
+    getClusterDf(object, phase = phase, verbose = verbose) %>% 
     dplyr::select(-cell_id)
   
   if(base::ncol(cluster_df) == 0){

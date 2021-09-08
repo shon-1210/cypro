@@ -31,8 +31,6 @@ navbar:
        - text: 3. Data processing
          href: articles/process-data.html
        - text: Quality checks
-       - text: Batch effect detection
-         href: articles/batch-effect-detection.html
        - text: Outlier detection 
          href: articles/outlier-detection.html
        - text: Around the cypro object
@@ -58,11 +56,7 @@ navbar:
        - text: Analysis Modules
        - text: Migration
          href: articles/module-migration.html
-       - text: Mitosis & Cell lineages
-         href: articles/module-mitosis.html
        - text: Visualization
-       - text: Well plates 
-         href: articles/plotting-well-plates.html
        - text: Statistical tests and plots
          href: articles/plotting-stats.html
 

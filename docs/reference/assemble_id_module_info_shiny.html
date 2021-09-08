@@ -118,9 +118,6 @@
     </li>
     <li class="dropdown-header">Quality checks</li>
     <li>
-      <a href="../articles/batch-effect-detection.html">Batch effect detection</a>
-    </li>
-    <li>
       <a href="../articles/outlier-detection.html">Outlier detection</a>
     </li>
     <li class="dropdown-header">Around the cypro object</li>
@@ -156,13 +153,7 @@
     <li>
       <a href="../articles/module-migration.html">Migration</a>
     </li>
-    <li>
-      <a href="../articles/module-mitosis.html">Mitosis &amp; Cell lineages</a>
-    </li>
     <li class="dropdown-header">Visualization</li>
-    <li>
-      <a href="../articles/plotting-well-plates.html">Well plates</a>
-    </li>
     <li>
       <a href="../articles/plotting-stats.html">Statistical tests and plots</a>
     </li>
@@ -198,7 +189,12 @@
     <p>Title</p>
     </div>
 
-    <div class="ref-usage sourceCode"><pre class='sourceCode r'><code><span class='fu'>assemble_id_module_info_shiny</span><span class='op'>(</span><span class='va'>input_list</span>, <span class='va'>object</span><span class='op'>)</span></code></pre></div>
+    <div class="ref-usage sourceCode"><pre class='sourceCode r'><code><span class='fu'>assemble_id_module_info_shiny</span><span class='op'>(</span>
+  <span class='va'>input_list</span>,
+  <span class='va'>object</span>,
+  example_df <span class='op'>=</span> <span class='cn'>NULL</span>,
+  ed_vars <span class='op'>=</span> <span class='cn'>NULL</span>
+<span class='op'>)</span></code></pre></div>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">

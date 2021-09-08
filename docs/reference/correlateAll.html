@@ -119,9 +119,6 @@ the correlation analysis has been initiated via initiateCorrelation()." />
     </li>
     <li class="dropdown-header">Quality checks</li>
     <li>
-      <a href="../articles/batch-effect-detection.html">Batch effect detection</a>
-    </li>
-    <li>
       <a href="../articles/outlier-detection.html">Outlier detection</a>
     </li>
     <li class="dropdown-header">Around the cypro object</li>
@@ -157,13 +154,7 @@ the correlation analysis has been initiated via initiateCorrelation()." />
     <li>
       <a href="../articles/module-migration.html">Migration</a>
     </li>
-    <li>
-      <a href="../articles/module-mitosis.html">Mitosis &amp; Cell lineages</a>
-    </li>
     <li class="dropdown-header">Visualization</li>
-    <li>
-      <a href="../articles/plotting-well-plates.html">Well plates</a>
-    </li>
     <li>
       <a href="../articles/plotting-stats.html">Statistical tests and plots</a>
     </li>
@@ -215,7 +206,8 @@ the correlation analysis has been initiated via <code><a href='initiateCorrelati
   phase <span class='op'>=</span> <span class='cn'>NULL</span>,
   across <span class='op'>=</span> <span class='cn'>NULL</span>,
   method_corr <span class='op'>=</span> <span class='cn'>NULL</span>,
-  verbose <span class='op'>=</span> <span class='cn'>NULL</span>
+  verbose <span class='op'>=</span> <span class='cn'>NULL</span>,
+  print_errors <span class='op'>=</span> <span class='cn'>TRUE</span>
 <span class='op'>)</span></code></pre></div>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -237,8 +229,9 @@ or <code>'spearman'</code>.</p></td>
     </tr>
     <tr>
       <th>phase</th>
-      <td><p>Character value. The ordinal value referring to the phase of interest (e.g. <em>'first'</em>, <em>'second'</em> etc.).
-referring to the phase of interest. If set to NULL takes the phase denoted as default with <code>adjustDefault()</code>.</p>
+      <td><p>Character or numeric. If character, the ordinal value referring to the phase of interest (e.g. <em>'first'</em>, <em>'second'</em> etc.).
+referring to the phase of interest or <em>'all'</em>. If numeric, the number referring to the phase.</p>
+<p>If set to NULL takes the phase denoted as default with <code>adjustDefault()</code>.</p>
 <p>Ignored if the experiment design contains only one phase.</p></td>
     </tr>
     <tr>

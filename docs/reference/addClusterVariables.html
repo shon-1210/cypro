@@ -119,9 +119,6 @@ to via the across-argument of many functions." />
     </li>
     <li class="dropdown-header">Quality checks</li>
     <li>
-      <a href="../articles/batch-effect-detection.html">Batch effect detection</a>
-    </li>
-    <li>
       <a href="../articles/outlier-detection.html">Outlier detection</a>
     </li>
     <li class="dropdown-header">Around the cypro object</li>
@@ -157,13 +154,7 @@ to via the across-argument of many functions." />
     <li>
       <a href="../articles/module-migration.html">Migration</a>
     </li>
-    <li>
-      <a href="../articles/module-mitosis.html">Mitosis &amp; Cell lineages</a>
-    </li>
     <li class="dropdown-header">Visualization</li>
-    <li>
-      <a href="../articles/plotting-well-plates.html">Well plates</a>
-    </li>
     <li>
       <a href="../articles/plotting-stats.html">Statistical tests and plots</a>
     </li>
@@ -216,6 +207,7 @@ to via the <code>across</code>-argument of many functions.</p>
   <span class='va'>variable_names</span>,
   phase <span class='op'>=</span> <span class='cn'>NULL</span>,
   overwrite <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  with_well_plate <span class='op'>=</span> <span class='cn'>FALSE</span>,
   by <span class='op'>=</span> <span class='st'>"cell_id"</span>,
   verbose <span class='op'>=</span> <span class='cn'>TRUE</span>
 <span class='op'>)</span></code></pre></div>
@@ -239,8 +231,9 @@ and join both data.frames.</p></td>
     </tr>
     <tr>
       <th>phase</th>
-      <td><p>Character value. The ordinal value referring to the phase of interest (e.g. <em>'first'</em>, <em>'second'</em> etc.).
-referring to the phase of interest. If set to NULL takes the phase denoted as default with <code>adjustDefault()</code>.</p>
+      <td><p>Character or numeric. If character, the ordinal value referring to the phase of interest (e.g. <em>'first'</em>, <em>'second'</em> etc.).
+referring to the phase of interest or <em>'all'</em>. If numeric, the number referring to the phase.</p>
+<p>If set to NULL takes the phase denoted as default with <code>adjustDefault()</code>.</p>
 <p>Ignored if the experiment design contains only one phase.</p></td>
     </tr>
     <tr>

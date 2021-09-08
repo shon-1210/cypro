@@ -25,7 +25,7 @@ renameGroups <- function(object, grouping_variable = NULL, ..., phase = NULL){
   phase <- check_phase(object, phase, max_phases = 1)
   
   all_grouping_vars <- 
-    getGroupingVariableNames(object, named = TRUE, phase = phase)
+    getGroupingVariableNames(object, named = TRUE, phase = phase, verbose = FALSE)
   
   valid_grouping_vars <- 
     all_grouping_vars[!all_grouping_vars %in% well_plate_vars]

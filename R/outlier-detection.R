@@ -38,21 +38,38 @@ detectOutliers <- function(object,
                            method_outlier = "iqr",
                            threshold_pval = 0.001,
                            variable_names = NULL,
+                           across = NULL, 
+                           phase = NULL,
                            verbose = NULL){
   
   check_object(object)
   assign_default(object)
   
+  phase <- check_phase(object, phase = phase, max_phase = 1)
+  
   if("iqr" %in% method_outlier){
     
-    object <- detect_outliers_iqr(object, variable_names = variable_names, verbose = verbose)
+    object <- 
+      detect_outliers_iqr(
+        object = object,
+        variable_names = variable_names,
+        verbose = verbose, 
+        phase = phase,
+        across = across
+        )
     
   }
   
   if("mahalanobis" %in% method_outlier){
     
-    object <- detect_outliers_mahalanobis(object, variable_names = variable_names, 
-                                          verbose = verbose, threshold_pval = threshold_pval)
+    object <- 
+      detect_outliers_mahalanobis(
+        object = object,
+        variable_names = variable_names,
+        verbose = verbose,
+        threshold_pval = threshold_pval, 
+        pahse = phase
+        )
     
   }
   
@@ -79,16 +96,28 @@ detectOutliers <- function(object,
 #' @seealso detectOutliers()
 #' @export
 
-removeOutliers <- function(object, method_outlier, new_name = "outlier_removed", verbose = NULL){
+removeOutliers <- function(object, method_outlier, new_name = "outlier_removed", phase = NULL, verbose = NULL){
   
   check_object(object)
   assign_default(object)
   
-  outlier_methods <-
-    getOutlierResults(object, method_outlier = method_outlier) %>% 
-    base::names()
+  confuns::is_value(x = method_outlier, mode = "character")
   
-  outlier_ids <- getOutlierIds(object, method_outlier = method_outlier, check = TRUE)
+  if(multiplePhases(object)){
+    
+    phase <- check_phase(object, phase = phase, max_phases = 1)
+    
+  } else {
+    
+    phase <- NULL
+    
+  }
+  
+  outlier_results <-
+    getOutlierResults(object, method_outlier = method_outlier, phase = phase, verbose = FALSE)
+  
+  outlier_ids <-
+    getOutlierIds(object, method_outlier = method_outlier, phase = phase, check = TRUE)
   
   cell_ids <- getStatsDf(object) %>% dplyr::pull(cell_id)
   
@@ -98,17 +127,34 @@ removeOutliers <- function(object, method_outlier, new_name = "outlier_removed",
   
   if(n_outliers == 0){
     
-    confuns::give_feedback(msg = "No outliers were detected by all specified methods. Returning original input object.")
+    confuns::give_feedback(msg = "No outliers were detected by specified method. Returning original input object.")
     
   } else {
     
-    msg <- glue::glue("Removing {n_outliers} {ref_outliers}.", 
-                      ref_outliers = confuns::adapt_reference(outlier_ids, "outlier", "outliers"))
+    msg <- 
+      glue::glue(
+        "Removing {n_outliers} {ref_outliers}.",
+        ref_outliers = confuns::adapt_reference(outlier_ids, "outlier", "outliers")
+        )
     
     confuns::give_feedback(msg = msg, verbose = verbose)
     
+    ref_across <- 
+      base::ifelse(
+        test = base::is.null(outlier_results$across),
+        yes = "None", 
+        no = outlier_results$across
+      )
+    
+    ref_variables <- 
+      base::names(outlier_results$ids[[1]]) %>% 
+      confuns::scollapse()
+    
     reasoning <- 
-      glue::glue("Outlier removal. Methods: '{scollapse(method_outlier)}'") %>%
+      glue::glue(
+        "Outlier removal. \nMethod: '{method_outlier}'\nAcross: '{ref_across}' ",
+        "\nVariables: '{ref_variables}'"
+        ) %>%
       base::as.character()
     
     object <-
@@ -120,16 +166,17 @@ removeOutliers <- function(object, method_outlier, new_name = "outlier_removed",
         verbose = verbose)
     
     object@analysis <- list()
+    object@qcheck$outlier_detection <- NULL
     
     # set information
     if(!base::is.null(object@information$outliers_removed)){
       
       object@information$outliers_removed <-
-        c(object@information$outliers_removed, list(outlier_ids = outlier_ids, methods = outlier_methods))
+        c(object@information$outliers_removed, list(outlier_ids = outlier_ids, method = method_outlier, across = ref_across))
       
     } else {
       
-      object@information$outliers_removed <- list(outlier_ids = outlier_ids, methods = outlier_methods)
+      object@information$outliers_removed[[1]] <- list(outlier_ids = outlier_ids, method = method_outlier, across = ref_across)
       
     }
     
@@ -138,71 +185,112 @@ removeOutliers <- function(object, method_outlier, new_name = "outlier_removed",
     
   }
   
-  confuns::give_feedback(msg = "Done.", verbose = verbose)
-  
   base::return(object)
   
 }
 
 
 #' @title Outlier detection functions
-detect_outliers_iqr <- function(object, variable_names = NULL, verbose = NULL){
+detect_outliers_iqr <- function(object, variable_names = NULL, across = NULL, phase = NULL, verbose = NULL){
   
   check_object(object)
   assign_default(object)
   
+  phase <- check_phase(object = object, phase = phase, max_phases = 1)
+
   if(base::is.null(variable_names)){
     
     variable_names <- getStatVariableNames(object)
     
   }
   
-  confuns::give_feedback(msg = "Running outlier detection with method = 'iqr'")
-  
-  outlier_results <- 
-    purrr::map(.x = getPhases(object), # iterate over phases: in case of non time lapse experiment phase is ignored anyway
-               .f = function(phase){
-                 
-                 stat_df <-
-                   getStatsDf(object, phase = phase, with_grouping = FALSE) %>% 
-                   dplyr::select(cell_id, dplyr::all_of(variable_names))
-                 
-                 numeric_vars <-
-                   dplyr::select_if(stat_df, .predicate = base::is.numeric) %>% 
-                   base::colnames()
-                 
-                 outlier_list <- 
-                   purrr::map(.x = numeric_vars, .f = function(num_var){
-                     
-                     variable <- base::as.numeric(stat_df[[num_var]])
-                     
-                     iqr_res <- grDevices::boxplot.stats(variable)
-                     
-                     outlier_values <- iqr_res$out
-                     
-                     outlier_positions <- base::which(variable %in% outlier_values)
-                     
-                     outlier_ids <- dplyr::pull(stat_df[outlier_positions,], var = "cell_id")
-                     
-                     base::return(outlier_ids)
-                     
-                   }) %>% 
-                   purrr::set_names(nm = numeric_vars)
-                 
-               }) %>% 
-    purrr::set_names(getPhases(object))
-  
-  if(!multiplePhases(object)){
+  if(base::is.character(across)){
     
-    outlier_results <- outlier_results[[1]]
+    confuns::check_one_of(
+      input = across, 
+      against = getGroupingVariableNames(object, verbose = FALSE)
+    )
     
   }
   
-  object@qcheck$outlier_detection$iqr <- outlier_results
+  confuns::give_feedback(msg = "Running outlier detection with method = 'iqr'")
   
-  msg <- glue::glue("Found {n} {ref_outliers}.",
-                    n = base::length(getOutlierIds(object, method_outlier = "iqr")), 
-                    ref_outliers = confuns::adapt_reference(getOutlierIds(object), "outlier", "outliers"))
+  stat_df <-
+    getStatsDf(object, phase = phase, with_grouping = TRUE) %>% 
+    dplyr::select(cell_id, dplyr::all_of(variable_names), dplyr::any_of(x = across))
+  
+  numeric_vars <-
+    dplyr::select_if(stat_df, .predicate = base::is.numeric) %>% 
+    base::colnames()
+  
+  if(base::is.character(across)){
+    
+    groups <-
+      getGroupNames(object = object, grouping_variable = across, phase = phase)
+    
+  } else {
+    
+    groups <- "All"
+    
+  }
+  
+  # if across is not specified function is applied only one time
+  # and stat_df is not filtered
+  
+  outlier_list <- 
+    purrr::map(.x = groups, .f = function(group){
+      
+      if(base::is.character(across)){
+        
+        stat_df <- dplyr::filter(stat_df, !!rlang::sym(across) == {{group}})
+        
+      }
+      
+      all_outlier_ids <- 
+        purrr::map(.x = numeric_vars, .f = function(num_var){
+          
+          variable <- base::as.numeric(stat_df[[num_var]])
+          
+          iqr_res <- grDevices::boxplot.stats(variable)
+          
+          outlier_values <- iqr_res$out
+          
+          outlier_positions <- base::which(variable %in% outlier_values)
+          
+          outlier_ids <- dplyr::pull(stat_df[outlier_positions,], var = "cell_id")
+          
+          base::return(outlier_ids)
+          
+        }) %>%
+        purrr::set_names(nm = numeric_vars)
+      
+      return(all_outlier_ids)
+      
+    }) %>% 
+    purrr::set_names(nm = groups)
+  
+  outlier_results <- list()
+  outlier_results$ids <- outlier_list
+  outlier_results$across <- across
+  
+  if(!multiplePhases(object)){
+    
+    object@qcheck$outlier_detection$iqr <- outlier_results
+    
+  } else {
+    
+    object@qcheck$outlier_detection$iqr[[phase]] <- outlier_results
+    
+  }
+  
+  outlier_ids <- getOutlierIds(object, phase = phase, method_outlier = "iqr")
+  
+  msg <- 
+    glue::glue(
+      "Found {n} {ref_outliers}.",
+      n = base::length(outlier_ids),
+      ref_outliers = confuns::adapt_reference(outlier_ids, "outlier", "outliers")
+      )
   
   confuns::give_feedback(msg = msg, verbose = verbose)
   

@@ -274,7 +274,7 @@ plotWellPlate <- function(object,
       cell_line, condition, group, well_plate_name
       )
   
-  # extract data df
+  # extract df
   if(multiplePhases(object) & color_by %in% c(stat_vars, "count")){
     
     data_df <- 
@@ -351,9 +351,9 @@ plotWellPlate <- function(object,
         na.value = "lightgrey", ...
       ) 
     
+    if(color_by == "count"){
     guides_add_on <- ggplot2::guides(color = FALSE)
     
-    if(color_by == "count"){
       
       smrd_df <- 
         dplyr::summarise(data_df, count = dplyr::n())
@@ -384,7 +384,6 @@ plotWellPlate <- function(object,
       
       wp_df <- 
         dplyr::left_join(x = complete_well_df, y = wp_df, by = c("row_num", "col_num", "well", "well_plate_name", "phase")) %>% 
-        # column for geom_mark_rect - aes(color = )
         dplyr::mutate(well_plate_name_phase = stringr::str_c(well_plate_name, phase, sep = "_"))
       
     } else {

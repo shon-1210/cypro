@@ -193,7 +193,11 @@ plotTimeHeatmap <- function(object,
   
   if(base::is.numeric(set_seed)){
     
-    confuns::give_feedback(msg = glue::glue("Setting seed: {set_seed}"), verbose = verbose)
+    confuns::give_feedback(
+      msg = glue::glue("Setting seed: {set_seed}"),
+      verbose = verbose, 
+      with.time = FALSE
+      )
     
     base::set.seed(set_seed)
     

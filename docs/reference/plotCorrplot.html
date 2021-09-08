@@ -118,9 +118,6 @@
     </li>
     <li class="dropdown-header">Quality checks</li>
     <li>
-      <a href="../articles/batch-effect-detection.html">Batch effect detection</a>
-    </li>
-    <li>
       <a href="../articles/outlier-detection.html">Outlier detection</a>
     </li>
     <li class="dropdown-header">Around the cypro object</li>
@@ -156,13 +153,7 @@
     <li>
       <a href="../articles/module-migration.html">Migration</a>
     </li>
-    <li>
-      <a href="../articles/module-mitosis.html">Mitosis &amp; Cell lineages</a>
-    </li>
     <li class="dropdown-header">Visualization</li>
-    <li>
-      <a href="../articles/plotting-well-plates.html">Well plates</a>
-    </li>
     <li>
       <a href="../articles/plotting-stats.html">Statistical tests and plots</a>
     </li>
@@ -264,7 +255,7 @@ than groups you are not interested in.)</p>
       <th>relevel</th>
       <td><p>Logical value. If set to TRUE the input order of <code>across_subset</code>
 determines the order in which the groups of interest are displayed. Groups that
-are not included are dropped which affects the colors with which they are displayed.</p></td>
+are not included are dropped which affects the choice of color.</p></td>
     </tr>
     <tr>
       <th>variables_subset</th>
@@ -276,8 +267,9 @@ than variables you are not interested in.)</p></td>
     </tr>
     <tr>
       <th>phase</th>
-      <td><p>Character value. The ordinal value referring to the phase of interest (e.g. <em>'first'</em>, <em>'second'</em> etc.).
-referring to the phase of interest. If set to NULL takes the phase denoted as default with <code>adjustDefault()</code>.</p>
+      <td><p>Character or numeric. If character, the ordinal value referring to the phase of interest (e.g. <em>'first'</em>, <em>'second'</em> etc.).
+referring to the phase of interest or <em>'all'</em>. If numeric, the number referring to the phase.</p>
+<p>If set to NULL takes the phase denoted as default with <code>adjustDefault()</code>.</p>
 <p>Ignored if the experiment design contains only one phase.</p></td>
     </tr>
     <tr>

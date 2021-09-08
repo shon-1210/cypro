@@ -76,6 +76,9 @@
     <loc>/authors.html</loc>
   </url>
   <url>
+    <loc>/index - Copy.html</loc>
+  </url>
+  <url>
     <loc>/index.html</loc>
   </url>
   <url>
@@ -164,6 +167,9 @@
   </url>
   <url>
     <loc>/reference/check_df_variables.html</loc>
+  </url>
+  <url>
+    <loc>/reference/check_nrow.html</loc>
   </url>
   <url>
     <loc>/reference/check_object.html</loc>
@@ -460,6 +466,9 @@
     <loc>/reference/loadData.html</loc>
   </url>
   <url>
+    <loc>/reference/loadDataFile.html</loc>
+  </url>
+  <url>
     <loc>/reference/loading_status_table_shiny.html</loc>
   </url>
   <url>
@@ -470,6 +479,12 @@
   </url>
   <url>
     <loc>/reference/moduleExperimentDesignUI.html</loc>
+  </url>
+  <url>
+    <loc>/reference/moduleLoadDataFileServer.html</loc>
+  </url>
+  <url>
+    <loc>/reference/moduleLoadDataFileUI.html</loc>
   </url>
   <url>
     <loc>/reference/moduleLoadDataServer.html</loc>
@@ -599,6 +614,9 @@
   </url>
   <url>
     <loc>/reference/read_example_file_shiny.html</loc>
+  </url>
+  <url>
+    <loc>/reference/read_table_shiny.html</loc>
   </url>
   <url>
     <loc>/reference/removeOutliers.html</loc>

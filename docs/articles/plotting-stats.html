@@ -70,9 +70,6 @@
     </li>
     <li class="dropdown-header">Quality checks</li>
     <li>
-      <a href="../articles/batch-effect-detection.html">Batch effect detection</a>
-    </li>
-    <li>
       <a href="../articles/outlier-detection.html">Outlier detection</a>
     </li>
     <li class="dropdown-header">Around the cypro object</li>
@@ -108,13 +105,7 @@
     <li>
       <a href="../articles/module-migration.html">Migration</a>
     </li>
-    <li>
-      <a href="../articles/module-mitosis.html">Mitosis &amp; Cell lineages</a>
-    </li>
     <li class="dropdown-header">Visualization</li>
-    <li>
-      <a href="../articles/plotting-well-plates.html">Well plates</a>
-    </li>
     <li>
       <a href="../articles/plotting-stats.html">Statistical tests and plots</a>
     </li>
@@ -216,11 +207,12 @@
 </details><div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># selected ones whose properties make sense to be compared against each other</span>
 <span class="va">vars_of_interest</span> <span class="op">&lt;-</span> 
-  <span class="fu"><a href="../reference/getStatVariableNames.html">getStatVariableNames</a></span><span class="op">(</span><span class="va">object</span>,
-                       <span class="fu"><a href="../reference/starts_with.html">starts_with</a></span><span class="op">(</span><span class="st">"AreaShape"</span><span class="op">)</span> <span class="op">&amp;</span> 
-                       <span class="fu"><a href="../reference/starts_with.html">contains</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Max"</span>, <span class="st">"Min"</span>, <span class="st">"Mean"</span>, <span class="st">"Median"</span>, <span class="st">"Solidity"</span>, <span class="st">"Ecc"</span><span class="op">)</span><span class="op">)</span> <span class="op">&amp;</span>
-                        <span class="op">-</span><span class="fu"><a href="../reference/starts_with.html">contains</a></span><span class="op">(</span><span class="st">"Bounding"</span><span class="op">)</span>
-                       <span class="op">)</span>
+  <span class="fu"><a href="../reference/getStatVariableNames.html">getStatVariableNames</a></span><span class="op">(</span>
+    object <span class="op">=</span> <span class="va">object</span>,
+    <span class="fu"><a href="../reference/starts_with.html">starts_with</a></span><span class="op">(</span><span class="st">"AreaShape"</span><span class="op">)</span> <span class="op">&amp;</span>
+      <span class="fu"><a href="../reference/starts_with.html">contains</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Max"</span>, <span class="st">"Min"</span>, <span class="st">"Mean"</span>, <span class="st">"Median"</span>, <span class="st">"Solidity"</span>, <span class="st">"Ecc"</span><span class="op">)</span><span class="op">)</span> <span class="op">&amp;</span>
+      <span class="op">-</span><span class="fu"><a href="../reference/starts_with.html">contains</a></span><span class="op">(</span><span class="st">"Bounding"</span><span class="op">)</span>
+    <span class="op">)</span>
 
 <span class="va">vars_of_interest</span></code></pre></div>
 <details><p><summary>output</summary></p>
@@ -248,7 +240,7 @@ Figure 2.1 Basic densityplots and histograms.
 <code class="sourceCode R"><span class="fu"><a href="../reference/getGroupingVariableNames.html">getGroupingVariableNames</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span></code></pre></div>
 <details><p><summary>output</summary></p>
 <pre><code>## [1] "cell_line"        "condition"        "concentration"    "moa"             
-## [5] "well_plate_name"  "well_plate_index" "well"             "well_image"</code></pre>
+## [5] "well_plate_name"  "well_plate_index" "well"             "well_roi"</code></pre>
 </details><div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/getGroupNames.html">getGroupNames</a></span><span class="op">(</span><span class="va">object</span>, grouping_variable <span class="op">=</span> <span class="st">"condition"</span><span class="op">)</span></code></pre></div>
 <details><p><summary>output</summary></p>
@@ -258,23 +250,25 @@ Figure 2.1 Basic densityplots and histograms.
 <code class="sourceCode R"><span class="va">conds_of_interest</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"DMSO"</span>, <span class="st">"AZ258"</span>, <span class="st">"taxol"</span>, <span class="st">"mitomycin C"</span><span class="op">)</span></code></pre></div>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># histograms are not suited for comparative plotting</span>
-<span class="fu"><a href="../reference/plotBoxplot.html">plotHistogram</a></span><span class="op">(</span><span class="va">object</span>, 
-                variable <span class="op">=</span> <span class="va">vars_of_interest</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span>, 
-                across <span class="op">=</span> <span class="st">"condition"</span>, 
-                across_subset <span class="op">=</span> <span class="va">conds_of_interest</span>, 
-                relevel <span class="op">=</span> <span class="cn">TRUE</span>,
-                clrp <span class="op">=</span> <span class="st">"npg"</span> <span class="co"># change colorpanel as color now refers to groups</span>
-                <span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="../reference/legendBottom.html">legendBottom</a></span><span class="op">(</span><span class="op">)</span>
+<span class="fu"><a href="../reference/plotBoxplot.html">plotHistogram</a></span><span class="op">(</span>
+  object <span class="op">=</span> <span class="va">object</span>,
+  variable <span class="op">=</span> <span class="va">vars_of_interest</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span>,
+  across <span class="op">=</span> <span class="st">"condition"</span>,
+  across_subset <span class="op">=</span> <span class="va">conds_of_interest</span>,
+  relevel <span class="op">=</span> <span class="cn">TRUE</span>,
+  clrp <span class="op">=</span> <span class="st">"npg"</span> <span class="co"># change colorpanel as color now refers to groups</span>
+  <span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="../reference/legendBottom.html">legendBottom</a></span><span class="op">(</span><span class="op">)</span>
 
 <span class="co"># densityplots have their drawbacks, too</span>
-<span class="fu"><a href="../reference/plotBoxplot.html">plotDensityplot</a></span><span class="op">(</span><span class="va">object</span>, 
-                variable <span class="op">=</span> <span class="va">vars_of_interest</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span>, 
-                across <span class="op">=</span> <span class="st">"condition"</span>, 
-                across_subset <span class="op">=</span> <span class="va">conds_of_interest</span>, 
-                relevel <span class="op">=</span> <span class="cn">TRUE</span>,
-                clrp <span class="op">=</span> <span class="st">"npg"</span>, <span class="co"># change colorpanel as color now refers to groups</span>
-                alpha <span class="op">=</span> <span class="fl">0.75</span> <span class="co"># increase transperancy</span>
-                <span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="../reference/legendBottom.html">legendBottom</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
+<span class="fu"><a href="../reference/plotBoxplot.html">plotDensityplot</a></span><span class="op">(</span>
+  object <span class="op">=</span> <span class="va">object</span>,
+  variable <span class="op">=</span> <span class="va">vars_of_interest</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span>,
+  across <span class="op">=</span> <span class="st">"condition"</span>,
+  across_subset <span class="op">=</span> <span class="va">conds_of_interest</span>,
+  relevel <span class="op">=</span> <span class="cn">TRUE</span>,
+  clrp <span class="op">=</span> <span class="st">"npg"</span>, <span class="co"># change colorpanel as color now refers to groups</span>
+  alpha <span class="op">=</span> <span class="fl">0.75</span> <span class="co"># increase transperancy</span>
+  <span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="../reference/legendBottom.html">legendBottom</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
 <div class="figure">
 <img src="plotting-stats_files/figure-html/comp-distr-1.png" alt="Figure 2.2 Distributions across a condition, suboptimal choice of plots" width="50%"><img src="plotting-stats_files/figure-html/comp-distr-2.png" alt="Figure 2.2 Distributions across a condition, suboptimal choice of plots" width="50%"><p class="caption">
 Figure 2.2 Distributions across a condition, suboptimal choice of plots
@@ -287,20 +281,24 @@ Figure 2.2 Distributions across a condition, suboptimal choice of plots
 <p>To plot continuous variables in a comparative manner while using the style of densityplots we recommend ridgeplots, accesible through the function <code><a href="../reference/plotBoxplot.html">plotRidgeplot()</a></code>.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># first four vars</span>
-<span class="fu"><a href="../reference/plotBoxplot.html">plotRidgeplot</a></span><span class="op">(</span><span class="va">object</span>,
-              variable <span class="op">=</span> <span class="va">vars_of_interest</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span>, 
-              across <span class="op">=</span> <span class="st">"condition"</span>, 
-              across_subset <span class="op">=</span> <span class="va">conds_of_interest</span>, 
-              relevel <span class="op">=</span> <span class="cn">TRUE</span>,
-              clrp <span class="op">=</span> <span class="st">"npg"</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="../reference/legendBottom.html">legendNone</a></span><span class="op">(</span><span class="op">)</span>
+<span class="fu"><a href="../reference/plotBoxplot.html">plotRidgeplot</a></span><span class="op">(</span>
+  object <span class="op">=</span> <span class="va">object</span>,
+  variable <span class="op">=</span> <span class="va">vars_of_interest</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span>,
+  across <span class="op">=</span> <span class="st">"condition"</span>,
+  across_subset <span class="op">=</span> <span class="va">conds_of_interest</span>, 
+  relevel <span class="op">=</span> <span class="cn">TRUE</span>,
+  clrp <span class="op">=</span> <span class="st">"npg"</span>
+  <span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="../reference/legendBottom.html">legendNone</a></span><span class="op">(</span><span class="op">)</span>
 
 <span class="co"># last four vars</span>
-<span class="fu"><a href="../reference/plotBoxplot.html">plotRidgeplot</a></span><span class="op">(</span><span class="va">object</span>,
-              variable <span class="op">=</span> <span class="va">vars_of_interest</span><span class="op">[</span><span class="fl">5</span><span class="op">:</span><span class="fl">8</span><span class="op">]</span>, 
-              across <span class="op">=</span> <span class="st">"condition"</span>, 
-              across_subset <span class="op">=</span> <span class="va">conds_of_interest</span>, 
-              relevel <span class="op">=</span> <span class="cn">TRUE</span>,
-              clrp <span class="op">=</span> <span class="st">"npg"</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="../reference/legendBottom.html">legendNone</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
+<span class="fu"><a href="../reference/plotBoxplot.html">plotRidgeplot</a></span><span class="op">(</span>
+  object <span class="op">=</span> <span class="va">object</span>,
+  variable <span class="op">=</span> <span class="va">vars_of_interest</span><span class="op">[</span><span class="fl">5</span><span class="op">:</span><span class="fl">8</span><span class="op">]</span>,
+  across <span class="op">=</span> <span class="st">"condition"</span>,
+  across_subset <span class="op">=</span> <span class="va">conds_of_interest</span>,
+  relevel <span class="op">=</span> <span class="cn">TRUE</span>,
+  clrp <span class="op">=</span> <span class="st">"npg"</span>
+  <span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="../reference/legendBottom.html">legendNone</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
 <div class="figure">
 <img src="plotting-stats_files/figure-html/ridge-plot-1.png" alt="Figure 2.3 Ridgplots to compare across cell groups" width="50%"><img src="plotting-stats_files/figure-html/ridge-plot-2.png" alt="Figure 2.3 Ridgplots to compare across cell groups" width="50%"><p class="caption">
 Figure 2.3 Ridgplots to compare across cell groups
@@ -313,23 +311,27 @@ Figure 2.3 Ridgplots to compare across cell groups
 <p>Each plot comes with its own respective function, namely <code><a href="../reference/plotBoxplot.html">plotBoxplot()</a></code> and <code><a href="../reference/plotBoxplot.html">plotViolinplot()</a></code>.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># first four vars</span>
-<span class="fu"><a href="../reference/plotBoxplot.html">plotBoxplot</a></span><span class="op">(</span><span class="va">object</span>,
-            variable <span class="op">=</span> <span class="va">vars_of_interest</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span>,
-            across <span class="op">=</span> <span class="st">"condition"</span>,
-            across_subset <span class="op">=</span> <span class="va">conds_of_interest</span>,
-            relevel <span class="op">=</span> <span class="cn">TRUE</span>,
-            display_points <span class="op">=</span> <span class="cn">TRUE</span>, 
-            pt_size <span class="op">=</span> <span class="fl">1</span>,
-            pt_shape <span class="op">=</span> <span class="fl">19</span>,
-            clrp <span class="op">=</span> <span class="st">"npg"</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="../reference/legendBottom.html">legendNone</a></span><span class="op">(</span><span class="op">)</span>
+<span class="fu"><a href="../reference/plotBoxplot.html">plotBoxplot</a></span><span class="op">(</span>
+  object <span class="op">=</span> <span class="va">object</span>,
+  variable <span class="op">=</span> <span class="va">vars_of_interest</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span>,
+  across <span class="op">=</span> <span class="st">"condition"</span>,
+  across_subset <span class="op">=</span> <span class="va">conds_of_interest</span>,
+  relevel <span class="op">=</span> <span class="cn">TRUE</span>,
+  display_points <span class="op">=</span> <span class="cn">TRUE</span>, 
+  pt_size <span class="op">=</span> <span class="fl">1</span>,
+  pt_shape <span class="op">=</span> <span class="fl">19</span>,
+  clrp <span class="op">=</span> <span class="st">"npg"</span>
+  <span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="../reference/legendBottom.html">legendNone</a></span><span class="op">(</span><span class="op">)</span>
 
 <span class="co"># last four vars</span>
-<span class="fu"><a href="../reference/plotBoxplot.html">plotViolinplot</a></span><span class="op">(</span><span class="va">object</span>,
-               variable <span class="op">=</span> <span class="va">vars_of_interest</span><span class="op">[</span><span class="fl">5</span><span class="op">:</span><span class="fl">8</span><span class="op">]</span>, 
-               across <span class="op">=</span> <span class="st">"condition"</span>, 
-               across_subset <span class="op">=</span> <span class="va">conds_of_interest</span>, 
-               relevel <span class="op">=</span> <span class="cn">TRUE</span>,
-               clrp <span class="op">=</span> <span class="st">"npg"</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="../reference/legendBottom.html">legendNone</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
+<span class="fu"><a href="../reference/plotBoxplot.html">plotViolinplot</a></span><span class="op">(</span>
+  object <span class="op">=</span> <span class="va">object</span>,
+  variable <span class="op">=</span> <span class="va">vars_of_interest</span><span class="op">[</span><span class="fl">5</span><span class="op">:</span><span class="fl">8</span><span class="op">]</span>,
+  across <span class="op">=</span> <span class="st">"condition"</span>,
+  across_subset <span class="op">=</span> <span class="va">conds_of_interest</span>,
+  relevel <span class="op">=</span> <span class="cn">TRUE</span>,
+  clrp <span class="op">=</span> <span class="st">"npg"</span>
+  <span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="../reference/legendBottom.html">legendNone</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
 <div class="figure">
 <img src="plotting-stats_files/figure-html/box-violin-wo-stats-1.png" alt="Figure 2.4 Boxplots and violinplots" width="50%"><img src="plotting-stats_files/figure-html/box-violin-wo-stats-2.png" alt="Figure 2.4 Boxplots and violinplots" width="50%"><p class="caption">
 Figure 2.4 Boxplots and violinplots
@@ -338,22 +340,26 @@ Figure 2.4 Boxplots and violinplots
 <p>Statistical tests can either be performed pairwise (e.g. <em>t-test</em>) or groupwise (e.g. <em>anova</em>). The respective arguments are named accordingly.</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># first four vars</span>
-<span class="fu"><a href="../reference/plotBoxplot.html">plotBoxplot</a></span><span class="op">(</span><span class="va">object</span>,
-            variable <span class="op">=</span> <span class="va">vars_of_interest</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span>,
-            across <span class="op">=</span> <span class="st">"condition"</span>,
-            across_subset <span class="op">=</span> <span class="va">conds_of_interest</span>,
-            test_pairwise <span class="op">=</span> <span class="st">"t.test"</span>,
-            ref_group <span class="op">=</span> <span class="st">"DMSO"</span>,
-            step_increase <span class="op">=</span> <span class="fl">0.2</span>, <span class="co"># adjust the p-value bar hight</span>
-            clrp <span class="op">=</span> <span class="st">"npg"</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="../reference/legendBottom.html">legendNone</a></span><span class="op">(</span><span class="op">)</span>
+<span class="fu"><a href="../reference/plotBoxplot.html">plotBoxplot</a></span><span class="op">(</span>
+  object <span class="op">=</span> <span class="va">object</span>,
+  variable <span class="op">=</span> <span class="va">vars_of_interest</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span>,
+  across <span class="op">=</span> <span class="st">"condition"</span>,
+  across_subset <span class="op">=</span> <span class="va">conds_of_interest</span>,
+  test_pairwise <span class="op">=</span> <span class="st">"t.test"</span>,
+  ref_group <span class="op">=</span> <span class="st">"DMSO"</span>,
+  step_increase <span class="op">=</span> <span class="fl">0.2</span>, <span class="co"># adjust the p-value bar hight</span>
+  clrp <span class="op">=</span> <span class="st">"npg"</span>
+  <span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="../reference/legendBottom.html">legendNone</a></span><span class="op">(</span><span class="op">)</span>
 
 <span class="co"># last four vars</span>
-<span class="fu"><a href="../reference/plotBoxplot.html">plotViolinplot</a></span><span class="op">(</span><span class="va">object</span>,
-               variable <span class="op">=</span> <span class="va">vars_of_interest</span><span class="op">[</span><span class="fl">5</span><span class="op">:</span><span class="fl">8</span><span class="op">]</span>, 
-               across <span class="op">=</span> <span class="st">"condition"</span>, 
-               across_subset <span class="op">=</span> <span class="va">conds_of_interest</span>, 
-               test_groupwise <span class="op">=</span> <span class="st">"anova"</span>,
-               clrp <span class="op">=</span> <span class="st">"npg"</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="../reference/legendBottom.html">legendNone</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
+<span class="fu"><a href="../reference/plotBoxplot.html">plotViolinplot</a></span><span class="op">(</span>
+  object <span class="op">=</span> <span class="va">object</span>,
+  variable <span class="op">=</span> <span class="va">vars_of_interest</span><span class="op">[</span><span class="fl">5</span><span class="op">:</span><span class="fl">8</span><span class="op">]</span>, 
+  across <span class="op">=</span> <span class="st">"condition"</span>,
+  across_subset <span class="op">=</span> <span class="va">conds_of_interest</span>, 
+  test_groupwise <span class="op">=</span> <span class="st">"anova"</span>,
+  clrp <span class="op">=</span> <span class="st">"npg"</span>
+  <span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="../reference/legendBottom.html">legendNone</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
 <div class="figure">
 <img src="plotting-stats_files/figure-html/box-violin-w-stats-1.png" alt="Figure 2.5 Boxplots and violinplots with t-test and anova." width="50%"><img src="plotting-stats_files/figure-html/box-violin-w-stats-2.png" alt="Figure 2.5 Boxplots and violinplots with t-test and anova." width="50%"><p class="caption">
 Figure 2.5 Boxplots and violinplots with t-test and anova.

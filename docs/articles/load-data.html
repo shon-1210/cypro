@@ -70,9 +70,6 @@
     </li>
     <li class="dropdown-header">Quality checks</li>
     <li>
-      <a href="../articles/batch-effect-detection.html">Batch effect detection</a>
-    </li>
-    <li>
       <a href="../articles/outlier-detection.html">Outlier detection</a>
     </li>
     <li class="dropdown-header">Around the cypro object</li>
@@ -108,13 +105,7 @@
     <li>
       <a href="../articles/module-migration.html">Migration</a>
     </li>
-    <li>
-      <a href="../articles/module-mitosis.html">Mitosis &amp; Cell lineages</a>
-    </li>
     <li class="dropdown-header">Visualization</li>
-    <li>
-      <a href="../articles/plotting-well-plates.html">Well plates</a>
-    </li>
     <li>
       <a href="../articles/plotting-stats.html">Statistical tests and plots</a>
     </li>
@@ -163,27 +154,34 @@
 <div id="introduction" class="section level2">
 <h2 class="hasAnchor">
 <a href="#introduction" class="anchor" aria-hidden="true"></a>1. Introduction</h2>
-<p>The experiment design is now stored in the <em>cypro</em>-object called <code>new_cypro_object</code>. You can’t do any analysis and visualization with it yet as it does not contain any loaded data. To load data use the function <code><a href="../reference/loadData.html">loadData()</a></code>.</p>
-<p><code><a href="../reference/loadData.html">loadData()</a></code> again opens a user interface. It is split in two parts.</p>
+<p>After the use of <code><a href="../reference/designExperiment.html">designExperiment()</a></code> the experiment design is now stored in the <em>cypro</em>-object called <code>cypro_object_new</code>. You can’t do any analysis and visualization with it yet as it does not contain any loaded data. To load data use the <code>loadData*()</code>- functions. There are two of them.</p>
+<ul>
+<li><p><code><a href="../reference/loadDataFile.html">loadDataFile()</a></code> is needed if the data is already present in one single file. This is often the case if <em>CellProfiler</em> has been used as the image processing software. This data table must contain variables giving information about the well, the region of interest (ROI) and - if the experiment design contains more than one well plate - about the well plate.</p></li>
+<li><p><code><a href="../reference/loadDataFile.html">loadDataFiles()</a></code> is needed if the data is present in multiple files. This is the case if <em>CellTracker</em> has been used as the image processing software. In this case the information about the well-ROI and the well plate is conveyed by the names of the file (see below for more information).</p></li>
+</ul>
 </div>
-<div id="prepare-data-loading" class="section level2">
+<div id="load-multiple-files" class="section level2">
 <h2 class="hasAnchor">
-<a href="#prepare-data-loading" class="anchor" aria-hidden="true"></a>2. Prepare data loading</h2>
-<p>The <code>cypro</code> package is very flexible regarding its input data. This flexibility comes with a small price: The name of important data variables such as x-coordinates, y-coordinates, Cell ID etc. must be single handedly denoted one by one. This is done during step 1 <em>Prepare data loading</em>.</p>
-<div id="load-template-file" class="section level3">
+<a href="#load-multiple-files" class="anchor" aria-hidden="true"></a>2. Load multiple files</h2>
+<p><code><a href="../reference/loadDataFile.html">loadDataFiles()</a></code> again opens a user interface. It is split in two parts.</p>
+<div id="prepare-data-loading" class="section level3">
 <h3 class="hasAnchor">
-<a href="#load-template-file" class="anchor" aria-hidden="true"></a>2.1 Load template file</h3>
+<a href="#prepare-data-loading" class="anchor" aria-hidden="true"></a>2.1 Prepare data loading</h3>
+<p>The <code>cypro</code> package is very flexible regarding its input data. This flexibility comes with a small price: The name of important data variables such as x-coordinates, y-coordinates, Cell ID etc. must be single handedly denoted one by one. This is done during step 1 <em>Prepare data loading</em>.</p>
+<div id="load-template-file" class="section level4">
+<h4 class="hasAnchor">
+<a href="#load-template-file" class="anchor" aria-hidden="true"></a>2.2.1 Load template file</h4>
 <p>Here you upload an example file that is representative of all the other files that you will read in later on. Once the file is loaded you see the first six rows printed right below.</p>
 <div class="figure">
 <img src="images/load-data/load-example.PNG" alt="Figure 1 Load an example file." width="100%"><img src="images/load-data/example-loaded.PNG" alt="Figure 1 Load an example file." width="100%"><p class="caption">
 Figure 1 Load an example file.
 </p>
 </div>
-<p>The example file in this case is a <em>track file</em> derived from the image processing software <a href="">CellTracker</a>.</p>
+<p>The example file in this case is a <em>track file</em> derived from the image processing software Cell Tracker.</p>
 </div>
-<div id="denote-identifier-variables" class="section level3">
-<h3 class="hasAnchor">
-<a href="#denote-identifier-variables" class="anchor" aria-hidden="true"></a>2.2 Denote identifier variables</h3>
+<div id="denote-identifier-variables" class="section level4">
+<h4 class="hasAnchor">
+<a href="#denote-identifier-variables" class="anchor" aria-hidden="true"></a>2.2.2 Denote identifier variables</h4>
 <p>As explained in the terminology article <code>cypro</code>requires its input data to contain data variables that contain information about the cell id and the frame. In case of data files generated with <em>CellTracker</em> the variable names are obvious but they might change from software to software.</p>
 <div class="figure">
 <img src="images/load-data/identifier-variables.PNG" alt="Figure 2 Tell cypro which columns refer to the cell id and the frame." width="100%"><p class="caption">
@@ -191,9 +189,9 @@ Figure 2 Tell cypro which columns refer to the cell id and the frame.
 </p>
 </div>
 </div>
-<div id="denote-module-specific-variables" class="section level3">
-<h3 class="hasAnchor">
-<a href="#denote-module-specific-variables" class="anchor" aria-hidden="true"></a>2.3 Denote module specific variables</h3>
+<div id="denote-module-specific-variables" class="section level4">
+<h4 class="hasAnchor">
+<a href="#denote-module-specific-variables" class="anchor" aria-hidden="true"></a>2.2.3 Denote module specific variables</h4>
 <p>Beyond the convenient possibility to read in huge amount of files according to specific experiment designs <code>cypro</code> offers a variety of analysis functionalities. <em>Step 3: Denote module specific variables</em> is about telling cypro where to get the required information as well as which modules it is supposed to use. Some of them require specific data variables (needed variables) based on which other variables are computed (computable variables). Every select input option is provided with a blue question mark which displays information about the variable to be denoted.</p>
 <div class="figure">
 <img src="images/load-data/cell-id-variable.PNG" alt="Figure 3 Example variable descriptions." width="50%" height="50%"><img src="images/load-data/x-coords-variable.PNG" alt="Figure 3 Example variable descriptions." width="50%" height="50%"><img src="images/load-data/speed-variable.PNG" alt="Figure 3 Example variable descriptions." width="50%" height="50%"><img src="images/load-data/parent-id.PNG" alt="Figure 3 Example variable descriptions." width="50%" height="50%"><p class="caption">
@@ -207,9 +205,9 @@ Figure 4 Tell cypro where to look for needed information.
 </p>
 </div>
 </div>
-<div id="denote-additional-variables" class="section level3">
-<h3 class="hasAnchor">
-<a href="#denote-additional-variables" class="anchor" aria-hidden="true"></a>2.4 Denote additional variables</h3>
+<div id="denote-additional-variables" class="section level4">
+<h4 class="hasAnchor">
+<a href="#denote-additional-variables" class="anchor" aria-hidden="true"></a>2.2.4 Denote additional variables</h4>
 <p>Every additional data variable that is unknown to <code>cypro</code> but contains information you want to include in downstream analysis steps such as clustering and correlation can be denoted here. CellTracker does not offer any additional variables apart from those already integrated in our migration module.</p>
 <div class="figure">
 <img src="images/load-data/additional-variables.PNG" alt="Figure 5 No data variables remain to be selected additionally." width="100%"><p class="caption">
@@ -224,9 +222,10 @@ Figure 6 Tell cypro which addtional variables you want to analyze later on.
 </div>
 <p>Note: Data variables denoted in <em>Step 3 Denote module variables</em> can be used for correlation and clustering, too! <em>Step 4 Denote additional variables</em> simply lets you keep data variables that do not have an inherent meaning to <code>cypro</code> while simultaneously lets you discard variables you won’t be interested in later on.</p>
 </div>
+</div>
 <div id="last-check" class="section level3">
 <h3 class="hasAnchor">
-<a href="#last-check" class="anchor" aria-hidden="true"></a>2.5 Last check</h3>
+<a href="#last-check" class="anchor" aria-hidden="true"></a>2.2.5 Last check</h3>
 <p>Every denoted variable name is saved as such. Based on the input from step 2, step 3, and step 4 the final data.frame as shown in Figure 7 is what <code>cypro</code> expects all files you are about to read in to look like. (The order of the data variables does not matter. However, missing data variables will result in an error during the reading process. See below.)</p>
 <div class="figure">
 <img src="images/load-data/final-data-output.PNG" alt="Figure 7 Double check that the data.frame cypro expects contains all information you need later on." width="100%"><p class="caption">
@@ -237,7 +236,7 @@ Figure 7 Double check that the data.frame cypro expects contains all information
 </div>
 <div id="load-data" class="section level2">
 <h2 class="hasAnchor">
-<a href="#load-data" class="anchor" aria-hidden="true"></a>3. Load data</h2>
+<a href="#load-data" class="anchor" aria-hidden="true"></a>2.3 Load data</h2>
 <p>Once <code>cypro</code> knows what to expect you assign a folder to each well plate that you’ve previously designed in <code><a href="../reference/designExperiment.html">designExperiment()</a></code>. <code>cypro</code> will then skim the folder and all its subfolders for data files that match the well-image names.</p>
 <div class="figure">
 <img src="images/load-data/assign-folders.PNG" alt="Figure 8 No folders have been assigned yet." width="100%"><p class="caption">
@@ -299,6 +298,21 @@ Figure 13 If errors occured while loading some files they are listed here.
 </p>
 </div>
 <p>Again, you can choose to ignore failed files and simply proceed without them by clicking on ‘Save &amp; Proceed’ and then on ‘Return Cypro Object’. If possible you can fix the reason that prevented <code>cypro</code> from reading the file successfully and click on ‘Load Data’ again.</p>
+</div>
+<div id="load-one-file" class="section level2">
+<h2 class="hasAnchor">
+<a href="#load-one-file" class="anchor" aria-hidden="true"></a>3. Load one file</h2>
+<p>The way <code><a href="../reference/loadDataFile.html">loadDataFile()</a></code> works is very similar to the way <code><a href="../reference/loadDataFile.html">loadDataFiles()</a></code> works. There are two differences:</p>
+<ol style="list-style-type: decimal">
+<li><p>Instead of uploading a template file you immediately upload the file that contains all the data.</p></li>
+<li><p>Before denoting the module specific variables you need to denote the ones that contain the information about the well plate, well and ROI.</p></li>
+</ol>
+<div class="figure">
+<img src="images/load-data/loadDataFiles-experiment-vars.PNG" alt="Figure 14 The interface of `loadDataFile()` looks slightly different." width="100%"><p class="caption">
+Figure 14 The interface of <code><a href="../reference/loadDataFile.html">loadDataFile()</a></code> looks slightly different.
+</p>
+</div>
+<p>These <em>experiment design</em> variables are then checked for validity. If they can be used to match the data to the experiment design you can proceed with denoting the module specific variables as described above and eventually return the <code>cypro</code>-object that now contains the data.</p>
 </div>
   </div>
 
