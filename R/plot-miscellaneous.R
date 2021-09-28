@@ -58,6 +58,113 @@ plotCellCount <- function(object, across, color_by = across, phase = NULL){
 }
 
 
+#' @title Plot numeric variables in a heatmap
+#' 
+#' @description This function uses a heatmpa to visualize numeric variables. 
+#' By specifying the \code{across}-argument in combination with the \code{summarize_with}-
+#' argument the heatmap can visualize not only cellular profiles but summarized
+#' profiles of any grouping variable such as \emph{cell_line} or \emph{condition}.
+#'
+#' @inherit argument_dummy params
+#' @param summarize_with Character value. Denotes the function with which the 
+#' numeric variables are summarized across groups if \code{across} is not specified 
+#' as \emph{'cell_id'} but \emph{e.g. 'condition'}. One of \emph{'mean', 'median', 'max'} \emph{'min'}.
+#' @param ... Addtional arguments given to function \code{pheatmap::pheatmap()}.
+#'
+#' @details Input for argument \code{across} can be \emph{'cell_id'} to focus
+#' on cells. In this case the summarizing is skipped. 
+#' 
+#' Before visualization all values are rescaled to values from 0 to 1 within their 
+#' variable for proper color coding. 
+#' 
+#'
+#' @return A heatmap.
+#' @export
+#'
+plotHeatmap <- function(object,
+                        variable_names,
+                        across = "cell_id",
+                        across_subset = NULL, 
+                        relevel = NULL,
+                        summarize_with = "mean", 
+                        drop_na = TRUE,
+                        phase = NULL,
+                        verbose = TRUE,
+                        ...){
+  
+  check_object(object)
+  
+  assign_default(object)
+  
+  phase <- check_phase(object, phase = phase, max_phases = 1)
+  
+  confuns::check_one_of(
+    input = across, 
+    against = c("cell_id", getGroupingVariableNames(object, phase = phase))
+  )
+  
+  confuns::check_one_of(
+    input = summarize_with, 
+    against = base::names(x = stat_funs)
+  )
+  
+  df <- 
+    getStatsDf(
+      object = object,
+      with_grouping = TRUE,
+      verbose = FALSE,
+      drop_na = drop_na
+    ) %>% 
+    dplyr::select(dplyr::all_of(c(across, variable_names))) %>% 
+    confuns::check_across_subset(
+      df = ., 
+      across = across, 
+      across.subset = across_subset, 
+      relevel = relevel
+    )
+  
+  if(!across == "cell_id"){
+    
+    msg <- glue::glue("Summarizing with {summarize_with}().")
+    
+    confuns::give_feedback(msg = msg, verbose = verbose)
+    
+    df <- 
+      dplyr::group_by(df, !!rlang::sym(across)) %>% 
+      dplyr::summarise(
+        dplyr::across(
+          .cols = where(base::is.numeric),
+          .fns = stat_funs[[summarize_with]]
+        )
+      )
+    
+  }
+  
+  plot_df <-
+    dplyr::mutate(
+      df,
+      dplyr::across(
+        .cols = where(base::is.numeric), 
+        .fns = ~ scales::rescale(x = .x, to = c(0,1))
+      )
+    ) %>% 
+    tibble::remove_rownames()
+  
+  mtr <- 
+    tibble::column_to_rownames(smrd_df, var = {{across}}) %>% 
+    base::as.matrix()
+  
+  hm <-  
+    pheatmap::pheatmap(
+      mat = mtr, 
+      ...
+    )
+  
+  return(hm)
+  
+}
+
+
 #' @title Plot a scatterplot
 #' 
 #' @description Convenient wrapper around a variety of scatterplot functionalities. See details for more. 

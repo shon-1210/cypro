@@ -646,7 +646,7 @@ moduleLoadDataServer <- function(id, object){
         
         shiny::showNotification(ui = "Reading done.", type = "message")
         
-        assign("data_list", data_list, envir = .GlobalEnv)
+        #assign("data_list", data_list, envir = .GlobalEnv)
         
         # update read_in_data
         read_in_data(data_list)
@@ -915,7 +915,7 @@ moduleLoadDataServer <- function(id, object){
           
         }
         
-        assign("track_list", track_list, envir = .GlobalEnv)
+        #assign("track_list", track_list, envir = .GlobalEnv)
         
         base::return(track_list)
         

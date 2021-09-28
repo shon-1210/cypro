@@ -278,9 +278,7 @@ mutate_cell_df <- function(df, phase = NULL, object, slot, enquos_input, group_b
   }
   
   
-  
   # mutation part
-  
   msg <- 
     glue::glue(
       "Mutating {slot}-data.frame{ref_phase}.",

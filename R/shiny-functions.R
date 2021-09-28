@@ -1040,8 +1040,6 @@ plot_well_plate_shiny <- function(wp_df,
   } 
   
   
-  
-  
   # plot output
   ggplot2::ggplot(data = wp_df, mapping = ggplot2::aes(x = col_num,y = row_num)) + 
     ggplot2::geom_point(

@@ -24,6 +24,7 @@ plotTimeLineplot(
   vline_clr = "lightgrey",
   vline_type = "dashed",
   clrp = "milo",
+  clrp_adjust = NULL,
   verbose = TRUE,
   ...,
   in_shiny = FALSE
@@ -42,8 +43,9 @@ Specifies the grouping variable of interest.
 Use \code{getGroupingVariableNames()} to obtain all variable names that group the
 cells of your experiment in a certain manner.}
 
-\item{across_subset}{Character vector or NULL. Specifies the particular groups
-of interest the grouping variable specified in argument \code{across} contains.
+\item{across_subset}{Character vector, list of character vectors or NULL (see details for
+more). Specifies the particular groups of interest the grouping variable specified in argument
+\code{across} contains.
 
 If set to NULL all of them are chosen. You can prefix groups you are NOT interested in
 with a \emph{'-'}. (Saves writing if there are more groups you are interested in
@@ -95,6 +97,11 @@ is referred to a vertical line is displayed hihglighting the phase separation.}
 \item{clrp}{Character value. Specifies the color palette to be used to represent
 groups of discrete variables. Run \code{validColorPalettes()} to obtain valid
 input options.}
+
+\item{clrp_adjust}{Named character vector or NULL. If character, it adjusts the
+color palette that is used to represent the groups. Names of the input vector must refer
+to the group and the respective named element denotes the color with which to
+represent the group.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

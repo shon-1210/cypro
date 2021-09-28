@@ -6,7 +6,7 @@
 \alias{nConditions}
 \title{Number of miscellaneous content}
 \usage{
-nCells(object, drop_na = FALSE)
+nCells(object, across = NULL, drop_na = FALSE, phase = NULL, ...)
 
 nCellLines(object)
 
@@ -14,6 +14,12 @@ nConditions(object, phase = NULL)
 }
 \arguments{
 \item{object}{A valid cypro object.}
+
+\item{across}{Character value, character vector or NULL (see details for more).
+Specifies the grouping variable of interest.
+
+Use \code{getGroupingVariableNames()} to obtain all variable names that group the
+cells of your experiment in a certain manner.}
 
 \item{phase}{Character or numeric. If character, the ordinal value referring to the phase of interest (e.g. \emph{'first'}, \emph{'second'} etc.).
 referring to the phase of interest or \emph{'all'}. If numeric, the number referring to the phase.
@@ -23,7 +29,7 @@ If set to NULL takes the phase denoted as default with \code{adjustDefault()}.
 Ignored if the experiment design contains only one phase.}
 }
 \value{
-A numeric value.
+A numeric value. If \code{across} is specified a data.frame.
 }
 \description{
 These functions return a numeric value describing the number

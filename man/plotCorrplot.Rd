@@ -48,8 +48,9 @@ Specifies the grouping variable of interest.
 Use \code{getGroupingVariableNames()} to obtain all variable names that group the
 cells of your experiment in a certain manner.}
 
-\item{across_subset}{Character vector or NULL. Specifies the particular groups
-of interest the grouping variable specified in argument \code{across} contains.
+\item{across_subset}{Character vector, list of character vectors or NULL (see details for
+more). Specifies the particular groups of interest the grouping variable specified in argument
+\code{across} contains.
 
 If set to NULL all of them are chosen. You can prefix groups you are NOT interested in
 with a \emph{'-'}. (Saves writing if there are more groups you are interested in

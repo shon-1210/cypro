@@ -9,16 +9,40 @@
 #'
 #' @inherit argument_dummy params
 #'
-#' @return A numeric value. 
+#' @return A numeric value. If \code{across} is specified a data.frame.
 #' @export
 #'
 
-nCells <- function(object, drop_na = FALSE){
+nCells <- function(object, across = NULL, drop_na = FALSE, phase = NULL, ...){
   
   check_object(object)
   
-  getStatsDf(object, drop_na = drop_na) %>% 
-    base::nrow()
+  assign_default(object)
+  
+  confuns::is_value(x = across, mode = "character", skip.all = TRUE, skip.val = NULL)
+  
+  phase <- check_phase(object, phase = phase, max_phase = 1)
+  
+  stat_df <- getStatsDf(object, drop_na = drop_na, phase = phase, ...)
+  
+  if(base::is.null(across)){
+    
+    res <- base::nrow(stat_df)
+    
+  } else if(base::is.character(across)){
+ 
+    confuns::check_one_of(
+      input = across, 
+      against = getGroupingVariableNames(object, phase = phase)
+    )
+    
+    res <- 
+      dplyr::group_by(stat_df, dplyr::across(.cols = dplyr::all_of(across))) %>% 
+      dplyr::tally()
+    
+  }
+  
+  return(res)
   
 }
 

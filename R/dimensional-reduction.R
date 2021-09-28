@@ -56,6 +56,7 @@ run_dim_red <- function(object,
         key.name = "cell_id", 
         method.dim.red = method_dim_red, 
         seed = set_seed, 
+        scale = TRUE,
         ...
       )
     
@@ -72,7 +73,7 @@ run_dim_red <- function(object,
     dim_red_obj@data <- base::matrix()
     dim_red_obj@meta <- base::data.frame()
     
-    confuns::give_feedback(msg = msg, verbose = verbose, with.time = FALSE)
+    confuns::give_feedback(msg = msg, verbose = verbose, with.time = TRUE)
     
   } else {
     
@@ -141,7 +142,7 @@ get_dim_red_obj <- function(object, variable_set, phase = NULL, method_dim_red){
   # add data
   numeric_vars <- dim_red_obj@variables_num
   
-  stat_df <- getStatsDf(object, phase = phase, verbose = FALSE)
+  stat_df <- getStatsDf(object, phase = phase, verbose = FALSE, drop_na = FALSE)
   
   dim_red_obj@data <- 
     dplyr::select(stat_df, cell_id, dplyr::all_of(numeric_vars)) %>% 

@@ -8,10 +8,13 @@ plotPamMedoids(
   object,
   variable_set,
   k,
+  facet_by = "cluster",
+  color_by = "variables",
   method_pam = NULL,
   phase = NULL,
   clrp = NULL,
-  verbose = NULL
+  verbose = NULL,
+  ...
 )
 }
 \arguments{

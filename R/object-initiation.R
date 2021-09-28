@@ -287,6 +287,8 @@ loadDataFiles <- function(object){
           
           body = shinydashboard::dashboardBody(
             
+            shinybusy::add_busy_spinner(spin = "cube-grid", margins = c(0,10), color = "red"),
+            
             shinydashboard::tabItems(
               shinydashboard::tabItem(tabName = "new_session",
                                       

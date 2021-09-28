@@ -15,7 +15,7 @@ getGroupingVariableNames(
   verbose = TRUE
 )
 
-getClusterVariableNames(object, ..., phase = NULL)
+getClusterVariableNames(object, ..., phase = NULL, verbose = NULL)
 
 getMetaVariableNames(object, ..., phase = NULL)
 

@@ -66,7 +66,7 @@ reference:
    desc: Three functions are needed to set up a fully functional cypro object.
  - contents:
    - designExperiment
-   - loadData
+   - starts_with("loadDataFil")
    - processData
    
  - title: Object Summary and Information 
@@ -183,7 +183,7 @@ reference:
  - subtitle: Clustering 
  - contents: 
    - initiateKmeansClustering
-   - inittiateHierarchicalClustering
+   - initiateHierarchicalClustering
    - initiatePamClustering
    - computeDistanceMatrices
    - agglomerateHierarchicalCluster

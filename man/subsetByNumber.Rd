@@ -11,6 +11,9 @@ subsetByNumber(
   n_by_group = NA,
   n_total = NA,
   weighted = FALSE,
+  suffix = FALSE,
+  suffix_sep = "_",
+  set_seed = NULL,
   phase = NULL,
   verbose = NULL
 )
@@ -32,6 +35,12 @@ to contain. The number of cells that is randomly selected by group is calculated
 
 \item{weighted}{Logical value. If set to TRUE and the object is subsetted according to \code{n_total} it makes sure that
 the proportion each group specified in argument \code{across} represents stays the same. See details for more.}
+
+\item{suffix}{Logical value. If set to TRUE the character value provided with arugment \code{new_name} is
+used to suffix the original name as well as the current default directory.}
+
+\item{suffix_sep}{Character value. Denotes the string to insert between the object name / storage directory
+and the input value for \code{new_name} if \code{suffix} is set to TRUE.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

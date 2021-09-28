@@ -230,6 +230,135 @@ discardStatVariables <- function(object, stat_variables, verbose = NULL){
 
 #' @rdname discardStatVariables
 #' @export
+discardTrackVariables <- function(object, track_variables, verbose = NULL){
+  
+  check_object(object)
+  
+  assign_default(object)
+  
+  track_variables <- base::unique(track_variables)
+  
+  confuns::check_one_of(
+    input = track_variables, 
+    against = getTrackVariableNames(object)
+  )
+  
+  # variable sets 
+  affected_vsets <- 
+    purrr::keep(.x = object@variable_sets, .p = ~ base::any(track_variables %in% .x)) %>% 
+    base::names()
+  
+  # subset variable sets
+  object@variable_sets <- 
+    purrr::map(object@variable_sets, .f = function(vset){
+      
+      subsetted_vset <- 
+        vset[!vset %in% track_variables]
+      
+      base::return(subsetted_vset)
+      
+    })
+  
+  if(multiplePhases(object)){
+    
+    object@cdata$tracks <- 
+      purrr::map(
+        .x = object@cdata$tracks, 
+        .f = ~ dplyr::select(.x, -dplyr::all_of(x = track_variables))
+      )
+    
+    corr_names <- base::names(object@analysis$correlation)
+    
+    affected_corr_sets <- base::intersect(affected_vsets, corr_names)
+    
+    if(base::length(affected_corr_sets) >= 1){
+      
+      for(aff_corr in affected_corr_sets){
+        
+        object@analysis$correlation[[aff_corr]] <- 
+          purrr::map(
+            .x = object@analysis$correlation[[aff_corr]], 
+            .f = confuns::discard_numeric_vars, 
+            vars = track_variables, 
+            remove.data = FALSE
+          )
+        
+      }
+      
+    }
+    
+  } else {
+    
+    object@cdata$tracks <- 
+      dplyr::select(object@cdata$tracks, -dplyr::all_of(x = track_variables))
+    
+    corr_names <- base::names(object@analysis$correlation)
+    
+    affected_corr_sets <- base::intersect(affected_vsets, corr_names)
+    
+    if(base::length(affected_corr_sets) >= 1){
+      
+      for(aff_corr in affected_corr_sets){
+        
+        object@analysis$correlation[[aff_corr]] <- 
+          confuns::discard_numeric_vars(
+            corr.obj = object@analysis$correlation[[aff_corr]], 
+            vars = track_variables, 
+            discard.data = FALSE
+          )
+        
+      }
+      
+    }
+    
+  }
+  
+  # discard dim red and clustering 
+  for(vset in affected_vsets){
+    
+    for(slot in base::names(analysis_methods)){
+      
+      for(method in analysis_methods[[slot]]){
+        
+        object@analysis[[slot]][[method]][[vset]] <- NULL
+        
+      }
+      
+    }
+    
+  }
+  
+  if(multiplePhases(object)){
+    
+    object@vdata$summary <- 
+      purrr::map(
+        .x = object@vdata$summary,
+        .f = ~ dplyr::filter(.x, !variable %in% {{track_variables}})
+      )
+    
+  } else {
+    
+    object@vdata$summary <- 
+      object@vdata$summary %>% dplyr::filter(!variable %in% {{track_variables}})
+    
+  }
+  
+  n_vars <- base::length(track_variables)
+  
+  msg <- 
+    glue::glue(
+      "Discarded {n_vars} {ref}.", 
+      ref = confuns::adapt_reference(track_variables, "variable", "variables")
+    )
+  
+  confuns::give_feedback(msg = msg, verbose = verbose)
+  
+  base::return(object)
+  
+}
+
+#' @rdname discardStatVariables
+#' @export
 keepStatVariables <- function(object, stat_variables, verbose = NULL){
   
   check_object(object)
@@ -254,5 +383,30 @@ keepStatVariables <- function(object, stat_variables, verbose = NULL){
   
 }
 
+#' @rdname discardStatVariables
+#' @export
+keepTrackVariables <- function(object, track_variables, verbose = NULL){
+  
+  check_object(object)
+  
+  assign_default(object)
+  
+  all_track_variables <- getTrackVariableNames(object)
+  
+  confuns::check_one_of(
+    input = track_variables, 
+    against = all_track_variables
+  )
+  
+  discard_variables <-
+    all_track_variables[!all_track_variables %in% track_variables]
+  
+  object <-
+    discardTrackVariables(object, track_variables = discard_variables, verbose = verbose)
+  
+  base::return(object)
+  
+  
+}
 
 

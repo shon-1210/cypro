@@ -39,6 +39,7 @@ plotTimeLineplot <- function(object,
                              vline_clr = "lightgrey", 
                              vline_type = "dashed",
                              clrp = "milo", 
+                             clrp_adjust = NULL, 
                              verbose = TRUE, 
                              ...,
                              in_shiny = FALSE){
@@ -100,7 +101,6 @@ plotTimeLineplot <- function(object,
       vars = stringr::str_replace_all(vars, pattern = pattern_string, replacement = replacement_string)
     )
   
-  
   ggplot2::ggplot(plot_df, mapping = ggplot2::aes(x = frame_num, y = values, color = .data[[across]])) + 
     ggplot2::geom_smooth(formula = y ~ x, method = smooth_method, span = smooth_span, se = smooth_se) + 
     ggplot2::facet_wrap(facets = ~ vars, scales = scales, nrow = nrow, ncol = ncol) +
@@ -116,7 +116,8 @@ plotTimeLineplot <- function(object,
       breaks = base::unique(plot_df$frame_num)
     ) + 
     confuns::scale_color_add_on(
-      aes = "color", variable = plot_df[[across]], clrp = clrp
+      aes = "color", variable = plot_df[[across]], clrp = clrp, 
+      clrp.adjust = clrp_adjust
     ) + 
     hlpr_caption_add_on(object, phase = phase) + 
     hlpr_phase_vertical_line(object, phase = phase, vline_clr = vline_clr, vline_type = vline_type)

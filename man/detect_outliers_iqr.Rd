@@ -5,13 +5,21 @@
 \alias{detect_outliers_mahalanobis}
 \title{Outlier detection functions}
 \usage{
-detect_outliers_iqr(object, variable_names = NULL, verbose = NULL)
+detect_outliers_iqr(
+  object,
+  variable_names = NULL,
+  across = NULL,
+  phase = NULL,
+  verbose = NULL
+)
 
 detect_outliers_mahalanobis(
   object,
   variable_names = NULL,
   threshold_pval = 0.001,
-  verbose = NULL
+  verbose = NULL,
+  across = NULL,
+  phase = NULL
 )
 }
 \description{

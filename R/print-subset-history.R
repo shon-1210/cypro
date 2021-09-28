@@ -154,7 +154,10 @@ subset_history_cell_lines <- function(info, slot_name, object){
   footer <- make_footer(info, slot_name)
   
   body <-
-    stringr::str_c("Kept: '", glue::glue_collapse(info$cell_lines, sep = "', '", last = "' and '"), "'") 
+    stringr::str_c(
+      "Kept: '", 
+      glue::glue_collapse(info$cell_lines, sep = "', '", last = "' and '", width = 50),
+      "'") 
   
   text <- 
     stringr::str_c(header, body, footer, sep = "\n")
@@ -176,7 +179,10 @@ subset_history_cluster <- function(info, slot_name, object){
     stringr::str_c("Cluster Name: '", info$cluster_variable, "'")
   
   cluster <-
-    stringr::str_c("Kept: '", glue::glue_collapse(info$cluster, sep = "', '", last = "' and '"), "'") 
+    stringr::str_c(
+      "Kept: '",
+      glue::glue_collapse(info$cluster, sep = "', '", last = "' and '", width = 50),
+      "'") 
   
   text <- 
     stringr::str_c(header, phase, cluster_var, cluster, footer, sep = "\n")
@@ -194,7 +200,10 @@ subset_history_conditions <- function(info, slot_name, object){
   phase <- make_phase(object, info)
   
   conditions <-
-    stringr::str_c("Kept: '", glue::glue_collapse(info$conditions, sep = "', '", last = "' and '"), "'") 
+    stringr::str_c(
+      "Kept: '",
+      glue::glue_collapse(info$conditions, sep = "', '", last = "' and '", width = 50),
+      "'") 
   
   text <- 
     stringr::str_c(header, phase, conditions,footer, sep = "\n")
@@ -215,7 +224,10 @@ subset_history_group <- function(info, slot_name, object){
     stringr::str_c("Grouping Name: '", info$grouping_variable, "'")
   
   groups <-
-    stringr::str_c("Kept: '", glue::glue_collapse(info$groups, sep = "', '", last = "' and '"), "'") 
+    stringr::str_c(
+      "Kept: '",
+      glue::glue_collapse(info$groups, sep = "', '", last = "' and '", width = 50),
+      "'") 
   
   text <- 
     stringr::str_c(header, phase, group_var, groups, footer, sep = "\n")

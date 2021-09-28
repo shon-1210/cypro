@@ -64,7 +64,7 @@ colors_information_status = c("Complete" = "forestgreen",
                               "Missing" = "red", 
                               "Discarded" = "lightgrey")
 
-current_version <- list(major = 0, minor = 2, patch = 0)
+current_version <- list(major = 0, minor = 3, patch = 0)
 
 debug_ct <- FALSE
 
@@ -79,6 +79,7 @@ default_list <-
     method_corr = "pearson",
     method_dist = "euclidean",
     method_kmeans = "Hartigan-Wong",
+    method_outlier = "iqr",
     method_pam = "euclidean",
     phase = "first", 
     pt_alpha = 0.9, 

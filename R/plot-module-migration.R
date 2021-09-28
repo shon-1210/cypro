@@ -11,6 +11,11 @@
 #' @param display_annotation Logical. If set to TRUE the number of cells (input
 #' for argument \code{n_cells}) is displayed in the right upper corner of each plot.
 #' 
+#' @details Argument \code{across} can be a single character value or a character vector of
+#' length two. If character vector, e.g. \code{across = c(\emph{'cell_line', 'condition'})}, 
+#' argument \code{across_subset} - if specified - should be a corresponding list: 
+#' \code{across_subset = list(cell_line = \emph{c('GCL24', 'GCL38')}, condition = c(\emph{'Ctrl', 'chlorambucil'}))}.
+#' 
 #' @inherit ggplot_return return
 #' @export
 #'
@@ -22,7 +27,7 @@ plotAllTracks <- function(object,
                           time_subset = NULL,
                           phase = NULL,
                           n_cells = 100,
-                          color_by = across, 
+                          color_by = across[1], 
                           linetype = "solid", 
                           linesize = 0.75,
                           clrp = "milo",
@@ -38,19 +43,20 @@ plotAllTracks <- function(object,
   
   phase <- check_phase(object, phase = phase)
   
-  confuns::is_value(across, "character")
+  #confuns::is_value(across, "character")
   
-  if(base::length(phase) >= 2 & !across %in% c("condition", "cl_condition")){
-    
-    base::stop(
-      "Plotting all tracks over several phases while splitting by clustering variables is not allowed as cluster variables are calculated for every phase respectively."
-    )
-    
-  } else if(base::length(phase) == 1) {
+  if(base::length(phase) == 1) {
     
     confuns::check_one_of(
       input = across, 
       against = getGroupingVariableNames(object, phase = phase, verbose = FALSE)
+    )
+    
+  } else {
+    
+    confuns::check_one_of(
+      input = across, 
+      against = c("condition", "cell_line", well_plate_vars)
     )
     
   }
@@ -68,13 +74,67 @@ plotAllTracks <- function(object,
       phase = phase, 
       across = across, 
       verbose = verbose
-    ) %>% 
-    confuns::check_across_subset(
-      df = ., 
-      across = across, 
-      across.subset = across_subset,
-      relevel = relevel 
     ) 
+  
+  if(base::is.character(across)){
+    
+    if(base::length(across) == 1){
+      
+      track_df <- 
+        confuns::check_across_subset(
+          df = track_df, 
+          across = across, 
+          across.subset = across_subset,
+          relevel = relevel 
+        ) %>% 
+        dplyr::mutate(
+          facet = !!rlang::sym(across)
+        )
+      
+      facet_add_on <- 
+        ggplot2::facet_wrap(facets = . ~ facet, ...)
+      
+    } else if(base::length(across) == 2) {
+      
+      if(!base::is.null(across)){
+        
+        if(!base::is.list(across)){
+          
+          warning("If 'across' is of length 2 input for 'across_subset' must be a list or NULL. Ignoring invalid 'across_subset' input.")
+          
+          across_subset <- NULL
+          
+        }
+        
+      }
+      
+      track_df <- 
+        confuns::check_across_subset(
+          df = track_df, 
+          across = across[1], 
+          across.subset = across_subset[[1]],
+          relevel = relevel 
+        ) %>% 
+        confuns::check_across_subset(
+          df = ., 
+          across = across[2], 
+          across.subset = across_subset[[2]],
+          relevel = relevel 
+        ) 
+      
+      across1 <- across[1]
+      across2 <- across[2]
+      
+      facet_add_on <- 
+        ggplot2::facet_grid(
+          rows = ggplot2::vars(!!rlang::sym(across1)),
+          cols = ggplot2::vars(!!rlang::sym(across2)), 
+          ...
+        )
+      
+    }
+    
+  }
   
   if(base::is.numeric(set_seed)){
     
@@ -85,9 +145,10 @@ plotAllTracks <- function(object,
   }
   
   cell_id_df <- 
-    dplyr::select(track_df, dplyr::all_of(x = c("cell_id", across))) %>% 
+    dplyr::select(track_df, dplyr::all_of(x = c("cell_id", across)), dplyr::contains("coords")) %>% 
+    tidyr::drop_na() %>% 
     dplyr::distinct() %>% 
-    dplyr::group_by(!!rlang::sym(across)) %>% 
+    dplyr::group_by(dplyr::across(.cols = dplyr::all_of(across))) %>% 
     dplyr::slice_sample(n = n_cells)
   
   cell_ids <- 
@@ -98,13 +159,12 @@ plotAllTracks <- function(object,
     dplyr::filter(cell_id %in% {{cell_ids}}) %>% 
     dplyr::mutate(
       x_coords = x_coords - x_coords[1], 
-      y_coords = y_coords - y_coords[1], 
-      facet = !!rlang::sym(across)
+      y_coords = y_coords - y_coords[1]
     ) %>% 
     dplyr::ungroup() 
   
   annotation_df <-  
-    dplyr::group_by(cell_id_df, !!rlang::sym(across)) %>% 
+    dplyr::group_by(cell_id_df, dplyr::across(.cols = dplyr::all_of(across))) %>% 
     dplyr::tally() %>% 
     dplyr::mutate(label = stringr::str_c("n", n, sep = " = "))
   
@@ -149,6 +209,7 @@ plotAllTracks <- function(object,
     
   }
   
+  
   ggplot2::ggplot(data = plot_df, mapping = ggplot2::aes(x = x_coords, y = y_coords)) + 
     ggplot2::geom_vline(xintercept = 0, linetype = "dashed", color = "lightgrey") +
     ggplot2::geom_hline(yintercept = 0, linetype = "dashed", color = "lightgrey") +
@@ -162,16 +223,20 @@ plotAllTracks <- function(object,
       panel.grid.minor = ggplot2::element_blank(), 
       strip.background = ggplot2::element_blank()
     ) + 
-    ggplot2::facet_wrap(facets = ~ facet, scales = "fixed", ...) + 
-    ggplot2::labs(x = NULL, y = NULL, color = across,
+    facet_add_on + 
+    ggplot2::labs(x = NULL, y = NULL, color = across[1],
                   subtitle = glue::glue("Time: {time_subset} {getIntervalUnit(object)}")) + 
     hlpr_caption_add_on(object = object, phase = phase) + 
     confuns::scale_color_add_on(
-      variable = plot_df[[across]],
+      variable = plot_df[[across[1]]],
       clrp = clrp,
       clrp.adjust = clrp_adjust)
   
 }
+
+#' @rdname plotAllTracks
+#' @export
+plotRosePlot <- plotAllTracks
 
 
 

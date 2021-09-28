@@ -8,6 +8,7 @@ removeOutliers(
   object,
   method_outlier,
   new_name = "outlier_removed",
+  phase = NULL,
   verbose = NULL
 )
 }
@@ -17,6 +18,13 @@ removeOutliers(
 \item{method_outlier}{Character vector. Specifies the method/algorithm of interest.
 
 Use \code{validOutlierDetectionMethods()} to obtain all valid input options.}
+
+\item{phase}{Character or numeric. If character, the ordinal value referring to the phase of interest (e.g. \emph{'first'}, \emph{'second'} etc.).
+referring to the phase of interest or \emph{'all'}. If numeric, the number referring to the phase.
+
+If set to NULL takes the phase denoted as default with \code{adjustDefault()}.
+
+Ignored if the experiment design contains only one phase.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

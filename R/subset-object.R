@@ -14,7 +14,10 @@
 #' @param reasoning Character value. Allows two write a short description of how the cell ids according 
 #' to which the object is filtered were selected. This description is included in the output of \code{printSubsetHistory()}.
 #' Ignored if set to NULL. 
-#' 
+#' @param suffix Logical value. If set to TRUE the character value provided with arugment \code{new_name} is 
+#' used to suffix the original name as well as the current default directory. 
+#' @param suffix_sep Character value. Denotes the string to insert between the object name / storage directory
+#' and the input value for \code{new_name} if \code{suffix} is set to TRUE.
 #' @details Creating subsets of your data affects analysis results such as clustering and correlation which 
 #' is why these results are reset in the subsetted object and must be computed again. To prevent inadvertent overwriting 
 #' the default directory is reset as well. Make sure to set a new one via \code{setDefaultDirectory()}. 
@@ -25,7 +28,14 @@
 #' @return A cypro object that contains the data for the subsetted cells. 
 #' @export
 #'
-subsetByCellId <- function(object, new_name, cell_ids, reasoning = NULL, verbose = NULL, ...){
+subsetByCellId <- function(object,
+                           new_name,
+                           cell_ids,
+                           reasoning = NULL,
+                           suffix = FALSE,
+                           suffix_sep = "_",
+                           verbose = NULL,
+                           ...){
   
   check_object(object)
   assign_default(object)
@@ -118,7 +128,9 @@ subsetByCellId <- function(object, new_name, cell_ids, reasoning = NULL, verbose
   object@analysis <- list()
   
   # subset well plate information (denote wells that are not longer in use as 'Discarded')
-  wp_subset_info <- object@cdata$well_plate %>% select(well_plate_name, well)
+  wp_subset_info <- 
+    object@cdata$well_plate %>%
+    select(well_plate_name, well)
   
   if(multiplePhases(object)){
     
@@ -179,9 +191,15 @@ subsetByCellId <- function(object, new_name, cell_ids, reasoning = NULL, verbose
       
       base::stop("Input for argument 'new_name' must not be identical with the objects name.")
       
-    }
+    } else if(base::isTRUE(suffix)){
+      
+      object@name <- stringr::str_c(object@name, new_name, sep = suffix_sep)
+      
+    } else {
     
-    object@name <- new_name
+      object@name <- new_name  
+      
+    }
     
   }
   
@@ -192,9 +210,9 @@ subsetByCellId <- function(object, new_name, cell_ids, reasoning = NULL, verbose
     subset_by <- list(by = "cell_id")
     
   }
-  
+
   subset_by$ids_remaining = cell_ids
-  subset_by$n_remaining <- nCells(object)
+  subset_by$n_remaining <- nCells(object, phase = phase)
   
   subset_by$parent_object <- parent_name
   subset_by$new_object <- object@name
@@ -229,16 +247,58 @@ subsetByCellId <- function(object, new_name, cell_ids, reasoning = NULL, verbose
   )
   
   # reset default directory 
-  object@information$directory_cto <- NULL
   
-  confuns::give_feedback(
-    msg = "Default directory has been reset. Make sure to set a new one via 'setStorageDirectory()'",
-    verbose = TRUE
-  )
+  if(base::isTRUE(suffix)){
+    
+    storage_dir <- object@information$storage_directory
+    
+    valid_dir <- 
+      base::is.character(storage_dir) &
+      stringr::str_detect(storage_dir, pattern = "\\.RDS$")
+    
+    if(base::isTRUE(valid_dir)){
+      
+      new_dir <-
+        stringr::str_remove(storage_dir, pattern = "\\.RDS$") %>% 
+        stringr::str_c(., new_name, sep = suffix_sep) %>% 
+        stringr::str_c(., ".RDS", sep = "")
+      
+      object <- setStorageDirectory(object, directory = new_dir)
+      
+      confuns::give_feedback(
+        msg = glue::glue("New storage directory: '{new_dir}'"), 
+        verbose = TRUE
+      )
+      
+    } else {
+      
+      confuns::give_feedback(
+        msg = "Current storage directory is an invalid string. Can not suffix.", 
+        verbose = TRUE
+      )
+      
+      confuns::give_feedback(
+        msg = "Default directory has been reset. Make sure to set a new one via 'setStorageDirectory()'",
+        verbose = TRUE
+      )
+      
+    }
+    
+    
+  } else {
+  
+    object@information$storage_directory <- NULL  
+    
+    confuns::give_feedback(
+      msg = "Default directory has been reset. Make sure to set a new one via 'setStorageDirectory()'",
+      verbose = TRUE
+    )
+    
+  }
   
   # give feedback
   confuns::give_feedback(
-    msg = glue::glue("A total of {nCells(object)} cells remain."), verbose = TRUE
+    msg = glue::glue("A total of {nCells(object, phase = phase)} cells remain."), verbose = TRUE
   )
   
   confuns::give_feedback(msg = "Done.", verbose = verbose)
@@ -255,7 +315,12 @@ subsetByCellId <- function(object, new_name, cell_ids, reasoning = NULL, verbose
 #' @return A cypro object that contains the data for the subsetted cells. 
 #' @export
 #'
-subsetByCellLine <- function(object, new_name, cell_lines, verbose = NULL){
+subsetByCellLine <- function(object,
+                             new_name,
+                             cell_lines,
+                             suffix = FALSE,
+                             suffix_sep = "_",
+                             verbose = NULL){
   
   check_object(object)
   assign_default(object)
@@ -286,6 +351,8 @@ subsetByCellLine <- function(object, new_name, cell_lines, verbose = NULL){
       object = object,
       cell_ids = cell_ids,
       new_name = new_name,
+      suffix = suffix, 
+      suffix_sep = suffix_sep,
       verbose = FALSE,
       subset_by = list(by = "cell_lines", cell_lines = cell_lines)
     )
@@ -324,6 +391,8 @@ subsetByCluster <- function(object,
                             new_name,
                             cluster_variable,
                             cluster,
+                            suffix = FALSE, 
+                            suffix_sep = "_", 
                             phase = NULL,
                             verbose = NULL){
   
@@ -378,6 +447,8 @@ subsetByCluster <- function(object,
       cell_ids = cell_ids,
       phase = phase,
       new_name = new_name,
+      suffix = suffix, 
+      suffix_sep = suffix_sep,
       verbose = FALSE,
       subset_by = list(by = "cluster", cluster_variable = cluster_variable, cluster = cluster)
     )
@@ -394,6 +465,8 @@ subsetByGroup <- function(object,
                           new_name = NULL,
                           grouping_variable,
                           groups,
+                          suffix = FALSE, 
+                          suffix_sep = "_",
                           phase = NULL,
                           verbose = NULL){
   
@@ -408,7 +481,7 @@ subsetByGroup <- function(object,
   
   confuns::check_one_of(
     input = grouping_variable, 
-    against = getGroupingVariableNames(object, phase = phase)
+    against = getGroupingVariableNames(object, phase = phase, verbose = FALSE)
   )
   
   groups <- base::as.character(groups)
@@ -449,6 +522,8 @@ subsetByGroup <- function(object,
       cell_ids = cell_ids,
       phase = phase,
       new_name = new_name,
+      suffix = suffix, 
+      suffix_sep = suffix_sep,
       verbose = FALSE,
       subset_by = list(by = "group", grouping_variable = grouping_variable, groups = groups)
     )
@@ -477,7 +552,13 @@ subsetByGroup <- function(object,
 #' @return A cypro object that contains the data for the subsetted cells. 
 #' @export
 #'
-subsetByCondition <- function(object, new_name, conditions, phase = NULL, verbose = NULL){
+subsetByCondition <- function(object,
+                              new_name,
+                              conditions,
+                              suffix = FALSE, 
+                              suffix_sep = "_",
+                              phase = NULL,
+                              verbose = NULL){
   
   check_object(object)
   check_phase_manually(object, phase = phase)
@@ -507,12 +588,15 @@ subsetByCondition <- function(object, new_name, conditions, phase = NULL, verbos
   
   # subset object
   object_new <-
-    subsetByCellId(object = object,
-                   cell_ids = cell_ids,
-                   phase = phase,
-                   new_name = new_name,
-                   verbose = FALSE,
-                   subset_by = list(by = "conditions", conditions = conditions)
+    subsetByCellId(
+      object = object,
+      cell_ids = cell_ids,
+      phase = phase,
+      new_name = new_name,
+      suffix = suffix, 
+      suffix_sep = suffix_sep,
+      verbose = FALSE,
+      subset_by = list(by = "conditions", conditions = conditions)
     )
   
   confuns::give_feedback(msg = "Done.", verbose = verbose)
@@ -589,10 +673,12 @@ subsetByFilter <- function(object, new_name, ..., phase = NULL, verbose = NULL){
   object_new <-
     subsetByCellId(
       object = object,
+      new_name = new_name,
       cell_ids = cell_ids,
+      suffix = suffix, 
+      suffix_sep = suffix_sep,
       phase = phase,
       verbose = FALSE,
-      new_name = new_name,
       subset_by = list(by = "filter", requirements = requirements)
     )
   
@@ -674,6 +760,9 @@ subsetByNumber <- function(object,
                            n_by_group = NA,
                            n_total = NA,
                            weighted = FALSE, 
+                           suffix = FALSE, 
+                           suffix_sep = "_",
+                           set_seed = NULL, 
                            phase = NULL,
                            verbose = NULL){
   
@@ -689,6 +778,7 @@ subsetByNumber <- function(object,
   )
   
   confuns::are_values("n_by_group", "n_total", mode = "numeric", skip.allow = TRUE, skip.val = NA)
+  confuns::is_value(x = set_seed, mode = "numeric", skip.allow = TRUE, skip.val = NULL)
   
   # extract cell ids 
   combined_name <- glue::glue_collapse(x = across, sep = "_")
@@ -709,6 +799,15 @@ subsetByNumber <- function(object,
     
     ref_arg <- "n_by_group"
     weighted <- FALSE # FALSE, irrespective of input
+    
+    if(base::is.numeric(set_seed)){
+      
+      confuns::give_feedback(
+        msg = glue::glue("Setting seed: {set_seed}"), 
+        verbose = verbose
+      )
+      
+    }
     
     cell_ids <- 
       dplyr::group_by(cell_ids_df, !!rlang::sym(combined_name)) %>% 
@@ -738,6 +837,15 @@ subsetByNumber <- function(object,
           perc = count / total
           )
       
+      if(base::is.numeric(set_seed)){
+        
+        confuns::give_feedback(
+          msg = glue::glue("Setting seed: {set_seed}"), 
+          verbose = verbose
+        )
+        
+      }
+      
       cell_ids <- 
         purrr::map(
           .x = all_groups, 
@@ -749,6 +857,12 @@ subsetByNumber <- function(object,
             
             n_of_group <-
               base::round(n_total * perc_val, digits = 0)
+              
+            if(base::is.numeric(set_seed)){
+            
+              base::set.seed(set_seed)  
+              
+            }
             
             ids <- 
               dplyr::filter(cell_ids_df, !!rlang::sym(combined_name) == {{group}}) %>% 
@@ -765,6 +879,17 @@ subsetByNumber <- function(object,
     } else {
       
       n_by_group <- base::round(n_total/n_groups, digits = 0)
+      
+      if(base::is.numeric(set_seed)){
+        
+        confuns::give_feedback(
+          msg = glue::glue("Setting seed: {set_seed}"), 
+          verbose = verbose
+        )
+        
+        base::set.seed(set_seed)
+        
+      }
       
       cell_ids <- 
         dplyr::group_by(cell_ids_df, !!rlang::sym(combined_name)) %>% 
@@ -787,10 +912,12 @@ subsetByNumber <- function(object,
   object_new <-
     subsetByCellId(
       object = object,
+      new_name = new_name,
       cell_ids = cell_ids,
+      suffix = suffix, 
+      suffix_sep = suffix_sep,
       phase = phase,
       verbose = FALSE,
-      new_name = new_name,
       subset_by = list(by = "number", across = across, n_type = ref_arg, n_val = n_by_group, weighted = weighted)
     )
   
@@ -833,9 +960,13 @@ subsetByNumber <- function(object,
 #' @inherit updated_object return
 #' @export
 #'
-subsetByQuality <- function(object, new_name = NULL, verbose = NULL){
+subsetByQuality <- function(object,
+                            new_name = NULL,
+                            suffix = FALSE,
+                            suffix_sep = "_",
+                            verbose = NULL){
   
-  check_object(object, set_up_req = "load_data", exp_type_req = "time_lapse")
+  check_object(object, exp_type_req = "time_lapse")
   
   assign_default(object)
   
@@ -941,7 +1072,9 @@ subsetByQuality <- function(object, new_name = NULL, verbose = NULL){
     subsetByCellId(
       object = object, 
       new_name = new_name, 
-      verbose = verbose, 
+      verbose = verbose,
+      suffix = suffix, 
+      suffix_sep = suffix_sep,
       cell_ids = qc_list$remaining_ids,
       reasoning = make_data_quality_reasoning(qc_list$reasoning),
       subset_by = list(by = "quality_check")

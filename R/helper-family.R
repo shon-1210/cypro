@@ -317,7 +317,7 @@ hlpr_discard_messages_missing <- function(x){
 #' @title Merge conditions
 hlpr_merge_conditions <- function(track_df, phase, across, verbose = TRUE){
   
-  if(base::length(phase) > 1 & across %in% c("condition")){
+  if(base::length(phase) > 1 & "condition" %in% across){
     
     confuns::give_feedback(
       msg = glue::glue("Merging conditions over {base::length(phase)} phases by cell ID."),

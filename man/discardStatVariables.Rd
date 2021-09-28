@@ -2,12 +2,18 @@
 % Please edit documentation in R/discard-family.R
 \name{discardStatVariables}
 \alias{discardStatVariables}
+\alias{discardTrackVariables}
 \alias{keepStatVariables}
+\alias{keepTrackVariables}
 \title{Discard unwanted variables from your data}
 \usage{
 discardStatVariables(object, stat_variables, verbose = NULL)
 
+discardTrackVariables(object, track_variables, verbose = NULL)
+
 keepStatVariables(object, stat_variables, verbose = NULL)
+
+keepTrackVariables(object, track_variables, verbose = NULL)
 }
 \arguments{
 \item{object}{A valid cypro object.}

@@ -527,6 +527,54 @@ getWellPlateDf <- function(object){
   
 }
 
+
+#' @title Obtain data.frame
+#' 
+#' @inherit argument_dummy params
+#' @param with_cluster,with_meta,with_well_plate Logical values. Denoting 
+#' if the respective grouping information should be joined to the stats data.frame
+#' or not.
+#'
+#' @return A data.frame with all numeric variables summarizing the measurements of 
+#' the track data.frame. 
+#' 
+#' @export
+#'
+
+
+getDataFrame <- function(object, 
+                         phase = NULL,
+                         with_grouping = NULL,
+                         with_cluster = NULL,
+                         with_meta = NULL,
+                         with_well_plate = NULL, 
+                         drop_na = TRUE, 
+                         verbose = NULL){
+  
+  if(isTimeLapseExp(object)){
+    
+    stop(
+      "Please use 'getStatsDf()' or 'getTracksDf()' to obtain data.frames",
+      "in case of timelapse experiments."
+      )
+    
+  }
+  
+  df <- 
+    getStatsDf(
+      object = object, 
+      with_cluster = with_cluster, 
+      with_grouping = with_grouping, 
+      with_meta = with_meta, 
+      with_well_plate = with_well_plate, 
+      drop_na = drop_na, 
+      phase = NULL
+    )
+  
+  return(df)
+  
+}
+
 #' @title Obtain stat data.frame 
 #'
 #' @inherit argument_dummy params
@@ -798,6 +846,12 @@ getVariableSet <- function(object, variable_set){
   
   var_set <- object@variable_sets[[variable_set]]
   
+  if(base::length(base::names(object@variable_sets)) == 0){
+    
+    stop("No variable sets have been defined yet.")
+    
+  }
+  
   confuns::check_one_of(
     input = variable_set, 
     against = base::names(object@variable_sets), 
@@ -844,6 +898,27 @@ getDefaultInstructions <- function(object){
   check_object(object)
   
   object@default
+  
+}
+
+
+getSubsetList <- function(object, nth = 1){
+  
+  check_object(object)
+  
+  nth <- english::ordinal(x = nth)
+  
+  subset_list <- object@information$subset[[nth]]
+  
+  if(!base::is.list(subset_list)){
+    
+    msg <- glue::glue("Could not find info for a {nth} subsetting.")
+    
+    confuns::give_feedback(msg = msg, fdb.fn = "stop", with.time = FALSE)
+    
+  }
+  
+  return(subset_list)
   
 }
 
@@ -991,11 +1066,7 @@ getOutlierIds <- function(object,
   
   phase <- check_phase(object, phase = phase, max_phase = 1)
   
-  if(base::is.null(method_outlier)){
-    
-    method_outlier <- base::names(object@qcheck$outlier_detection)
-    
-  }
+  existOutlierResults(object, phase = phase, method_outlier = method_outlier, verbose = TRUE)
   
   outlier_ids <- list()
   
@@ -1029,7 +1100,7 @@ getOutlierIds <- function(object,
       )
   
     outlier_ids$mahalanobis <- 
-      outlier_list$outlier_ids
+      purrr::flatten_chr(outlier_list$ids)
       
   }
   
@@ -1041,7 +1112,6 @@ getOutlierIds <- function(object,
       base::unique()
     
   }
-
   
   base::return(outlier_ids)
   
@@ -1441,8 +1511,9 @@ getTrackVariableNames <- function(object, ...){
 #' @export
 
 getWellPlateNames <- function(object){
-  
-  object@well_plates %>% base::names()
+
+  object@cdata$well_plate$well_plate_name %>% 
+    base::levels()
   
 }
 

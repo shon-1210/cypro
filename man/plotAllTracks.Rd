@@ -2,6 +2,7 @@
 % Please edit documentation in R/plot-module-migration.R
 \name{plotAllTracks}
 \alias{plotAllTracks}
+\alias{plotRosePlot}
 \title{Plot scaled cell migration}
 \usage{
 plotAllTracks(
@@ -12,7 +13,26 @@ plotAllTracks(
   time_subset = NULL,
   phase = NULL,
   n_cells = 100,
-  color_by = across,
+  color_by = across[1],
+  linetype = "solid",
+  linesize = 0.75,
+  clrp = "milo",
+  clrp_adjust = NULL,
+  display_annotation = TRUE,
+  set_seed = NULL,
+  ...,
+  verbose = TRUE
+)
+
+plotRosePlot(
+  object,
+  across = "condition",
+  across_subset = NULL,
+  relevel = NULL,
+  time_subset = NULL,
+  phase = NULL,
+  n_cells = 100,
+  color_by = across[1],
   linetype = "solid",
   linesize = 0.75,
   clrp = "milo",
@@ -32,8 +52,9 @@ Specifies the grouping variable of interest.
 Use \code{getGroupingVariableNames()} to obtain all variable names that group the
 cells of your experiment in a certain manner.}
 
-\item{across_subset}{Character vector or NULL. Specifies the particular groups
-of interest the grouping variable specified in argument \code{across} contains.
+\item{across_subset}{Character vector, list of character vectors or NULL (see details for
+more). Specifies the particular groups of interest the grouping variable specified in argument
+\code{across} contains.
 
 If set to NULL all of them are chosen. You can prefix groups you are NOT interested in
 with a \emph{'-'}. (Saves writing if there are more groups you are interested in
@@ -84,4 +105,10 @@ A ggplot.
 Visualizes the cells migration in a typical migration plot.
 Scales the cell's x- and y-coordinates such that all cell's migration
 paths start from the same position.
+}
+\details{
+Argument \code{across} can be a single character value or a character vector of
+length two. If character vector, e.g. \code{across = c(\emph{'cell_line', 'condition'})},
+argument \code{across_subset} - if specified - should be a corresponding list:
+\code{across_subset = list(cell_line = \emph{c('GCL24', 'GCL38')}, condition = c(\emph{'Ctrl', 'chlorambucil'}))}.
 }

@@ -35,8 +35,6 @@ updateCyproObject <- function(object){
   version <- object@version
   
   # updating 
-  new_object <- initiateEmptyCyproObject()
-  
   if(base::identical(version, current_version)){
     
     stop("Updating not possible. Input object already has been updated to the newest version.")
@@ -45,18 +43,47 @@ updateCyproObject <- function(object){
     
     stop("Updating not possible. Please initiate the cypro object again.")
     
-  } else {
+  }
+  
+  # patch 3 well_image => well_roi
+  if(version$major == 0 & version$minor < 3){
     
-    for(slot in success_names){
-      
-      methods::slot(new_object, name = slot) <- 
-        methods::slot(object, name = slot)
-      
-      new_object@version <- current_version
-      
-    }
+    confuns::give_feedback(
+      msg = "Patch 0.2.0 -> 0.3.0: Change in terminology - well_image => well_roi",
+      verbose = TRUE
+    )
+    
+    object@cdata$well_plate <-
+      dplyr::rename(object@cdata$well_plate, well_roi = well_image)
+    
+    object@well_plates <- 
+      purrr::map(object@well_plates, .f = function(wp_list){
+        
+        wp_list[["wp_df_eval"]] <-
+          dplyr::rename(wp_list[["wp_df_eval"]], rois_per_well = ipw, well_roi_files = well_image_files)
+        
+        return(wp_list)
+        
+      })
+    
+    object@version$minor <- 3
     
   }
+  
+  
+  # update slots 
+  new_object <- initiateEmptyCyproObject()
+  
+  for(slot in success_names){
+    
+    methods::slot(new_object, name = slot) <- 
+      methods::slot(object, name = slot)
+    
+    new_object@version <- current_version
+    
+  }
+  
+  confuns::give_feedback(msg = "Done.", verbose = TRUE)
   
   # return
   base::return(new_object)

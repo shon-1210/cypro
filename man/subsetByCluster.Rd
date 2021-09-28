@@ -10,6 +10,8 @@ subsetByCluster(
   new_name,
   cluster_variable,
   cluster,
+  suffix = FALSE,
+  suffix_sep = "_",
   phase = NULL,
   verbose = NULL
 )
@@ -19,6 +21,8 @@ subsetByGroup(
   new_name = NULL,
   grouping_variable,
   groups,
+  suffix = FALSE,
+  suffix_sep = "_",
   phase = NULL,
   verbose = NULL
 )
@@ -34,6 +38,12 @@ to subset the cells.}
 
 \item{cluster, groups}{Character vector. Denotes the exact cluster/group names carried by the
 variable specified with argument \code{cluster_variable}/\code{grouping_variable} to be kept.}
+
+\item{suffix}{Logical value. If set to TRUE the character value provided with arugment \code{new_name} is
+used to suffix the original name as well as the current default directory.}
+
+\item{suffix_sep}{Character value. Denotes the string to insert between the object name / storage directory
+and the input value for \code{new_name} if \code{suffix} is set to TRUE.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

@@ -9,6 +9,8 @@ subsetByCellId(
   new_name,
   cell_ids,
   reasoning = NULL,
+  suffix = FALSE,
+  suffix_sep = "_",
   verbose = NULL,
   ...
 )
@@ -24,6 +26,12 @@ input object is taken and suffixed with \emph{'_subset'}.}
 \item{reasoning}{Character value. Allows two write a short description of how the cell ids according
 to which the object is filtered were selected. This description is included in the output of \code{printSubsetHistory()}.
 Ignored if set to NULL.}
+
+\item{suffix}{Logical value. If set to TRUE the character value provided with arugment \code{new_name} is
+used to suffix the original name as well as the current default directory.}
+
+\item{suffix_sep}{Character value. Denotes the string to insert between the object name / storage directory
+and the input value for \code{new_name} if \code{suffix} is set to TRUE.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

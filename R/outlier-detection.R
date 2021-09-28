@@ -68,7 +68,8 @@ detectOutliers <- function(object,
         variable_names = variable_names,
         verbose = verbose,
         threshold_pval = threshold_pval, 
-        pahse = phase
+        phase = phase, 
+        across = across
         )
     
   }
@@ -119,7 +120,7 @@ removeOutliers <- function(object, method_outlier, new_name = "outlier_removed",
   outlier_ids <-
     getOutlierIds(object, method_outlier = method_outlier, phase = phase, check = TRUE)
   
-  cell_ids <- getStatsDf(object) %>% dplyr::pull(cell_id)
+  cell_ids <- getStatsDf(object, drop_na = FALSE) %>% dplyr::pull(cell_id)
   
   keep_ids <- cell_ids[!cell_ids %in% outlier_ids]
   
@@ -147,15 +148,41 @@ removeOutliers <- function(object, method_outlier, new_name = "outlier_removed",
       )
     
     ref_variables <- 
-      base::names(outlier_results$ids[[1]]) %>% 
-      confuns::scollapse()
+      outlier_results$variable_names %>% 
+      confuns::scollapse(width = 50)
+    
+    if(multiplePhases(object)){
+      
+      ref_phase <- stringr::str_c("\nBased on ", phase, " phase.") 
+      
+    } else {
+      
+      ref_phase <- " "
+      
+    }
+    
+    if(method_outlier == "mahalanobis"){
+      
+      ref_pval <- stringr::str_c("\nThreshold p-value:", outlier_results$threshold_pval) 
+      
+    } else {
+      
+      ref_pval <- " "
+      
+    }
     
     reasoning <- 
       glue::glue(
-        "Outlier removal. \nMethod: '{method_outlier}'\nAcross: '{ref_across}' ",
-        "\nVariables: '{ref_variables}'"
+        "Outlier removal. ",
+        ref_phase,
+        "\nMethod: '{method_outlier}'" ,
+        ref_pval,
+        "\nAcross: '{ref_across}' " ,
+        "\nVariables: '{ref_variables}'",
+        "\nNumber of outliers: {n_outliers}"
         ) %>%
       base::as.character()
+    
     
     object <-
       subsetByCellId(
@@ -163,7 +190,9 @@ removeOutliers <- function(object, method_outlier, new_name = "outlier_removed",
         new_name = new_name,
         cell_ids = keep_ids,
         reasoning = reasoning,
-        verbose = verbose)
+        verbose = verbose, 
+        phase = phase
+        )
     
     object@analysis <- list()
     object@qcheck$outlier_detection <- NULL
@@ -272,6 +301,7 @@ detect_outliers_iqr <- function(object, variable_names = NULL, across = NULL, ph
   outlier_results <- list()
   outlier_results$ids <- outlier_list
   outlier_results$across <- across
+  outlier_results$variable_names <- variable_names
   
   if(!multiplePhases(object)){
     
@@ -300,10 +330,17 @@ detect_outliers_iqr <- function(object, variable_names = NULL, across = NULL, ph
 
 
 #' @rdname detect_outliers_iqr
-detect_outliers_mahalanobis <- function(object, variable_names = NULL, threshold_pval = 0.001, verbose = NULL){
+detect_outliers_mahalanobis <- function(object,
+                                        variable_names = NULL,
+                                        threshold_pval = 0.001,
+                                        verbose = NULL,
+                                        across = NULL, 
+                                        phase = NULL){
   
   check_object(object)
   assign_default(object)
+  
+  phase <- check_phase(object = object, phase = phase, max_phases = 1)
   
   if(base::is.null(variable_names)){
     
@@ -311,57 +348,91 @@ detect_outliers_mahalanobis <- function(object, variable_names = NULL, threshold
     
   }
   
-  outlier_results <- 
-    # iterating over phase (in non time lapse experiments phase is ignored anyway)
-    purrr::map(.x = getPhases(object), .f = function(phase){
-                 
-                 stat_df <-
-                   getStatsDf(object, phase = phase, with_grouping = FALSE) %>% 
-                   dplyr::select(cell_id, dplyr::all_of(variable_names)) %>% 
-                   tibble::column_to_rownames(var = "cell_id")
-                 
-                 stat_df$mahal <- 
-                   stats::mahalanobis(
-                     x = stat_df,
-                     center = base::colMeans(stat_df),
-                     cov = stats::cov(stat_df)
-                     )
-                 
-                 stat_df$pval <- 
-                   stats::pchisq(
-                     q = stat_df$mahal,
-                     df = base::length(variable_names)-1,
-                     lower.tail = FALSE
-                   )
-                 
-                 outlier_ids <- 
-                   tibble::rownames_to_column(stat_df, var = "cell_id") %>% 
-                   dplyr::filter(pval <= {{threshold_pval}}) %>% 
-                   dplyr::pull(cell_id)
-                 
-                 base::return(outlier_ids)
-                 
-               }) %>% 
-    purrr::set_names(getPhases(object))
-  
-  if(!multiplePhases(object)){
+  if(base::is.character(across)){
     
-    outlier_results <- outlier_results[[1]]
+    confuns::check_one_of(
+      input = across, 
+      against = getGroupingVariableNames(object, phase = phase, verbose = FALSE)
+    )
+    
+    groups <- 
+      getGroupNames(object, grouping_variable = across, phase = phase)
+    
+    stat_df <- 
+      getStatsDf(object, phase = phase, with_grouping = TRUE, verbose = FALSE) %>% 
+      dplyr::select(cell_id, !!rlang::sym(across), dplyr::all_of(variable_names))
+    
+  } else {
+    
+    groups <- "All"
+    
+    stat_df <- 
+      getStatsDf(object, phase = phase, with_grouping = FALSE, verbose = FALSE) %>% 
+      dplyr::select(cell_id, dplyr::all_of(variable_names))
     
   }
   
-  object@qcheck$outlier_detection$mahalanobis <- 
-    list(
-      outlier_ids = outlier_results, 
-      threshold_pval = threshold_pval, 
-      variable_names = variable_names
-    )
+  outlier_list <- 
+    # iterating over phase (in non time lapse experiments phase is ignored anyway)
+    purrr::map(.x = groups, .f = function(group){
+      
+      if(base::is.character(across)){
+        
+        stat_df <- 
+          dplyr::filter(stat_df, !!rlang::sym(across) == {{group}}) %>% 
+          dplyr::select(-!!rlang::sym(across))
+        
+      }
+      
+      stat_df <- tibble::column_to_rownames(stat_df, var = "cell_id")
+      
+      stat_df$mahal <- 
+        stats::mahalanobis(
+          x = stat_df,
+          center = base::colMeans(stat_df),
+          cov = stats::cov(stat_df)
+        )
+      
+      stat_df$pval <- 
+        stats::pchisq(
+          q = stat_df$mahal,
+          df = base::length(variable_names)-1,
+          lower.tail = FALSE
+        )
+      
+      outlier_ids <- 
+        tibble::rownames_to_column(stat_df, var = "cell_id") %>% 
+        dplyr::filter(pval <= {{threshold_pval}}) %>% 
+        dplyr::pull(cell_id)
+      
+      base::return(outlier_ids)
+      
+    }) %>% 
+    purrr::set_names(groups)
+  
+  outlier_results <- list()
+  outlier_results$across <- across
+  outlier_results$ids <- outlier_list
+  outlier_results$threshold_pval <- threshold_pval
+  outlier_results$variable_names <- variable_names
+  
+  if(!multiplePhases(object)){
+    
+    object@qcheck$outlier_detection$mahalanobis <- outlier_results
+    
+  } else {
+    
+    object@qcheck$outlier_detection$mahalanobis[[phase]] <- outlier_results
+    
+  }
+  
+  ids <- getOutlierIds(object, method_outlier = "mahalanobis", phase = phase)
   
   msg <- 
     glue::glue(
       "Found {n} {ref_outliers}.",
-      n = base::length(getOutlierIds(object, method_outlier = "mahalanobis")), 
-      ref_outliers = confuns::adapt_reference(getOutlierIds(object), "outlier", "outliers")
+      n = base::length(ids), 
+      ref_outliers = confuns::adapt_reference(ids, "outlier", "outliers")
     )
   
   confuns::give_feedback(msg = msg, verbose = verbose)
