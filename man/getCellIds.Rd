@@ -2,9 +2,18 @@
 % Please edit documentation in R/get-family.R
 \name{getCellIds}
 \alias{getCellIds}
+\alias{getCellIds,CyproScreening-method}
+\alias{getCellIds,CyproTimeLapse-method}
+\alias{getCellIds,CyproTimeLapseMP-method}
 \title{Get cell ids}
 \usage{
-getCellIds(object, ..., phase = NULL)
+getCellIds(object, ...)
+
+\S4method{getCellIds}{CyproScreening}(object, ...)
+
+\S4method{getCellIds}{CyproTimeLapse}(object, ...)
+
+\S4method{getCellIds}{CyproTimeLapseMP}(object, phase = NULL, ...)
 }
 \arguments{
 \item{object}{A valid cypro object.}
@@ -25,6 +34,11 @@ Ignored if the experiment design contains only one phase.}
 Character vector of cell ids.
 }
 \description{
-Using the ... options the stats data can be
+Using the ... options the data can be
 subsetted in the style of \code{dplyr::filter()}.
+}
+\details{
+Cell IDs are extracted from the feature data.frame in case
+of \code{CyproScreening} objects and from the stats data.frame in
+case of \code{CyproTimeLapse(MP)} objects.
 }

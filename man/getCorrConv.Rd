@@ -5,15 +5,14 @@
 \alias{getCorrObject}
 \title{Obtain cypros correlation objects}
 \usage{
-getCorrConv(object, variable_set, phase = NULL)
+getCorrConv(object, feature_set, phase = NULL)
 
-getCorrObject(object, variable_set, phase = NULL)
+getCorrObject(object, feature_set, phase = NULL)
 }
 \arguments{
 \item{object}{A valid cypro object.}
 
-\item{variable_set}{Character value. Denotes the variable set of interest. Use \code{getVariableSetNames()}
-to obtain all names of currently stored variable sets in your object.}
+\item{feature_set}{Character value. The name of the feature set of interest.}
 
 \item{phase}{Character or numeric. If character, the ordinal value referring to the phase of interest (e.g. \emph{'first'}, \emph{'second'} etc.).
 referring to the phase of interest or \emph{'all'}. If numeric, the number referring to the phase.

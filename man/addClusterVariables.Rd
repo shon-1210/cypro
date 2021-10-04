@@ -61,6 +61,10 @@ as \emph{'mechanism_of_action'} again grouping the conditions you can specify
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
+
+\item{with_well_plate}{Logical values. Denoting
+if the respective grouping information should be joined to the output data.frame
+or not.}
 }
 \value{
 An updated cypro object that contains the data added.

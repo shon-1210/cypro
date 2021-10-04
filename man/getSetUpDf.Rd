@@ -2,12 +2,18 @@
 % Please edit documentation in R/get-family.R
 \name{getSetUpDf}
 \alias{getSetUpDf}
+\alias{getSetUpDf,Cypro-method}
 \title{Obtain well plate set up}
 \usage{
-getSetUpDf(object, well_plate_name = NULL)
+getSetUpDf(object, ...)
+
+\S4method{getSetUpDf}{Cypro}(object, well_plate, ...)
 }
 \arguments{
 \item{object}{A valid cypro object.}
+
+\item{well_plate}{Character value. The name of the well plate of interest. Valid inputs can be obtained
+via \code{getWellPlateNames()}.}
 }
 \value{
 A data.frame in which each observation represents the well of a well plate

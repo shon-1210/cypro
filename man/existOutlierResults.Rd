@@ -5,6 +5,7 @@
 \alias{isTimeLapseExp}
 \alias{isUsable}
 \alias{multiplePhases}
+\alias{isNormalizedWithZscore}
 \title{Logical Tests}
 \usage{
 existOutlierResults(object, phase = NA, method_outlier = NA, verbose = FALSE)
@@ -14,6 +15,8 @@ isTimeLapseExp(object)
 isUsable(object, module, verbose = FALSE)
 
 multiplePhases(object)
+
+isNormalizedWithZscore(object)
 }
 \arguments{
 \item{object}{A valid cypro object.}

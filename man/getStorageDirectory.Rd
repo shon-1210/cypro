@@ -2,9 +2,12 @@
 % Please edit documentation in R/get-family.R
 \name{getStorageDirectory}
 \alias{getStorageDirectory}
+\alias{getStorageDirectory,Cypro-method}
 \title{Obtain storage directory}
 \usage{
 getStorageDirectory(object)
+
+\S4method{getStorageDirectory}{Cypro}(object)
 }
 \arguments{
 \item{object}{A valid cypro object.}

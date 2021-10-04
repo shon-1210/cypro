@@ -35,15 +35,15 @@ check_object <- function(object, experiment = NULL, set_up_req = "process_data",
   input_class <- base::class(object)
   input_attribute <- base::attr(input_class, "package")
   
-  if(!input_class == object_class & input_attribute == "cypro"){
+  if(FALSE){
     
-    msg <- "Input for argument 'object' must be of class 'cto' from package 'cypro'."
+    msg <- "Input for argument 'object' must be of class 'cypro' from package 'cypro'."
     
     confuns::give_feedback(msg = msg, fdb.fn = "stop", with.time = FALSE)
     
   }
   
-  if(!base::isTRUE(object@set_up$progress[[set_up_req]])){
+  if(FALSE){
     
     missing_fun <- set_up_funs[[set_up_req]]
     
@@ -53,7 +53,7 @@ check_object <- function(object, experiment = NULL, set_up_req = "process_data",
     
   }
   
-  if(base::is.character(exp_type_req)){
+  if(FALSE){
     
     if(exp_type_req == "time_lapse"){
       
@@ -83,7 +83,7 @@ check_object <- function(object, experiment = NULL, set_up_req = "process_data",
   }
   
   
-  if(base::is.character(module_req)){
+  if(FALSE){
     
     if(!isUsable(object, module = module_req)){
       

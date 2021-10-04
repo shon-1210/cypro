@@ -66,6 +66,8 @@ colors_information_status = c("Complete" = "forestgreen",
 
 current_version <- list(major = 0, minor = 3, patch = 0)
 
+data_status_levels <- c("Complete", "Incomplete", "Missing")
+
 debug_ct <- FALSE
 
 descr_variables <- c("cell_id", "cell_line", "condition")
@@ -95,6 +97,7 @@ default_list <-
     smooth_se = FALSE,
     smooth_size = 1,
     verbose = TRUE, 
+    well_plate = character(1), 
     with_cluster = TRUE, 
     with_meta = TRUE, 
     with_well_plate = TRUE
@@ -266,6 +269,8 @@ not_splitted <- c("No treatment", "From beginning")
 object_class <- "cypro"
 base::attr(object_class, which = "package") <- "cypro"
 
+
+
 protected_vars <- c("cell_id", "cell_line", "condition",
                     "well_plate_name", "well_plate_index", "well",  "well_roi", 
                     "x_coords", "y_coords", 
@@ -318,7 +323,6 @@ storage_slots <- c("directory", "valid_directories", "missing_files")
 
 testable_plottypes <- c("boxplot", "violinplot")
 
-
 variable_relevance_descr <- 
   list(
     "needed" = glue::glue(
@@ -331,7 +335,6 @@ variable_relevance_descr <-
       "needed by this module."
       )
   )
-
 
 well_plate_vars <- c("well_plate_name", "well_plate_index", "well",  "well_roi")
 

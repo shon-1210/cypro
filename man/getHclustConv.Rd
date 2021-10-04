@@ -9,23 +9,22 @@
 \alias{getPamObject}
 \title{Obtain cypros clustering objects}
 \usage{
-getHclustConv(object, variable_set, phase = NULL, with_data = TRUE)
+getHclustConv(object, feature_set, phase = NULL, with_data = TRUE)
 
-getHclustObject(object, variable_set, phase = NULL, with_data = TRUE)
+getHclustObject(object, feature_set, phase = NULL, with_data = TRUE)
 
-getKmeansConv(object, variable_set, phase = NULL, with_data = TRUE)
+getKmeansConv(object, feature_set, phase = NULL, with_data = TRUE)
 
-getKmeansObject(object, variable_set, phase = NULL, with_data = TRUE)
+getKmeansObject(object, feature_set, phase = NULL, with_data = TRUE)
 
-getPamConv(object, variable_set, phase = NULL, with_data = TRUE)
+getPamConv(object, feature_set, phase = NULL, with_data = TRUE)
 
-getPamObject(object, variable_set, phase = NULL, with_data = TRUE)
+getPamObject(object, feature_set, phase = NULL, with_data = TRUE)
 }
 \arguments{
 \item{object}{A valid cypro object.}
 
-\item{variable_set}{Character value. Denotes the variable set of interest. Use \code{getVariableSetNames()}
-to obtain all names of currently stored variable sets in your object.}
+\item{feature_set}{Character value. The name of the feature set of interest.}
 
 \item{phase}{Character or numeric. If character, the ordinal value referring to the phase of interest (e.g. \emph{'first'}, \emph{'second'} etc.).
 referring to the phase of interest or \emph{'all'}. If numeric, the number referring to the phase.

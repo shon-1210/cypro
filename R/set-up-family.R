@@ -456,3 +456,68 @@ setUpWellPlateDf <- function(type = "8x12 (96)", phases = NULL){
   base::return(well_plate_df_new)
   
 }
+
+
+setUpExpDesignDf <- function(well_plate_name, 
+                             well_plate_type, 
+                             phases = NULL){
+  
+  confuns::are_values(c("well_plate_name", "well_plate_type"), mode = "character")
+  
+  confuns::check_one_of(
+    input = well_plate_type, 
+    against = well_plate_info$type
+  )
+  
+  # row- and column number of current well plate
+  well_plate_used <- 
+    dplyr::filter(well_plate_info, type == {{well_plate_type}})
+  
+  # data.frame (obs => well)
+  exp_df <- 
+    tidyr::expand_grid(
+      row_num = 1:well_plate_used$rows, 
+      col_num = 1:well_plate_used$cols
+    ) %>%
+    dplyr::group_by(row_num, col_num) %>% 
+    dplyr::mutate(
+      well_plate_name = {{well_plate_name}},
+      row_letter = base::LETTERS[row_num],
+      well = stringr::str_c(row_letter, col_num, sep = ""), 
+      data_status = base::factor(x = "Missing", levels = data_status_levels),
+      cell_line = "unknown",
+      condition = "unknown", 
+      well_plate_type = {{well_plate_type}}
+    ) %>% 
+    dplyr::select(
+      well_plate_name, well_plate_type, dplyr::everything()
+    )
+  
+  base::attr(x = exp_df, which = "class") <-
+    c("exp_design_df", base::class(exp_df))
+  
+  if(!base::is.null(phases)){
+    
+    phases_names <- 
+      english::ordinal(x = base::seq_along(phases)) %>%
+      confuns::make_capital_letters(collapse.with = NULL) %>% 
+      stringr::str_c(., "Phase:", sep = " ")
+    
+    exp_df$condition_df <- 
+      purrr::map(.x = base::seq_along(exp_df$well), 
+                 .f = function(x){
+                   
+                   base::matrix(ncol = base::length(phases_names), nrow = 1) %>% 
+                     base::as.data.frame() %>% 
+                     magrittr::set_colnames(value = phases_names)
+                   
+                 })
+    
+    base::attr(x = exp_df, which = "class") <-
+      c("exp_design_df_mp", base::class(exp_df))
+    
+  }
+  
+  return(exp_df)
+  
+}

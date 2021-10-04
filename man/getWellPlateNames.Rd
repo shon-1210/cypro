@@ -2,9 +2,12 @@
 % Please edit documentation in R/get-family.R
 \name{getWellPlateNames}
 \alias{getWellPlateNames}
+\alias{getWellPlateNames,Cypro-method}
 \title{Obtain well plate names}
 \usage{
 getWellPlateNames(object)
+
+\S4method{getWellPlateNames}{Cypro}(object)
 }
 \arguments{
 \item{object}{A valid cypro object.}

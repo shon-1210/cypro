@@ -2,28 +2,37 @@
 % Please edit documentation in R/get-family.R
 \name{getStatsDf}
 \alias{getStatsDf}
+\alias{getStatsDf,CyproTimeLapse-method}
+\alias{getStatsDf,CyproTimeLapseMP-method}
 \title{Obtain stat data.frame}
 \usage{
-getStatsDf(
+getStatsDf(object, ...)
+
+\S4method{getStatsDf}{CyproTimeLapse}(
   object,
-  phase = NULL,
+  drop_na = TRUE,
   with_grouping = NULL,
   with_cluster = NULL,
   with_meta = NULL,
   with_well_plate = NULL,
+  verbose = NULL,
+  ...
+)
+
+\S4method{getStatsDf}{CyproTimeLapseMP}(
+  object,
   drop_na = TRUE,
-  verbose = NULL
+  with_grouping = NULL,
+  with_cluster = NULL,
+  with_meta = NULL,
+  with_well_plate = NULL,
+  phase = NULL,
+  verbose = NULL,
+  ...
 )
 }
 \arguments{
 \item{object}{A valid cypro object.}
-
-\item{phase}{Character or numeric. If character, the ordinal value referring to the phase of interest (e.g. \emph{'first'}, \emph{'second'} etc.).
-referring to the phase of interest or \emph{'all'}. If numeric, the number referring to the phase.
-
-If set to NULL takes the phase denoted as default with \code{adjustDefault()}.
-
-Ignored if the experiment design contains only one phase.}
 
 \item{with_cluster, with_meta, with_well_plate}{Logical values. Denoting
 if the respective grouping information should be joined to the stats data.frame
@@ -33,6 +42,13 @@ or not.}
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
+
+\item{phase}{Character or numeric. If character, the ordinal value referring to the phase of interest (e.g. \emph{'first'}, \emph{'second'} etc.).
+referring to the phase of interest or \emph{'all'}. If numeric, the number referring to the phase.
+
+If set to NULL takes the phase denoted as default with \code{adjustDefault()}.
+
+Ignored if the experiment design contains only one phase.}
 }
 \value{
 A data.frame with all numeric variables summarizing the measurements of

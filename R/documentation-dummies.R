@@ -101,6 +101,7 @@ dim_red_df <- function(dim_red_df){}
 #' the overall trend of the data. Use the \code{smooth_*} arguments to additionally adjust they way
 #' the trend is plotted. 
 #' @param display_title Logical value. If set to TRUE an informative title is displayed.
+#' @param feature_set Character value. The name of the feature set of interest.
 #' @param force Logical value. Needs to be set to TRUE if you want to overwrite an already existing 
 #' set up or already existing results. 
 #' @param image Numeric value. The well-image of interest. 
@@ -177,10 +178,13 @@ dim_red_df <- function(dim_red_df){}
 #' via \code{getWellPlateNames()}.
 #' @param with_cluster Logical. If set to TRUE the discrete variables of the meta data slot are added
 #' to the output data.frame. 
-#' @param with_meta Logical. If set to TRUE the discrete variables of the meta data slot are added
+#' @param with_meta Logical. If set to TRUE the discrete variables of the cluster data slot are added
 #' to the output data.frame. 
 #' @param with_stats Logical. If set to TRUE the numeric variables of the stat data slots are added
-#' tot he output data.frame. 
+#' tot the output data.frame. 
+#' @param with_cluster,with_meta,with_well_plate Logical values. Denoting 
+#' if the respective grouping information should be joined to the output data.frame
+#' or not.
 #' @param variable_set Character value. Denotes the variable set of interest. Use \code{getVariableSetNames()}
 #' to obtain all names of currently stored variable sets in your object.
 #' @param verbose Logical. If set to TRUE informative messages regarding

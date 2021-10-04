@@ -2,12 +2,21 @@
 % Please edit documentation in R/get-family.R
 \name{getCellLines}
 \alias{getCellLines}
+\alias{getCellLines,Cypro-method}
 \alias{getConditions}
+\alias{getConditions,Cypro-method}
+\alias{getConditions,CyproTimeLapseMP-method}
 \title{Obtain cell line and condition names}
 \usage{
 getCellLines(object)
 
-getConditions(object, phase = NULL)
+\S4method{getCellLines}{Cypro}(object)
+
+getConditions(object, ...)
+
+\S4method{getConditions}{Cypro}(object)
+
+\S4method{getConditions}{CyproTimeLapseMP}(object, phase = NULL)
 }
 \arguments{
 \item{object}{A valid cypro object.}

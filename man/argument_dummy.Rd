@@ -85,6 +85,8 @@ the trend is plotted.}
 
 \item{display_title}{Logical value. If set to TRUE an informative title is displayed.}
 
+\item{feature_set}{Character value. The name of the feature set of interest.}
+
 \item{force}{Logical value. Needs to be set to TRUE if you want to overwrite an already existing
 set up or already existing results.}
 
@@ -164,11 +166,15 @@ via \code{getWellPlateNames()}.}
 \item{with_cluster}{Logical. If set to TRUE the discrete variables of the meta data slot are added
 to the output data.frame.}
 
-\item{with_meta}{Logical. If set to TRUE the discrete variables of the meta data slot are added
+\item{with_meta}{Logical. If set to TRUE the discrete variables of the cluster data slot are added
 to the output data.frame.}
 
 \item{with_stats}{Logical. If set to TRUE the numeric variables of the stat data slots are added
-tot he output data.frame.}
+tot the output data.frame.}
+
+\item{with_cluster, with_meta, with_well_plate}{Logical values. Denoting
+if the respective grouping information should be joined to the output data.frame
+or not.}
 
 \item{variable_set}{Character value. Denotes the variable set of interest. Use \code{getVariableSetNames()}
 to obtain all names of currently stored variable sets in your object.}
