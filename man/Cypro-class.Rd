@@ -38,7 +38,7 @@ same \code{Cypro}-object.}
 \item{\code{information}}{list. Misellaneous information around the object.}
 
 \item{\code{modules}}{list. Each slot is again a list representing one of the modules that has been denoted
-during \code{denoteVariables()}. In addition to the variable denotation it can contain
+during \code{assignVariables()}. In addition to the variable denotation it can contain
 module specific data, computation or analysis results.}
 
 \item{\code{name}}{character. The name of the experiment.}

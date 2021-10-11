@@ -19,3 +19,6 @@ information about a cells well plate belonging: \emph{well_plate_name,
 well_plate_index, well} and \emph{well_roi}.}
 }}
 
+\seealso{
+CdataScreening, CdataTimeLapse, CdataTimeLapseMP
+}

@@ -430,38 +430,6 @@ setMethod(f = "getCellIds", signature = "CyproTimeLapseMP", definition = functio
 # -----
 # Data extraction ---------------------------------------------------------
 
-
-getCellDf <- function(object, slot = "tracks", phase = NULL){
-  
-  check_object(object)
-  assign_default(object)
-  
-  warning("getCellDf is deprecatd.")
-  
-  if(multiplePhases(object)){
-    
-    phase <- check_phase(object, phase = phase, max_phases = 1)
-    
-    if(slot == "well_plate"){
-      
-      df <- object@cdata$well_plate
-      
-    } else {
-    
-      df <- object@cdata[[slot]][[phase]]  
-      
-    }
-    
-  } else {
-    
-    df <- object@cdata[[slot]]
-    
-  }
-  
-  return(df)
-  
-}
-
 #' @title Obtain cluster data (by cell id)
 #' 
 #' @description This function lets you extract a data.frame that contains variables 

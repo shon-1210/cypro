@@ -14,7 +14,7 @@ calls that have to be made in order to use a \code{Cypro}-object.
 \describe{
 \item{\code{designExperiment}}{logical.}
 
-\item{\code{denoteVariables}}{logical.}
+\item{\code{assignVariables}}{logical.}
 
 \item{\code{loadData}}{logical.}
 }}
