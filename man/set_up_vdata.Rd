@@ -7,7 +7,7 @@
 set_up_vdata(object, verbose = TRUE)
 }
 \arguments{
-\item{object}{A valid cypro object.}
+\item{object}{Any S4-object for whose class a method has been defined.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

@@ -28,6 +28,8 @@ in \code{cypro}.}
 \item{\code{default}}{list. Contains the object specific default input for recurring arguments. Can
 be savely modified via \code{adjustDefaultInstructions()}.}
 
+\item{\code{experiment}}{character. The name of the experiment.}
+
 \item{\code{design}}{ExperimentDesign. An S4-object of class \code{ExperimentDesign}.}
 
 \item{\code{feature_sets}}{list. Each slot contains a character vector of names of numeric variables forming
@@ -40,8 +42,6 @@ same \code{Cypro}-object.}
 \item{\code{modules}}{list. Each slot is again a list representing one of the modules that has been denoted
 during \code{assignVariables()}. In addition to the variable denotation it can contain
 module specific data, computation or analysis results.}
-
-\item{\code{name}}{character. The name of the experiment.}
 
 \item{\code{progress}}{Progress. S4-object of class \code{Progress.}}
 

@@ -4,7 +4,7 @@
 \name{DataVariable-class}
 \alias{DataVariable-class}
 \alias{DataVariable}
-\title{The Variable Class}
+\title{The DataVariable Class}
 \description{
 The S4-class \code{DataVariable} is an object oriented approach to
 solve the problem of different image analysis software following different

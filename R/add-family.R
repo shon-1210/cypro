@@ -613,3 +613,69 @@ addPamClusterVariables <- function(object,
   base::return(object)
   
 }
+
+
+
+
+
+# W -----------------------------------------------------------------------
+
+#' @title Add well plate S4 object
+#' 
+#' @description Creates and adds a new object of class \code{WellPlate} in the respective
+#' slot of input for argument \code{object}.
+#'
+#' @inherit argument_dummy params
+#' @param name,layout Input as described in documentation of class \code{WellPlate}.
+#' See details for more information. 
+#' 
+#' @param ... Additional arguments given to \code{methods::new(Class = \emph{'WellPlate'}, ...)}.
+#' @details Slot @@index of the new well plate is automatically defined by adding 1 to the sum of all well plates found.
+#' Slot @@experiment of the new well plate is inherited by the 
+#' 
+#' Input for slot @@name must not be already used by another well plate.
+#' @return The input object.
+#' 
+#' @seealso \code{WellPlate-class}
+#' 
+#' @export
+#'
+setGeneric(name = "addWellPlate", def = function(object, ...){
+  
+  standardGeneric(f = "addWellPlate")
+  
+})
+
+
+#' @rdname addWellPlate
+#' @export
+setMethod(f = "addWellPlate", signature = "ExperimentDesign", function(object, name, layout, ... ){
+  
+  n_wps <- nWellPlates(object)
+  
+  if(n_wps != 0){
+    
+    confuns::check_none_of(
+      input = name, 
+      against = getWellPlateNames(object), 
+      ref.against = "well plate names"
+    )
+    
+  }
+  
+  well_plate <- 
+    methods::new(
+      Class = "WellPlate", 
+      experiment = object@experiment, 
+      name = name,
+      layout = layout,
+      index = n_wps + 1,
+      ...
+    )
+  
+  object@well_plates[[name]] <- well_plate
+  
+  return(object)
+  
+})
+

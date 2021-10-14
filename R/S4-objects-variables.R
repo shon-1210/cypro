@@ -1,3 +1,6 @@
+#' @include compute-family.R logical-tests.R r-objects.R
+#' 
+NULL
 
 
 
@@ -61,6 +64,8 @@ var_speed <-
     name_in_cypro = "dfo"
   )
 
+# -----
+
 # required variables ------------------------------------------------------
 
 var_cell_id <- 
@@ -103,7 +108,7 @@ var_y_coords <-
     name_in_cypro = "y_coords"
   )
 
-
+# -----
 
 
 # summarizable variables --------------------------------------------------
@@ -121,5 +126,7 @@ var_total_dist <-
     name_in_cypro = "total_dist", 
     summarize_with = compute_var_total_dist 
   )
+
+# -----
 
 

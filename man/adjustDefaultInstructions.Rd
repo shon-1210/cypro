@@ -7,7 +7,7 @@
 adjustDefaultInstructions(object, ...)
 }
 \arguments{
-\item{object}{A valid cypro object.}
+\item{object}{Any S4-object for whose class a method has been defined.}
 
 \item{...}{The argument names with their new default value specified with the
 following syntax 'argument_name' = 'argument_default'.

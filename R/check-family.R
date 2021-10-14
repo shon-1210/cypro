@@ -342,37 +342,6 @@ check_summarize_with <- function(summarize_with, max_length = 1){
 check_track_df <- function(track_df){}
 
 
-#' @title Check well plate data.frame (shiny)
-#'
-#' @description Makes sure that the well plate data.frame's information 
-#' status is sufficient to proceed with data loading. 
-#'
-#' @return A named list containing the argument input for \code{checkpoint()}.
-
-check_wp_df_shiny <- function(wp_df){
-  
-  result_list <- list()
-  
-  # check conditions for unknown
-  if(!base::any(stringr::str_detect(string = wp_df$cl_condition, pattern = "unknown"))){
-    
-    result_list$evaluate <- TRUE
-    
-  } else if(base::any(wp_df$condition == "unknown")) {
-    
-    result_list$evaluate <- FALSE
-    result_list$case_false <- "There are still missing or incomplete wells left. Please add respective information or enable 'Empty Wells'."
-    
-  } else if(base::any(wp_df$cell_line == "unknown")){
-    
-    result_list$evaluate <- FALSE
-    result_list$case_false <- "There are still missing or incomplete wells left. Please add respective information or enable 'Empty Wells"
-    
-  }
-  
-  return(result_list)
-  
-}
 
 #' @title Detect double directories
 #'

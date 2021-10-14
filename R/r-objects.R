@@ -5,7 +5,7 @@
 
 # Well plate information --------------------------------------------------
 
-valid_well_plates <- c("2x3 (6)", "3x4 (12)", "4x6 (24)", "6x8 (48)", "8x12 (96)")
+valid_well_plates <- c("2x3", "3x4", "4x6", "6x8", "8x12")
 
 well_plate_info <- 
   data.frame(
@@ -66,7 +66,7 @@ colors_information_status = c("Complete" = "forestgreen",
 
 current_version <- list(major = 0, minor = 3, patch = 0)
 
-data_status_levels <- c("Complete", "Incomplete", "Missing")
+info_status_levels <- c("Complete", "Incomplete", "Missing")
 
 debug_ct <- FALSE
 
@@ -113,14 +113,25 @@ default_numeric_values <- c("pt_alpha", "pt_size")
 
 
 
+# f -----------------------------------------------------------------------
 
-
+feedback_list <- list(
+  
+  invalid_simple_string = "Input must start with a letter, must not be equal to '', must not contain '-' and must not contain empty space."
+  
+)
 
 filetypes <- c("csv$", "xls$", "xlsx$")
+
+
+# h -----------------------------------------------------------------------
+
 
 helper_content <- list(
   
   # designExperiment()
+  
+  experiment_type = c("This is a helper"), 
   
   total_number_of_images = c(
     "'Total Number of Images' refers to the number of times the imaging device
@@ -240,6 +251,8 @@ helper_content <- list(
   
 )
 
+# i -----------------------------------------------------------------------
+
 image_processing_softwares <- 
   c("Cell Profiler" = "cell_profiler", 
     "Cell Tracker" = "cell_tracker", 
@@ -252,10 +265,17 @@ interval_options <- c("weeks", "days", "hours", "minutes", "seconds", "milisecon
 
 invalid_groups <- c("cell_id", "well_plate_name", "well_plate_index", "well", "well_roi")
 
+
+# l -----------------------------------------------------------------------
+
 legend_titles <- c("ambiguity_status" = "Ambiguity Status", 
                    "cl_condition" = "Cell Line & Condition", 
                    "condition" = "Condition", 
                    "cell_line" = "Cell Line")
+
+levels_info_status <- c("Complete", "Incomplete", "Missing")
+
+# m -----------------------------------------------------------------------
 
 meta_variables <- c("cell_id", "well_plate_name", "well_plate_index", "well", "well_roi")
 
@@ -266,10 +286,14 @@ numeric_stat_vars <- c("total_dist", "max_dist_fo", "avg_dist_fo", "max_dist_flp
 
 not_splitted <- c("No treatment", "From beginning")
 
+
+# o -----------------------------------------------------------------------
+
 object_class <- "cypro"
 base::attr(object_class, which = "package") <- "cypro"
 
 
+# p -----------------------------------------------------------------------
 
 protected_vars <- c("cell_id", "cell_line", "condition",
                     "well_plate_name", "well_plate_index", "well",  "well_roi", 
@@ -277,23 +301,36 @@ protected_vars <- c("cell_id", "cell_line", "condition",
                     "frame_itvl", "frame_num", "frame_time", 
                     "imputed")
 
-protected_vars_modules <- 
-  purrr::map(.x = cypro_modules, .f = function(module){
-    
-    var_names <- 
-      c(base::names(module$variables),
-        base::names(module$variables_to_summarize)
-      )
-    
-    return(var_names)
-    
-  }) %>% 
-  purrr::flatten_chr() %>% 
-  base::unique()
+if(exists(x = "cypro_modules")){
+  
+  protected_vars_modules <- 
+    purrr::map(.x = cypro_modules, .f = function(module){
+      
+      var_names <- 
+        c(base::names(module$variables),
+          base::names(module$variables_to_summarize)
+        )
+      
+      return(var_names)
+      
+    }) %>% 
+    purrr::flatten_chr() %>% 
+    base::unique()
+  
+  protected_vars_all <- 
+    base::unique(c(protected_vars, protected_vars_modules))
+  
+}
 
-protected_vars_all <- 
-  base::unique(c(protected_vars, protected_vars_modules))
 
+# r -----------------------------------------------------------------------
+
+req_numeric_var <- "Must be numeric or convertable to numeric. (Must not contain character values.)"
+
+req_grouping_var <- "Must be of type character or be convertable to type character. (Must not contain decimal numbers.)"
+
+
+# s -----------------------------------------------------------------------
 
 set_up_funs <- list(experiment_design = "designExperiment()", 
                     load_data = "loadData()", 
@@ -321,7 +358,13 @@ status_colors <- c("Missing" = "#B31010",
 
 storage_slots <- c("directory", "valid_directories", "missing_files")
 
+
+# t -----------------------------------------------------------------------
+
 testable_plottypes <- c("boxplot", "violinplot")
+
+
+# v -----------------------------------------------------------------------
 
 variable_relevance_descr <- 
   list(
@@ -335,6 +378,10 @@ variable_relevance_descr <-
       "needed by this module."
       )
   )
+
+
+# w -----------------------------------------------------------------------
+
 
 well_plate_vars <- c("well_plate_name", "well_plate_index", "well",  "well_roi")
 
@@ -436,6 +483,9 @@ ct_warnings <- list(
   
   
 )
+
+
+
 
 
 

@@ -10,7 +10,7 @@ renameMetaDf(object, ..., phase = NULL)
 renameMetaDfWith(object, ..., phase = NULL)
 }
 \arguments{
-\item{object}{A valid cypro object.}
+\item{object}{Any S4-object for whose class a method has been defined.}
 
 \item{...}{Input for function \code{dplyr::rename_with()}. This includes the arguments
 \code{.fn} and \code{.cols}.}

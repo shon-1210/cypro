@@ -821,36 +821,53 @@ evaluate_file_content_shiny <- function(var_name_well_plate = "none",
 }
 
 
-
-
-
-
-
-
-
-
-#' @title Well plate data.frame check
-#' 
-#' @description Checks if there is a current well plate data.frame that has
-#' been modified but not saved yet. Prevents 'New Well Plate' from overwriting 
-#' unsaved progress.
-#' 
-is_modified_wp_df <- function(wp_df){
+hovered_well_info_shiny <- function(df){
   
-  if(base::identical(wp_df, data.frame())){
-    
-    modified <- FALSE
-    
-  } else {
-    
-    cell_line <- base::any(wp_df$cell_line != "unknown")
-    condition <- base::any(wp_df$condition != "unknown")
-    
-    modified <- base::any(c(cell_line, condition))
-    
-  }
+  UseMethod(generic = "hovered_well_info_shiny", object = df)
   
-  return(modified)  
+}
+
+
+#' @title Create printable well info df
+#'
+hovered_well_info_shiny <- function(df){
+  
+  dplyr::select(
+    .data = df,
+    `Well:` = well,
+    `Status:` = info_status,
+    `Cell Line:` = cell_line,
+    `Condition:` = condition
+  ) 
+  
+}
+
+
+#' @rdname hovered_well_info_shiny
+#' @export
+hovered_well_info_shiny_mp <- function(df){
+  
+  n_phases <- base::attr(df, "n_phases")
+  
+  c_df <- df$condition[[1]]
+  
+  c_vec <- 
+    base::as.character(c_df[1,]) %>%
+    stringr::str_c(1:n_phases, .,sep = ".") %>% 
+    confuns::scollapse(sep = ", ", last = " and ")
+  
+  df_res <- 
+    dplyr::select(
+      .data = df,
+      `Well:` = well,
+      `Status:` = info_status,
+      `Cell Line:` = cell_line
+    ) %>% 
+    dplyr::mutate(
+      `Conditions:` = {{c_vec}}
+    )
+  
+  return(df_res)
   
 }
 
@@ -1039,9 +1056,8 @@ plot_well_plate_shiny <- function(wp_df,
     
   } 
   
-  
   # plot output
-  ggplot2::ggplot(data = wp_df, mapping = ggplot2::aes(x = col_num,y = row_num)) + 
+  ggplot2::ggplot(data = wp_df, mapping = ggplot2::aes(x = col_num, y = row_num)) + 
     ggplot2::geom_point(
       data = wp_df, 
       mapping = ggplot2::aes(fill = .data[[aes_fill]], color = .data[[aes_color]]),

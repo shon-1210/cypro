@@ -7,7 +7,7 @@
 plotBatchHeatmap(object, clrp = "milo", verbose = NULL, correlated = FALSE)
 }
 \arguments{
-\item{object}{A valid cypro object.}
+\item{object}{Any S4-object for whose class a method has been defined.}
 
 \item{clrp}{Character value. Specifies the color palette to be used to represent
 groups of discrete variables. Run \code{validColorPalettes()} to obtain valid

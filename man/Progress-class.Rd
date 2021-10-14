@@ -4,7 +4,7 @@
 \name{Progress-class}
 \alias{Progress-class}
 \alias{Progress}
-\title{Progress of Cypro Object}
+\title{The Progress Class}
 \description{
 S4-object that keeps track of the necessary function
 calls that have to be made in order to use a \code{Cypro}-object.
@@ -12,6 +12,8 @@ calls that have to be made in order to use a \code{Cypro}-object.
 \section{Slots}{
 
 \describe{
+\item{\code{experiment}}{character. The name of the \code{Cypro} object it is part of.}
+
 \item{\code{designExperiment}}{logical.}
 
 \item{\code{assignVariables}}{logical.}

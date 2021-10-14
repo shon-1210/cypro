@@ -25,52 +25,30 @@ moduleExperimentDesignUI <- function(id){
                       shiny::fluidRow(
                         shiny::column(
                           width = 4, 
-                          shiny::h5(shiny::strong("Experiment Name:")),
                           shiny::textInput(
-                            inputId = ns("ed_experiment_name"),
-                                           placeholder = "experiment name", 
-                                           label = NULL)
+                            inputId = ns("exp_name"),
+                            label = "Experiment Name:",
+                            placeholder = "experiment name")
                         ), 
                         shiny::column(
-                          width = 4, 
-                          shiny::h5(shiny::strong("Storage Folder:")),
-                          shinyFiles::shinyDirButton(
-                            id = ns("ed_experiment_dir"), 
-                                                     label = "Browse", 
-                                                     title = NULL)
-                        ), 
-                        shiny::column(
-                          width = 4, 
-                          shiny::h5(shiny::strong("Storage Directory:")), 
-                          shiny::textOutput(outputId = ns("ed_experiment_path")))
-                      ),
-                      shiny::fluidRow(
-                        shiny::column(
-                          width = 12, 
+                          width = 8, 
                           shinyWidgets::radioGroupButtons(
-                            inputId = ns("ed_exp_type"),
+                            inputId = ns("exp_type"),
                             label = "Experiment Type:",
-                            choices = c("One Time Imaging" = "one_time_imaging", "Time lapse" = "time_lapse"),
+                            choices = c("Screening" = "CyproScreening", # change to "screening" 
+                                        "Time lapse" = "CyproTimeLapse",
+                                        "Time lapse (multiple phases)" = "CyproTimeLapseMP"
+                            ),
                             checkIcon = list(
                               yes = tags$i(class = "fa fa-check-square", style = "color: steelblue"),
                               no = tags$i(class = "fa fa-square-o", style = "color: steelblue"))
-                          )
+                          ) %>% add_helper(content = helper_content$experiment_type)
                         )
                       ),
                       shiny::fluidRow( 
                         shiny::column(
                           width = 4, 
-                          shiny::h5(shiny::strong("Software:")),
-                          shiny::selectInput(
-                            inputId = ns("ed_software"),
-                            label = NULL,
-                            choices = c("   ", image_processing_softwares)
-                          ), 
-                          shiny::actionButton(inputId = ns("ed_overall_info_save"), label = "Save & Proceed")
-                        ),
-                        shiny::column(
-                          width = 8, 
-                          shiny::uiOutput(outputId = ns("ed_example")) 
+                          shiny::actionButton(inputId = ns("overall_info_save"), label = "Save & Proceed")
                         )
                       )
                     )
@@ -85,17 +63,17 @@ moduleExperimentDesignUI <- function(id){
               # measurements
               shiny::column(
                 width = 3,
-                shiny::uiOutput(outputId = ns("ed_imaging_set_up_box"))
+                shiny::uiOutput(outputId = ns("imaging_set_up_box"))
               ), 
               shiny::column(
                 width = 4, 
-                shiny::uiOutput(outputId = ns("ed_experiment_phases_box"))
+                shiny::uiOutput(outputId = ns("experiment_phases_box"))
               )
             ),
             shiny::HTML("<br>"), 
-            shiny::uiOutput(outputId = ns("ed_well_plate_box")),
+            shiny::uiOutput(outputId = ns("well_plate_box")),
             shiny::HTML("<br>"),
-            shiny::uiOutput(outputId = ns("ed_save_and_proceed_box"))
+            shiny::uiOutput(outputId = ns("save_and_proceed_box"))
             
           )
           

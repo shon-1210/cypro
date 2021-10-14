@@ -4,7 +4,7 @@
 \name{CdataTimeLapse-class}
 \alias{CdataTimeLapse-class}
 \alias{CdataTimeLapse}
-\title{Cypro Cell Data - Time Lapse Experiments}
+\title{The Cdata Class (Cell Data - Time Lapse Experiments)}
 \description{
 S4 object that contains the slots needed to represent the
 data obtained by screening experiments (one time imaging).

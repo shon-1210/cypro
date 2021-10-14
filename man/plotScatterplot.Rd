@@ -41,7 +41,7 @@ plotScatterplot(
 )
 }
 \arguments{
-\item{object}{A valid cypro object.}
+\item{object}{Any S4-object for whose class a method has been defined.}
 
 \item{variable_x, variable_y}{Character values. The numeric variables to be plotted on the x-axis and
 y-axis. Use \code{getNumericVariableNames()} to obtain all valid input options.}

@@ -17,6 +17,9 @@ Cellular migration is a commonly explored aspect in time lapse image analysis.
 \section{Slots}{
 
 \describe{
+\item{\code{data}}{list. A named list that contains specific data, computations or analysis
+that does not fit into the regular \code{Cdata}-class.}
+
 \item{\code{descr}}{character. Text that describes what the analysis module is about.}
 
 \item{\code{name_in_app}}{character. Pretty name to be used as reference in application.}

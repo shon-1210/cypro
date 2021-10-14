@@ -4,13 +4,13 @@
 \name{ExperimentDesign-class}
 \alias{ExperimentDesign-class}
 \alias{ExperimentDesign}
-\title{Experiment Design}
+\title{The ExperimentDesign Class}
 \description{
-S4-objet that contains the information around the
-experiment design. Of vital importance for all data loading functions.
+S4-object that contains the information around the
+experiment design.
 }
 \details{
-E.g. @frames = 25, @interval = 1, @interval_unit = 'hours' means
+E.g. @n_frames = 25, @interval = 1, @interval_unit = 'hours' means
 that during the experiment every well region of interest was captured 25 times.
 The read in data should therefore contain 25 rows for every observed cell - assuming
 that no cells emerged due to mitosis or went missing due to imaging artifacts.
@@ -18,7 +18,9 @@ that no cells emerged due to mitosis or went missing due to imaging artifacts.
 \section{Slots}{
 
 \describe{
-\item{\code{frames}}{numeric. Only relevant in case of time lapse experiments. The total
+\item{\code{experiment}}{character. The name of the \code{Cypro} object it is part of.}
+
+\item{\code{n_frames}}{numeric. Only relevant in case of time lapse experiments. The total
 number of images that have been made for every well-region-of-interest (well-roi).}
 
 \item{\code{interval}}{numeric. Only relevant in case of time lapse experiments.

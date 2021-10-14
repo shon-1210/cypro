@@ -51,7 +51,6 @@ dim_red_df <- function(dim_red_df){}
 #' @title argument_dummy
 #' 
 #' 
-#' @inherit check_object params
 #' @inherit check_phase params
 #' @param across Character value, character vector or NULL (see details for more).
 #' Specifies the grouping variable of interest.
@@ -104,6 +103,8 @@ dim_red_df <- function(dim_red_df){}
 #' @param feature_set Character value. The name of the feature set of interest.
 #' @param force Logical value. Needs to be set to TRUE if you want to overwrite an already existing 
 #' set up or already existing results. 
+#' @param grouping_variable Character value. Denotes the categorical variable - the grouping of cells - 
+#' of interest. Use \code{getGroupingVariableNames()} to obtain all valid input options. 
 #' @param image Numeric value. The well-image of interest. 
 #' @param linesize Numeric value. Denotes the size of the lines drawn. 
 #' @param linetype Character value. Valid options are \emph{'solid', 'twodash', 'longdash', 'dotted'}
@@ -137,6 +138,8 @@ dim_red_df <- function(dim_red_df){}
 #' @param n_cells Numeric calue. Determines the number of cells that are randomly chosen from 
 #' every group to be displayed. Useful to keep plots insightful and aesthetically pleasing.
 #' 
+#' @param object Any S4-object for whose class a method has been defined. 
+#' 
 #' @param overwrite Logical value. Must be set to TRUE in case of overlapping 
 #' variable names.
 #' 
@@ -169,7 +172,11 @@ dim_red_df <- function(dim_red_df){}
 #' \emph{'lm'} (linear model). Given to argument \code{method} of function \code{ggplot2::geom_smooth()}.
 #' @param smooth_se Logical. If set to TRUE the standard error will be displayed. 
 #' @param smooth_size Numeric value. Denotes the size of the smoothed line.
-#' @param smooth_span NUmeric value. Denotes the smoothing span used. 
+#' @param smooth_span NUmeric value. Denotes the smoothing span used.
+#' 
+#' @param stop_if_false Logical value. If set to TRUE and the test evaluates to FALSE the 
+#' function is stopped via \code{stop()} printing an informative message. If FALSE the 
+#' resulting logical value is returned. 
 #'
 #' @param well_plate Character value. Denotes the well plate of interest. Use function \code{getWellPlateNames()}
 #' to obtain all valid input options.

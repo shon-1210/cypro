@@ -191,6 +191,43 @@ getVariableValues <- function(object, phase = NULL, variable_name){
 
 
 
+#' @title Obtain well plate set up 
+#' 
+#' @description Access function to the experiment set up in a tidy-data fashion. 
+#'
+#' @inherit argument_dummy params
+#'
+#' @return A data.frame in which each observation represents the well of a well plate
+#' @export
+#'
+
+setGeneric(name = "getSetUpDf", def = function(object, ...){
+  
+  standardGeneric(f = "getSetUpDf")
+  
+})
+
+#' @rdname getSetUpDf
+#' @export
+setMethod(f = "getSetUpDf", signature = "Cypro", function(object, well_plate, ...){
+  
+  confuns::check_one_of(
+    input = well_plate, 
+    against = getWellPlateNames(object)
+  )
+  
+  warning("getSetUpDf is deprecated")
+  
+  exp_design <- getExperimentDesign(object)
+  
+  set_up_df <- exp_design@well_plates[[well_plate]][[set_up]]
+  
+  return(set_up_df)
+  
+})
+
+
+
 #' @title Plot dimensional reduction 
 #' 
 #' @description Visualizes the dimensional reduction method of choice.

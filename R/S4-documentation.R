@@ -1,7 +1,6 @@
 
 
-
-# cypro-object -------------------------------------------------------
+# old-cypro-object -------------------------------------------------------
 
 
 ### old
@@ -24,10 +23,73 @@ cypro <- setClass(Class = "cypro",
                   )
 )
 
+# -----
 
-### new
 
-#' @title Cypro Cell Data 
+
+# analysis modules --------------------------------------------------------
+
+#' @title The AnalysisModule Class
+#' 
+#' @description An analysis module in \code{cypro} represents a biological aspect
+#' of cells that can be described and explored using a fixed set of data variables. 
+#' See details for more information and examples. 
+#' 
+#' @slot data list. A named list that contains specific data, computations or analysis
+#' that does not fit into the regular \code{Cdata}-class.
+#' @slot descr character. Text that describes what the analysis module is about.
+#' @slot name_in_app character. Pretty name to be used as reference in application.
+#' @slot name_in_cypro character. character. Short name to be used as reference throughout
+#' \code{cypro}. Should follow underscore-naming-convention (e.g. \emph{x_coords} instead of 
+#' \emph{xCoords} or \emph{x-coords})
+#' @slot variables_computed list. Named list of computable variables represented by the S4-Class
+#' \code{ComputableVariable}.  Names of list correspond to the respective slot @@name_in_cypro.
+#' Variable must be ordered according to the order in which they are supposed to be computed.
+#' @slot variables_required list. Named list of required variables represented by the S4-Class
+#' \code{RequiredVariable}.  Names of list correspond to the respective slot @@name_in_cypro.
+#' 
+#' @details Example: Cellular migration 
+#' Cellular migration is a commonly explored aspect in time lapse image analysis.  
+
+AnalysisModule <- setClass(Class = "AnalysisModule", 
+                           slots = list(
+                             data = "list",
+                             descr = "character",
+                             name_in_app = "character",
+                             name_in_cypro = "character",
+                             variables_computed = "list",
+                             variables_required = "list")
+                           )
+
+
+#' @title The AnalysisModuleTimeLapse Class
+#' 
+#' @description Subclass of S4-Class \code{AnalysisModule}. Specific class for modules
+#' that can only be used in time lapse experiments.
+#'
+#' @slot variables_summarized list. Named list of summarizable variables represented by the 
+#' S4-class \code{SummarizableVariables}. Names of list correspond to the repsective
+#' slot @@name_in_cypro. Variable must be ordered according to the order in which they
+#' are supposed to be summarized. E.g. as the migration efficiancy (\emph{mgr_eff}) requires
+#' the variable total distance (\emph{total_dist}) the total distance must be listed 
+#' before migration efficiency.
+#' 
+#' @export
+#'
+AnalysisModuleTimeLapse <- setClass(Class = "AnalysisModuleTimeLapse", 
+                                    slots = list(
+                                      variables_summarized = "list"
+                                    ), 
+                                    contains = "AnalysisModule")
+
+# -----
+
+
+
+
+# Cdata + -----------------------------------------------------------------
+
+#' @title The Cdata Class (Cell Data)
 #' 
 #' @description The parent S4-object of every \code{Cypro}-objects \code{@@cdata}
 #' slot. Contains the experiment data in form of data.frames. All data.frames 
@@ -45,7 +107,7 @@ Cdata <- setClass(Class = "Cdata",
                     well_plate = "data.frame"
                   ))
 
-#' @title Cypro Cell Data - Screening Experiments
+#' @title The Cdata Class (Cell Data - Screening Experiments)
 #' 
 #' @description S4 object that contains the slots needed to represent the 
 #' data obtained by screening experiments (one time imaging).
@@ -68,7 +130,7 @@ CdataScreening <- setClass(Class = "CdataScreening",
                            ), 
                            contains = "Cdata")
 
-#' @title Cypro Cell Data - Time Lapse Experiments
+#' @title The Cdata Class (Cell Data - Time Lapse Experiments)
 #' 
 #' @description S4 object that contains the slots needed to represent the 
 #' data obtained by screening experiments (one time imaging).
@@ -100,7 +162,7 @@ CdataTimeLapse <- setClass(Class = "CdataTimeLapse",
                            contains = "Cdata")
 
 
-#' @title Cypro Cell Data - Time Lapse Experiments - Multiple Phases
+#' @title The Cdata Class (Cell Data - Time Lapse Experiments - Multiple Phases)
 #' 
 #' @description S4 object that contains the slots needed to represent the 
 #' data obtained by screening experiments (multiple phase time lapse experiments).
@@ -125,178 +187,13 @@ CdataTimeLapseMP <- setClass(Class = "CdataTimeLapseMP",
                              ),
                              contains = "Cdata")
 
-### Experiment Design 
-
-#' @title Experiment Design 
-#' 
-#' @description S4-objet that contains the information around the 
-#' experiment design. Of vital importance for all data loading functions. 
-#'
-#' @slot frames numeric. Only relevant in case of time lapse experiments. The total
-#' number of images that have been made for every well-region-of-interest (well-roi).
-#' @slot interval numeric. Only relevant in case of time lapse experiments. 
-#' The interval in between which the images were made. 
-#' @slot interval_unit character. Only relevant in case of time lapse experiments. 
-#' The unit of the numeric value specified in slot @@interval. One of 
-#' \emph{'days', 'hours', 'minutes', 'seconds'}.
-#' @slot type character. The experiment type. One of \emph{'screening', 'time_lapse',
-#' 'time_lapse_mp'}.
-#' @slot well_plates list. Contains as many S4-objects of class \code{WellPlate}
-#' as defined during the interactive session of \code{designExperiment()}.
-#' 
-#' @details E.g. @@frames = 25, @@interval = 1, @@interval_unit = 'hours' means 
-#' that during the experiment every well region of interest was captured 25 times. 
-#' The read in data should therefore contain 25 rows for every observed cell - assuming 
-#' that no cells emerged due to mitosis or went missing due to imaging artifacts.
-#'
-ExperimentDesign <- setClass(Class = "ExperimentDesign", 
-                             slots = list(
-                               interval = "numeric", 
-                               interval_unit = "character",
-                               frames = "numeric", 
-                               type = "character",
-                               well_plates = "list"
-                             ))
+# -----
 
 
-#' @title Progress of Cypro Object
-#' 
-#' @description S4-object that keeps track of the necessary function
-#' calls that have to be made in order to use a \code{Cypro}-object.
-#'
-#' @slot designExperiment logical. 
-#' @slot assignVariables logical. 
-#' @slot loadData logical. 
-#'
-Progress <- setClass(Class = "Progress", 
-                     slots = list(
-                       designExperiment = "logical", 
-                       assignVariables = "logical", 
-                       loadData = "logical"
-                     ))
 
+# DataVariable + ------------------------------------------------------------
 
-#' @title Cypro Well Plate Design
-#' 
-#' @description S4-objects that abstract the design of every well plate. 
-#' It additionally carries information about if and how the related data has been 
-#' loaded.
-#'
-#' @slot experiment character. The name of the \code{Cypro}-object it is part of.
-#' @slot files character. All spreadsheet-files directories that have been loaded 
-#' for that well plate.
-#' @slot folder character. Only relevant in case of usage of \code{loadFilesByWellRoi()}.
-#' Contains the directory to the folder from which the files have been loaded.
-#' @slot loaded_by character. The function that has been used to load data for this 
-#' well plate. 
-#' @slot index numeric. The ordinal well plate number. E.g. if @@index = 2, it was the second
-#' well plate that has been designed.
-#' @slot name character. The well plate name.
-#' @slot set_up data.frame. A data.frame carrying and additonal S3-class \code{wp_design_df} or 
-#' \code{wp_design_mp_df} in case of multiple phase experiments.
-#' @slot type character. The well plate type. Currently one of
-#' \emph{'2x3 (6)', '3x4 (12)', '4x6 (24)', '6x8 (48)','8x12 (96)'}.
-#'
-WellPlate <- setClass(Class = "WellPlate", 
-                      slots = list(
-                        experiment = "character",
-                        files = "character",
-                        folder = "character",
-                        loaded_by = "character",
-                        index = "numeric",
-                        name = "character",
-                        set_up = "data.frame", 
-                        type = "character"
-                      ))
-
-### new cypro classes
-
-
-#' @title The Cypro Class
-#' 
-#' @description The \code{Cypro}-object is a representation of high-content-screening (HCS)
-#' and time-lapse-imaging experiment for R. In both cases images from cells have been 
-#' made and the features of the captured cells have been quantified by image analyzing 
-#' software such as \emph{CellProfer, CellTracker, ImageJ}. 
-#' 
-#' For details on slot @@cdata see documentation for S4-classes \code{Cdata}.
-#' 
-#' @slot analysis list. A list of three slots containing results of statistical and machine-learning
-#' techniques used on the numeric data of slot @@cdata. Currently implemented analysis pipelines
-#' occupy the slots \emph{clustering}, \emph{correlation} and \emph{dim_red}.
-#' @slot commands list. A list of commands run on this \code{Cypro}-object. 
-#' @slot compatibility list. A list that can be used as a short term deposit for anything that isn't implemented
-#' in \code{cypro}.
-#' @slot default list. Contains the object specific default input for recurring arguments. Can 
-#' be savely modified via \code{adjustDefaultInstructions()}.
-#' @slot design ExperimentDesign. An S4-object of class \code{ExperimentDesign}.
-#' @slot feature_sets list. Each slot contains a character vector of names of numeric variables forming 
-#' a \emph{feature_set}. Based on these features clustering and dimensional reduction can be 
-#' performed. This allows to store several clustering results based on different features in one and the 
-#' same \code{Cypro}-object.
-#' @slot information list. Misellaneous information around the object.
-#' @slot modules list. Each slot is again a list representing one of the modules that has been denoted 
-#' during \code{assignVariables()}. In addition to the variable denotation it can contain 
-#' module specific data, computation or analysis results. 
-#' @slot name character. The name of the experiment.
-#' @slot progress Progress. S4-object of class \code{Progress.}
-#' @slot qcheck list. Contains results of quality check related results such as outlier detection.
-#' @slot storage character. Directory under which the \code{Cypro}-object is stored by default 
-#' using \code{saveCyproObject()}.
-#' @slot subsets list. Contains information of each subsetting process the \code{Cypro}-object
-#' has gone through. See functions prefixed with \code{subsetBy*()}.
-#' @slot version list. Three slots named \emph{patch, minor} and \emph{major} that keep 
-#' track of the version of the object and the latest version of the cypro package.
-#'
-Cypro <- setClass(Class = "Cypro", 
-                  slots = list(
-                    analysis = "list",
-                    commands = "list",
-                    compatibility = "list",
-                    default = "list",
-                    design = "ExperimentDesign",
-                    feature_sets = "list",
-                    information = "list",
-                    modules = "list",
-                    name = "character",
-                    progress = "Progress", 
-                    qcheck = "list",
-                    storage = "character",
-                    subsets = "list",
-                    version = "list"
-                  )
-)
-
-
-#' @rdname Cypro
-#' @export
-CyproScreening <- setClass(Class = "CyproScreening", 
-                           slots = list(
-                             cdata = "CdataScreening"
-                           ), 
-                           contains = "Cypro"
-)
-
-#' @rdname Cypro
-#' @export
-CyproTimeLapse <- setClass(Class = "CyproTimeLapse", 
-                           slots = list(
-                             cdata = "CdataTimeLapse"
-                           ),
-                           contains = "Cypro"
-)
-
-#' @rdname Cypro
-#' @export
-CyproTimeLapseMP <- setClass(Class = "CyproTimeLapseMP", 
-                             slots = list(
-                               cdata = "CdataTimeLapseMP"
-                             ),
-                             contains = "Cypro"
-)
-
-
-#' @title The Variable Class
+#' @title The DataVariable Class
 #' 
 #' @description The S4-class \code{DataVariable} is an object oriented approach to 
 #' solve the problem of different image analysis software following different
@@ -459,152 +356,291 @@ SummarizableVariable <- setClass(Class = "SummarizableVariable",
                                  contains = "DataVariable"
                                  )
 
+# -----
 
 
-#' @title The AnalysisModule Class
+
+
+# ExperimentDesign --------------------------------------------------------
+
+#' @title The ExperimentDesign Class 
 #' 
-#' @description An analysis module in \code{cypro} represents a biological aspect
-#' of cells that can be described and explored using a fixed set of data variables. 
-#' See details for more information and examples. 
-#' 
-#' @slot descr character. Text that describes what the analysis module is about.
-#' @slot name_in_app character. Pretty name to be used as reference in application.
-#' @slot name_in_cypro character. character. Short name to be used as reference throughout
-#' \code{cypro}. Should follow underscore-naming-convention (e.g. \emph{x_coords} instead of 
-#' \emph{xCoords} or \emph{x-coords})
-#' @slot variables_computed list. Named list of computable variables represented by the S4-Class
-#' \code{ComputableVariable}.  Names of list correspond to the respective slot @@name_in_cypro.
-#' Variable must be ordered according to the order in which they are supposed to be computed.
-#' @slot variables_required list. Named list of required variables represented by the S4-Class
-#' \code{RequiredVariable}.  Names of list correspond to the respective slot @@name_in_cypro.
-#' 
-#' @details Example: Cellular migration 
-#' Cellular migration is a commonly explored aspect in time lapse image analysis.  
-
-AnalysisModule <- setClass(Class = "AnalysisModule", 
-                           slots = list(
-                             descr = "character",
-                             name_in_app = "character",
-                             name_in_cypro = "character",
-                             variables_computed = "list",
-                             variables_required = "list"
-                           ))
-
-
-#' @title The AnalysisModuleTimeLapse Class
-#' 
-#' @description Subclass of S4-Class \code{AnalysisModule}. Specific class for modules
-#' that can only be used in time lapse experiments.
+#' @description S4-object that contains the information around the 
+#' experiment design.
 #'
-#' @slot variables_summarized list. Named list of summarizable variables represented by the 
-#' S4-class \code{SummarizableVariables}. Names of list correspond to the repsective
-#' slot @@name_in_cypro. Variable must be ordered according to the order in which they
-#' are supposed to be summarized. E.g. as the migration efficiancy (\emph{mgr_eff}) requires
-#' the variable total distance (\emph{total_dist}) the total distance must be listed 
-#' before migration efficiency.
+#' @slot experiment character. The name of the \code{Cypro} object it is part of.
+#' @slot n_frames numeric. Only relevant in case of time lapse experiments. The total
+#' number of images that have been made for every well-region-of-interest (well-roi).
+#' @slot interval numeric. Only relevant in case of time lapse experiments. 
+#' The interval in between which the images were made. 
+#' @slot interval_unit character. Only relevant in case of time lapse experiments. 
+#' The unit of the numeric value specified in slot @@interval. One of 
+#' \emph{'days', 'hours', 'minutes', 'seconds'}.
+#' @slot type character. The experiment type. One of \emph{'screening', 'time_lapse',
+#' 'time_lapse_mp'}.
+#' @slot well_plates list. Contains as many S4-objects of class \code{WellPlate}
+#' as defined during the interactive session of \code{designExperiment()}.
 #' 
+#' @details E.g. @@n_frames = 25, @@interval = 1, @@interval_unit = 'hours' means 
+#' that during the experiment every well region of interest was captured 25 times. 
+#' The read in data should therefore contain 25 rows for every observed cell - assuming 
+#' that no cells emerged due to mitosis or went missing due to imaging artifacts.
+#'
+ExperimentDesign <- setClass(Class = "ExperimentDesign", 
+                             slots = list(
+                               experiment = "character",
+                               interval = "numeric", 
+                               interval_unit = "character",
+                               n_frames = "numeric",
+                               phases = "list",
+                               type = "character",
+                               well_plates = "list"
+                             ))
+
+
+
+# Progress ----------------------------------------------------------------
+
+#' @title The Progress Class
+#' 
+#' @description S4-object that keeps track of the necessary function
+#' calls that have to be made in order to use a \code{Cypro}-object.
+#'
+#' @slot experiment character. The name of the \code{Cypro} object it is part of.
+#' @slot designExperiment logical. 
+#' @slot assignVariables logical. 
+#' @slot loadData logical. 
+#'
+Progress <- setClass(Class = "Progress", 
+                     slots = list(
+                       experiment = "character",
+                       designExperiment = "logical", 
+                       assignVariables = "logical", 
+                       loadData = "logical"
+                     ))
+
+
+# -----
+
+
+# WellPlate ---------------------------------------------------------------
+
+#' @title The WellPlate Class
+#' 
+#' @description S4-objects that abstracts a well plate. 
+#' It additionally carries information about if and how the related data has been 
+#' loaded.
+#'
+#' @slot experiment character. The name of the \code{Cypro} object it is part of.
+#' @slot files character. All spreadsheet-files directories that have been loaded 
+#' for that well plate.
+#' @slot folder character. Only relevant in case of usage of \code{loadFilesByWellRoi()}.
+#' Contains the directory to the folder from which the files have been loaded.
+#' @slot loaded_by character. The function that has been used to load data for this 
+#' well plate. 
+#' @slot index numeric. The ordinal well plate number. E.g. if @@index = 2, it was the second
+#' well plate that has been designed.
+#' @slot name character. The well plate name.
+#' @slot set_up data.frame. A data.frame carrying and additonal S3-class \code{wp_design_df} or 
+#' \code{wp_design_mp_df} in case of multiple phase experiments.
+#' @slot type character. The well plate type. Currently one of
+#' \emph{'2x3 (6)', '3x4 (12)', '4x6 (24)', '6x8 (48)','8x12 (96)'}.
+#'
+WellPlate <- setClass(Class = "WellPlate", 
+                      slots = list(
+                        experiment = "character",
+                        files = "character",
+                        folder = "character",
+                        layout = "layout_df", 
+                        loaded_by = "character",
+                        index = "numeric",
+                        name = "character",
+                        type = "character"
+                      ))
+
+
+# -----
+
+
+# Cypro + -----------------------------------------------------------------
+
+#' @title The Cypro Class
+#' 
+#' @description The \code{Cypro}-object is a representation of high-content-screening (HCS)
+#' and time-lapse-imaging experiment for R. In both cases images from cells have been 
+#' made and the features of the captured cells have been quantified by image analyzing 
+#' software such as \emph{CellProfer, CellTracker, ImageJ}. 
+#' 
+#' For details on slot @@cdata see documentation for S4-classes \code{Cdata}.
+#' 
+#' @slot analysis list. A list of three slots containing results of statistical and machine-learning
+#' techniques used on the numeric data of slot @@cdata. Currently implemented analysis pipelines
+#' occupy the slots \emph{clustering}, \emph{correlation} and \emph{dim_red}.
+#' @slot commands list. A list of commands run on this \code{Cypro}-object. 
+#' @slot compatibility list. A list that can be used as a short term deposit for anything that isn't implemented
+#' in \code{cypro}.
+#' @slot default list. Contains the object specific default input for recurring arguments. Can 
+#' be savely modified via \code{adjustDefaultInstructions()}.
+#' @slot experiment character. The name of the experiment. 
+#' @slot design ExperimentDesign. An S4-object of class \code{ExperimentDesign}.
+#' @slot feature_sets list. Each slot contains a character vector of names of numeric variables forming 
+#' a \emph{feature_set}. Based on these features clustering and dimensional reduction can be 
+#' performed. This allows to store several clustering results based on different features in one and the 
+#' same \code{Cypro}-object.
+#' @slot information list. Misellaneous information around the object.
+#' @slot modules list. Each slot is again a list representing one of the modules that has been denoted 
+#' during \code{assignVariables()}. In addition to the variable denotation it can contain 
+#' module specific data, computation or analysis results. 
+#' @slot progress Progress. S4-object of class \code{Progress.}
+#' @slot qcheck list. Contains results of quality check related results such as outlier detection.
+#' @slot storage character. Directory under which the \code{Cypro}-object is stored by default 
+#' using \code{saveCyproObject()}.
+#' @slot subsets list. Contains information of each subsetting process the \code{Cypro}-object
+#' has gone through. See functions prefixed with \code{subsetBy*()}.
+#' @slot version list. Three slots named \emph{patch, minor} and \emph{major} that keep 
+#' track of the version of the object and the latest version of the cypro package.
+#'
+Cypro <- setClass(Class = "Cypro", 
+                  slots = list(
+                    analysis = "list",
+                    commands = "list",
+                    compatibility = "list",
+                    default = "list",
+                    experiment = "character",
+                    experiment_design = "ExperimentDesign",
+                    feature_sets = "list",
+                    information = "list",
+                    modules = "list",
+                    progress = "Progress", 
+                    qcheck = "list",
+                    storage = "character",
+                    subsets = "list",
+                    version = "list"
+                  )
+)
+
+
+#' @rdname Cypro
 #' @export
-#'
-AnalysisModuleTimeLapse <- setClass(Class = "AnalysisModuleTimeLapse", 
-                                    slots = list(
-                                      variables_summarized = "list"
-                                    ), 
-                                    contains = "AnalysisModule")
+CyproScreening <- setClass(Class = "CyproScreening", 
+                           slots = list(
+                             cdata = "CdataScreening"
+                           ), 
+                           contains = "Cypro"
+)
 
+#' @rdname Cypro
+#' @export
+CyproTimeLapse <- setClass(Class = "CyproTimeLapse", 
+                           slots = list(
+                             cdata = "CdataTimeLapse"
+                           ),
+                           contains = "Cypro"
+)
 
+#' @rdname Cypro
+#' @export
+CyproTimeLapseMP <- setClass(Class = "CyproTimeLapseMP", 
+                             slots = list(
+                               cdata = "CdataTimeLapseMP"
+                             ),
+                             contains = "Cypro"
+)
 
-
+# -----
 
 
 
 
 # show method
 setMethod(f = "show", signature = "cypro", definition = function(object){
-            
-            check_object(object)
-            
-            summary_list <- list()
-            
-            summary_list$class <- "An object of class 'cypro'.\n\n"
-            
-            summary_list$object_name <-stringr::str_c("Name: ", object@name)
-            
-            summary_list$exp_type <- stringr::str_c("\nType: ", pretty_exp_types[object@set_up$experiment_type])
-            
-            summary_list$n_cells <- stringr::str_c("\nNumber of Cells: ", nCells(object))
-            
-            # conditions --------------------------------------------------------------
-            
-            if(multiplePhases(object)){
-              
-              summary_list$conditions <- 
-                purrr::map_chr(
-                  .x = getPhases(object), 
-                  .f = function(phase){
-                    
-                    all_conditions <- getConditions(object, phase = phase)
-                    
-                    text <- 
-                      stringr::str_c(
-                        "\n ", confuns::make_capital_letters(phase), " phase: '", 
-                        glue::glue_collapse(all_conditions, sep = "', '", last = "' and '"), 
-                        "'"
-                      )
-                    
-                    base::return(text)
-                    
-                  }
-                ) %>% 
-                stringr::str_c(collapse = "") %>% 
-                stringr::str_c("\nConditions:", .)
-              
-              
-            } else {
-              
-              summary_list$conditions <- 
-                getConditions(object) %>% 
-                glue::glue_collapse(sep = "', '", last = "' and '") %>% 
-                stringr::str_c("\nConditions: ", "'", . , "'") 
-              
-            }
-            
-            
-            
-            # cell lines  -------------------------------------------------------------
-            
-            summary_list$cell_lines <- 
-              getCellLines(object) %>% 
-              glue::glue_collapse(sep = "', '", last = "' and '") %>% 
-              stringr::str_c("\nCell Lines: ", "'", . , "'")   
-            
-            
-            # well plates -------------------------------------------------------------
-            
-            summary_list$well_plates <- 
-              getWellPlateNames(object) %>% 
-              glue::glue_collapse(sep = "', '", last = "' and '") %>% 
-              stringr::str_c("\nWell Plates: ", "'", . , "'")   
-            
-            
-            # variable sets -----------------------------------------------------------
-            
-            if(base::identical(object@variable_sets, base::list())){
-              
-              summary_list$variable_sets <- "\nNo variables sets have been defined yet."
-              
-            } else {
-              
-              summary_list$variables_sets <- 
-                getVariableSetNames(object) %>% 
-                glue::glue_collapse(sep = "', '", last = "' and '") %>% 
-                stringr::str_c("\nVariable Sets: '", ., "'") 
-              
-            }
-            
-            # print output ------------------------------------------------------------
-            
-            purrr::flatten_chr(summary_list) %>% 
-              stringr::str_c(collapse = "") %>% 
-              base::writeLines()
-            
-          })
+  
+  check_object(object)
+  
+  summary_list <- list()
+  
+  summary_list$class <- "An object of class 'cypro'.\n\n"
+  
+  summary_list$object_name <-stringr::str_c("Name: ", object@name)
+  
+  summary_list$exp_type <- stringr::str_c("\nType: ", pretty_exp_types[object@set_up$experiment_type])
+  
+  summary_list$n_cells <- stringr::str_c("\nNumber of Cells: ", nCells(object))
+  
+  # conditions --------------------------------------------------------------
+  
+  if(multiplePhases(object)){
+    
+    summary_list$conditions <- 
+      purrr::map_chr(
+        .x = getPhases(object), 
+        .f = function(phase){
+          
+          all_conditions <- getConditions(object, phase = phase)
+          
+          text <- 
+            stringr::str_c(
+              "\n ", confuns::make_capital_letters(phase), " phase: '", 
+              glue::glue_collapse(all_conditions, sep = "', '", last = "' and '"), 
+              "'"
+            )
+          
+          base::return(text)
+          
+        }
+      ) %>% 
+      stringr::str_c(collapse = "") %>% 
+      stringr::str_c("\nConditions:", .)
+    
+    
+  } else {
+    
+    summary_list$conditions <- 
+      getConditions(object) %>% 
+      glue::glue_collapse(sep = "', '", last = "' and '") %>% 
+      stringr::str_c("\nConditions: ", "'", . , "'") 
+    
+  }
+  
+  
+  
+  # cell lines  -------------------------------------------------------------
+  
+  summary_list$cell_lines <- 
+    getCellLines(object) %>% 
+    glue::glue_collapse(sep = "', '", last = "' and '") %>% 
+    stringr::str_c("\nCell Lines: ", "'", . , "'")   
+  
+  
+  # well plates -------------------------------------------------------------
+  
+  summary_list$well_plates <- 
+    getWellPlateNames(object) %>% 
+    glue::glue_collapse(sep = "', '", last = "' and '") %>% 
+    stringr::str_c("\nWell Plates: ", "'", . , "'")   
+  
+  
+  # variable sets -----------------------------------------------------------
+  
+  if(base::identical(object@variable_sets, base::list())){
+    
+    summary_list$variable_sets <- "\nNo variables sets have been defined yet."
+    
+  } else {
+    
+    summary_list$variables_sets <- 
+      getVariableSetNames(object) %>% 
+      glue::glue_collapse(sep = "', '", last = "' and '") %>% 
+      stringr::str_c("\nVariable Sets: '", ., "'") 
+    
+  }
+  
+  # print output ------------------------------------------------------------
+  
+  purrr::flatten_chr(summary_list) %>% 
+    stringr::str_c(collapse = "") %>% 
+    base::writeLines()
+  
+})
+
+

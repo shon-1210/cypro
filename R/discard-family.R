@@ -410,3 +410,50 @@ keepTrackVariables <- function(object, track_variables, verbose = NULL){
 }
 
 
+
+# W -----------------------------------------------------------------------
+
+#' @title Discard well plate
+#' 
+#' @description Discards the well plate from the provided object. 
+#' 
+#' @inherit argument_dummy params
+#'
+#' @return The input object.
+#' @export
+#'
+
+setGeneric(name = "discardWellPlate", def = function(object, well_plate, ...){
+  
+  standardGeneric(f = "discardWellPlate")
+  
+})
+
+#' @rdname discardWellPlate
+#' @export
+
+setMethod(
+  f = "discardWellPlate",
+  signature = "ExperimentDesign",
+  definition = function(object, well_plate, verbose = FALSE){
+    
+    confuns::check_one_of(
+      input = well_plate,
+      against = getWellPlateNames(object)
+    )
+    
+    object@well_plates[[well_plate]] <- NULL
+    
+    confuns::give_feedback(
+      msg = "Discarded well plate '{well_plate}'.", 
+      with.time = FALSE,
+      verbose = verbose
+    )
+    
+    return(object)
+    
+  })
+
+
+
+

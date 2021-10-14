@@ -13,7 +13,7 @@ removeOutliers(
 )
 }
 \arguments{
-\item{object}{A valid cypro object.}
+\item{object}{Any S4-object for whose class a method has been defined.}
 
 \item{method_outlier}{Character vector. Specifies the method/algorithm of interest.
 

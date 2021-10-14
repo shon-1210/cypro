@@ -4,7 +4,7 @@
 \name{Cdata-class}
 \alias{Cdata-class}
 \alias{Cdata}
-\title{Cypro Cell Data}
+\title{The Cdata Class (Cell Data)}
 \description{
 The parent S4-object of every \code{Cypro}-objects \code{@cdata}
 slot. Contains the experiment data in form of data.frames. All data.frames

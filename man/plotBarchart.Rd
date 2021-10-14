@@ -21,7 +21,7 @@ plotBarchart(
 )
 }
 \arguments{
-\item{object}{A valid cypro object.}
+\item{object}{Any S4-object for whose class a method has been defined.}
 
 \item{variables}{Character vector. The grouping variables whose group count or
 proportion you want to display. Must not contain the feature specified in

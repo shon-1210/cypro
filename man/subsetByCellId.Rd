@@ -16,7 +16,7 @@ subsetByCellId(
 )
 }
 \arguments{
-\item{object}{A valid cypro object.}
+\item{object}{Any S4-object for whose class a method has been defined.}
 
 \item{new_name}{Character value. Denotes the name of the output object. If set to NULL the name of the
 input object is taken and suffixed with \emph{'_subset'}.}

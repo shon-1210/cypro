@@ -4,7 +4,7 @@
 \name{CdataScreening-class}
 \alias{CdataScreening-class}
 \alias{CdataScreening}
-\title{Cypro Cell Data - Screening Experiments}
+\title{The Cdata Class (Cell Data - Screening Experiments)}
 \description{
 S4 object that contains the slots needed to represent the
 data obtained by screening experiments (one time imaging).

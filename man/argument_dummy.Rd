@@ -7,7 +7,7 @@
 argument_dummy(object, phase, pt_alpha, pt_clr, pt_clrp, pt_clrsp, pt_size)
 }
 \arguments{
-\item{object}{A valid cypro object.}
+\item{object}{Any S4-object for whose class a method has been defined.}
 
 \item{phase}{Character or numeric. If character, the ordinal value referring to the phase of interest (e.g. \emph{'first'}, \emph{'second'} etc.).
 referring to the phase of interest or \emph{'all'}. If numeric, the number referring to the phase.
@@ -90,6 +90,9 @@ the trend is plotted.}
 \item{force}{Logical value. Needs to be set to TRUE if you want to overwrite an already existing
 set up or already existing results.}
 
+\item{grouping_variable}{Character value. Denotes the categorical variable - the grouping of cells -
+of interest. Use \code{getGroupingVariableNames()} to obtain all valid input options.}
+
 \item{image}{Numeric value. The well-image of interest.}
 
 \item{linesize}{Numeric value. Denotes the size of the lines drawn.}
@@ -157,6 +160,10 @@ to FALSE a list is returned.}
 \item{smooth_size}{Numeric value. Denotes the size of the smoothed line.}
 
 \item{smooth_span}{NUmeric value. Denotes the smoothing span used.}
+
+\item{stop_if_false}{Logical value. If set to TRUE and the test evaluates to FALSE the
+function is stopped via \code{stop()} printing an informative message. If FALSE the
+resulting logical value is returned.}
 
 \item{well}{Character value. The well of interest (e.g. \emph{'A1'}, \emph{'B12'})}
 

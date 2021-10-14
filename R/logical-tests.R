@@ -103,8 +103,10 @@ existOutlierResults <- function(object, phase = NA, method_outlier = NA, verbose
 #' @rdname existOutlierResults
 #' @export
 isTimeLapseExp <- function(object){
-  
-  return(object@set_up$experiment_type == "time_lapse")
+
+  res <- !methods::is(object, class2 = "CyproScreening")
+    
+  return(res)
   
 }
 
@@ -162,7 +164,87 @@ isNormalizedWithZscore <- function(object){
 
 # not exported ------------------------------------------------------------
 
+# candidate check (for picker outputs) return TRUE or FALSE
+is_grouping_candidate <- function(var){
+  
+  var <- var[!base::is.na(var)]
+  
+  if(base::is.character(var) | base::is.factor(var)){
+    
+    res <- TRUE
+    
+    # if not character of factor -> numeric
+  } else if(!base::any(stringr::str_detect(var, pattern = "\\."))){ # . in var -> double
+    
+    res <- TRUE
+    
+  } else {
+    
+    res <- FALSE
+    
+  }
+  
+  return(res)
+  
+}
+
+is_numeric_candidate <- function(var){
+  
+  if(base::is.numeric(var)){
+    
+    res <- TRUE
+    
+  } else if(base::is.character(var)){
+    
+    n_na <- base::is.na(var) %>% base::sum()
+    
+    var_numeric <- base::suppressWarnings({ base::as.numeric(var) })
+    
+    n_na_new <- base::is.na(var_numeric) %>% base::sum()
+    
+    if(n_na_new > n_na){
+      
+      res <- FALSE
+      
+    } else {
+      
+      res <- TRUE
+      
+    }
+    
+  } else {
+    
+    res <- FALSE
+    
+  }
+  
+  return(res)
+  
+}
 
 
+isOfClass <- function(x, valid_class, stop_if_false = FALSE, ref_x = NULL){
+  
+  res <- methods::is(x, class2 = valid_class)
+  
+  if(base::isTRUE(stop_if_false) && base::isFALSE(res)){
+    
+    if(!base::is.character(ref_x)){
+      
+      ref_x <- base::substitute(expr = x)
+      
+    }
+    
+    stop(
+      glue::glue(
+        "Input {ref_x} must be of class '{valid_class}' but is of class '{base::class(x)}'."
+      )
+    )
+    
+  }
+  
+  return(res)
+  
+}
 
 

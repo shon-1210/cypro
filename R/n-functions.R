@@ -201,3 +201,41 @@ nMissingValuesStats <- function(object, phase = NULL){
 }
 
 
+
+
+
+
+
+
+
+
+
+
+#' @title Number of NAs by cell id  (in stats)
+#' 
+#' @description Returns the number of well plates.
+#'
+#' @inherit argument_dummy params
+#' 
+#' @return Numeric value.
+#' 
+#' @export
+#'
+
+setGeneric(name = "nWellPlates", def = function(object){
+  
+  standardGeneric(f = "nWellPlates")
+  
+})
+
+#' @rdname nWellPlates
+#' @export
+
+setMethod(f = "nWellPlates", signature = "ExperimentDesign", definition = function(object){
+  
+  base::length(object@well_plates)
+  
+})
+
+
+

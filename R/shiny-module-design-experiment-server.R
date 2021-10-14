@@ -11,34 +11,31 @@
 moduleExperimentDesignServer <- function(id, usage = "in_function"){
 
   shiny::moduleServer(
-    id = id,
-    module = function(input, output, session){
-
-      
+   id = id,
+   module = function(input, output, session){
+     
   options(shiny.maxRequestSize = 50*1024^2)
 
-# Reactive values ---------------------------------------------------------
 
-  measurements_string <- shiny::reactiveVal(value = base::character())
-  
+# reactive values ---------------------------------------------------------
+     
   example_list <- shiny::reactiveVal(value = list(loaded = FALSE))
   
-  well_plate_df <- shiny::reactiveVal(value = data.frame())
-  well_plate_list <- shiny::reactiveVal(value = list())
-  well_plate_name <- shiny::reactiveVal(value = base::character(1))
+  # s4 objects
+  new_cypro_object <- shiny::reactiveVal(value = FALSE)
+  new_exp_design <- shiny::reactiveVal(value = FALSE)
+  
+  
+  # well plate handling
+  current_layout_df <- shiny::reactiveVal(value = data.frame())
+  current_well_plate <- shiny::reactiveVal(value = FALSE)
+  current_well_plate_name <- shiny::reactiveVal(value = character(1))
   
   # list containing all the information regarding the experiment's design
   # - the return value of this module
-  ed_list <- shiny::reactiveValues(
-    
-    default_directory = base::character(),
-    experiment_name = base::character(),
-    module_progress = list(overall_information = FALSE, 
-                           imaging_set_up = FALSE, 
-                           experiment_phases = FALSE),
+  output_list <- shiny::reactiveValues(
     proceed = base::logical(),
-    set_up = list()
-    
+    object = methods::new(Class = "Cypro")
   )
   
   ###--- module progress
@@ -52,7 +49,7 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
 # Render UIs --------------------------------------------------------------
 
   # layout boxes 
-  output$ed_imaging_set_up_box <- shiny::renderUI({
+  output$imaging_set_up_box <- shiny::renderUI({
     
     ns <- session$ns
     
@@ -63,7 +60,7 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
           shiny::fluidRow(
             shiny::column(
               width = 12, 
-              shiny::uiOutput(outputId = ns("ed_imaging_set_up"))
+              shiny::uiOutput(outputId = ns("imaging_set_up"))
             )
           ) 
         )
@@ -76,7 +73,7 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
     
   })
   
-  output$ed_experiment_phases_box <- shiny::renderUI({
+  output$experiment_phases_box <- shiny::renderUI({
     
     ns <- session$ns
     
@@ -87,9 +84,9 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
             shiny::fluidRow( 
               shiny::column(
                 width = 8, 
-                shiny::uiOutput(outputId = ns("ed_phases_number")), 
-                shiny::uiOutput(outputId = ns("ed_phases_start")), 
-                shiny::uiOutput(outputId = ns("ed_phases_save"))
+                shiny::uiOutput(outputId = ns("phases_number")), 
+                shiny::uiOutput(outputId = ns("phases_start")), 
+                shiny::uiOutput(outputId = ns("phases_save"))
               )
             )
           )
@@ -102,7 +99,7 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
     
   })
   
-  output$ed_well_plate_box <- shiny::renderUI({
+  output$well_plate_box <- shiny::renderUI({
     
     ns <- session$ns
     
@@ -116,7 +113,7 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
               width = 2,
               shiny::h5(shiny::strong("Step 1:")),
               shiny::actionButton(
-                inputId = ns("ed_new_well_plate"), 
+                inputId = ns("new_well_plate"), 
                 label = "New Well Plate", 
                 width = "100%")
             ),
@@ -124,16 +121,16 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
               width = 2,
               shiny::h5(shiny::strong("Well Plate:")),
               shiny::selectInput(
-                inputId = ns("ed_well_plate"), 
+                inputId = ns("well_plate_type"), 
                 label = NULL, 
                 choices = valid_well_plates, 
-                selected = "8x12 (96)")
+                selected = "8x12")
             ), 
             shiny::column(
               width = 2,
               shiny::h5(shiny::strong("Well Plate Name:")), 
               shiny::textInput(
-                inputId = ns("ed_well_plate_name"), 
+                inputId = ns("well_plate_name"), 
                 label = NULL, 
                 placeholder = "well plate name")), 
             shiny::column(
@@ -141,10 +138,10 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
               shiny::h5(shiny::strong("ROIS per Well:")) %>% 
                 add_helper(
                   content = helper_content$rois_per_well,
-                  title = "In how many fields of view has each well been divided?"
+                  title = "In how many regions of interest / fields of view has each well been divided?"
                   ), 
               shiny::numericInput(
-                inputId = ns("ed_rois_per_well"),
+                inputId = ns("rois_per_well"),
                 min = 0, value = 0, step = 1,
                 label = NULL))
           ),
@@ -155,11 +152,11 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
               shiny::h5(shiny::strong("Step 2:")),
               shiny::splitLayout(
                 shiny::actionButton(
-                  inputId = ns("ed_add_well_info"), 
+                  inputId = ns("add_well_info"), 
                   label = "Add Info",
                   width = "100%"), 
                 shiny::actionButton(
-                  inputId = ns("ed_delete_well_info"), 
+                  inputId = ns("delete_well_info"), 
                   label = "Delete Info", 
                   width = "100%"), 
                 cellWidths = c("50%", "50%")
@@ -169,20 +166,20 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
                   width = 6,
                   shiny::h5(shiny::strong("Cell Line:")),
                   shiny::textInput(
-                    inputId = ns("ed_cell_line"), 
+                    inputId = ns("cell_line"), 
                     label = NULL,
                     placeholder = "cell line") 
                 ),
                 shiny::column(
                   width = 6,
-                  shiny::uiOutput(outputId = ns("ed_conditions"))
+                  shiny::uiOutput(outputId = ns("conditions"))
                 )
               )
             ),
             shiny::column(
               width = 8,
               # well plate plot
-              shiny::plotOutput(outputId = ns("ed_well_plate_plot"), brush = ns("well_plate_brush"), hover = ns("well_plate_hover"))
+              shiny::plotOutput(outputId = ns("well_plate_plot"), brush = ns("well_plate_brush"), hover = ns("well_plate_hover"))
             )
             
           ),
@@ -193,23 +190,15 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
               width = 2,
               shiny::h5(shiny::strong("Step 3:")),
               shiny::actionButton(
-                inputId = ns("ed_add_well_plate"), 
+                inputId = ns("add_well_plate"), 
                 label = "Save Well Plate",
                 width = "100%")
             ),
-            shiny::column(
-              width = 2,
-              shiny::h5(shiny::strong("Empty Wells:")),
-              shinyWidgets::materialSwitch(
-                inputId = ns("ed_dismiss_unknown"), 
-                label = NULL, 
-                value = FALSE, 
-                status = "warning")
-            ), 
+            shiny::column(width = 2),
             shiny::column(
               width = 8, 
               shiny::h5(shiny::strong("Well Information:")), 
-              shiny::tableOutput(outputId = ns("ed_well_info")))
+              shiny::tableOutput(outputId = ns("well_info")))
           )
         )
       ), 
@@ -221,12 +210,12 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
     
   })
   
-  output$ed_save_and_proceed_box <- shiny::renderUI({
+  output$save_and_proceed_box <- shiny::renderUI({
     
     ns <- session$ns
     
     shinydashboard::box(
-      shiny::uiOutput(outputId = ns("ed_save_and_proceed_box_html")), 
+      shiny::uiOutput(outputId = ns("save_and_proceed_box_html")), 
       title = "Save Experiment Design & Proceed",
       solidHeader = TRUE,
       status = css_status(evaluate = base::length(well_plate_list()) >= 1),
@@ -235,7 +224,7 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
     
   })
   
-  output$ed_save_and_proceed_box_html <- shiny::renderUI({
+  output$save_and_proceed_box_html <- shiny::renderUI({
     
     ns <- session$ns
     
@@ -249,12 +238,12 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
     shiny::tagList(
       shiny::fluidRow(
         shiny::column(
-          DT::dataTableOutput(outputId = ns("ed_well_plate_folders")),
+          DT::dataTableOutput(outputId = ns("well_plate_folders")),
           align = "center",
           width = 4
         ), 
         shiny::column(
-          shiny::plotOutput(outputId = ns("ed_well_plate_plot2")),
+          shiny::plotOutput(outputId = ns("well_plate_plot2")),
           align = "center", 
           width = 8
         )
@@ -262,7 +251,7 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
       shiny::fluidRow(
         shiny::column(
           shiny::actionButton(
-            inputId = ns("ed_save_and_proceed"), 
+            inputId = ns("save_and_proceed"), 
             label = "Save & Proceed" 
           ), 
           align = "center",
@@ -270,7 +259,7 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
         ),
         shiny::column(
           shiny::selectInput(
-            inputId = ns("ed_well_plate_select"),
+            inputId = ns("well_plate_select"),
             label = NULL,
             choices = base::names(well_plate_list())
           ),
@@ -279,7 +268,7 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
         ),
         shiny::column(
           shiny::selectInput(
-            inputId = ns("ed_well_plate_plot2_color"),
+            inputId = ns("well_plate_plot2_color"),
             label = NULL,
             choices = c("Condition" = "condition", "Cell Line" = "cell_line")
           ),
@@ -288,7 +277,7 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
         ),
         shiny::column(
           shiny::actionButton(
-            inputId = ns("ed_edit_well_plate"),
+            inputId = ns("edit_well_plate"),
             label = "Edit", 
             width = "100%"
             ), 
@@ -297,7 +286,7 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
         ),
         shiny::column(
           shiny::actionButton(
-            inputId = ns("ed_delete_well_plate"),
+            inputId = ns("delete_well_plate"),
             label = "Remove",
             width = "100%"
             ),
@@ -313,7 +302,7 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
   
   ###--- imaging set up
   
-  output$ed_imaging_set_up <- shiny::renderUI({
+  output$imaging_set_up <- shiny::renderUI({
     
     ns <- session$ns
     
@@ -328,8 +317,8 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
     # make sure that it's a time lapse experiment
     shiny::validate(
       shiny::need(
-        expr = experiment_type() == "time_lapse", 
-        message = "Imaging set up not required for non time-lapse experiments. (Proceed with well plate set up.)"
+        expr = exp_type() != "CyproScreening", 
+        message = "Imaging set up not required for non time lapse experiments. (Proceed with well plate set up.)"
       )
     )
     
@@ -339,7 +328,7 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
           shiny::column(
             width = 6, 
             shiny::numericInput(
-              inputId = ns("ed_meas_num"),
+              inputId = ns("n_frames"),
               label = "Total Number of Frames:",
               min = 0, step = 1, value = 0
               ) %>% 
@@ -355,7 +344,7 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
                  content = helper_content$interval
                ), 
              shiny::numericInput(
-               inputId = ns("ed_meas_interval"), 
+               inputId = ns("interval"), 
                label = NULL, 
                min = 1, step = 0.5, value = 1)
              ) , 
@@ -365,13 +354,13 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
                  content = helper_content$interval_unit
                ),
              shiny::selectInput(
-               inputId = ns("ed_interval_unit"), 
+               inputId = ns("interval_unit"), 
                label = NULL, 
                choices = interval_options, 
                selected = "hours") )
         ),
         shiny::actionButton(
-          inputId = ns("ed_imaging_set_up_save"), 
+          inputId = ns("imaging_set_up_save"), 
           label = "Save & Proceed")
         
       )
@@ -382,7 +371,7 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
   
   
   ###--- experiment phases set up
-  output$ed_phases_number <- shiny::renderUI({
+  output$phases_number <- shiny::renderUI({
     
     ns <- session$ns
     
@@ -397,13 +386,13 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
     # make sure that it's a time lapse experiment
     shiny::validate(
       shiny::need(
-        expr = experiment_type() == "time_lapse", 
-        message = "Phase set up not required for non time-lapse experiments. (Proceed with well plate set up.)"
+        expr = multiple_phases(), 
+        message = "Phase set up not required for non-multiple-phase experiments. (Proceed with well plate set up.)"
       )
     )
     
     shiny::numericInput(
-      inputId = ns("ed_phases_number"), 
+      inputId = ns("phases_number"), 
       label = "Number of Phases:",
       value = 1, min = 1, max = 10, step = 1
     ) %>% 
@@ -414,44 +403,47 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
     
   })
   
-  output$ed_phases_start <- shiny::renderUI({
+  output$phases_start <- shiny::renderUI({
     
     ns <- session$ns
     
-    # not going to appear if non time lapse exp as ed_phases_number is not going to appear 
-    #shiny::req(base::isTRUE(module_progress_imaging_set_up()) & shiny::isTruthy(input$ed_phases_number))
+    # not going to appear if non time lapse exp as phases_number is not going to appear 
+    #shiny::req(base::isTRUE(module_progress_imaging_set_up()) & shiny::isTruthy(input$phases_number))
     
-    shiny::req(ed_list$set_up$experiment_type == "time_lapse" & shiny::isTruthy(input$ed_phases_number))
+    shiny::req(
+      multiple_phases() &
+      shiny::isTruthy(input$phases_number)
+      )
     
-    all_phases <- 1:input$ed_phases_number
+    phases <- 1:input$phases_number
     
     ordinal_phases <- 
-      english::ordinal(all_phases) %>%
+      english::ordinal(phases) %>%
       confuns::make_capital_letters(collapse.with = NULL) %>% 
       stringr::str_c(., "Phase starts from:", sep = " ")
     
-    measurements <- measurements_string()
+    frames <- time_frame_vec()
     
-    n_meas <- base::length(measurements)
+    n_frames <- base::length(frames)
     
     output_list <- 
       purrr::map2(
-        .x = all_phases,
+        .x = phases,
         .y = ordinal_phases, 
         .f = function(x, y){
           
           if(x == 1){
             
-            choices <- measurements[1]
+            choices <- frames[1]
             
           } else {
             
-            choices <- measurements[x:n_meas]
+            choices <- frames[x:n_frames]
             
           }
           
           shiny::selectInput(
-            inputId = ns(stringr::str_c("ed_phases_start", x, sep = "_")),
+            inputId = ns(stringr::str_c("phases_start", x, sep = "_")),
             label = y,
             choices = choices
             )
@@ -459,32 +451,34 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
         }
       )
     
-    base::return(output_list[2:n_meas])
+    base::return(output_list[2:n_frames])
     
   })
   
-  output$ed_phases_save <- shiny::renderUI({
+  output$phases_save <- shiny::renderUI({
     
     ns <- session$ns
     
-    # not going to appear if non time lapse exp as ed_phases_start is not going to appear
-    #shiny::req(module_progress_imaging_set_up() & shiny::isTruthy(input$ed_phases_number))
+    # not going to appear if non time lapse exp as phases_start is not going to appear
+    #shiny::req(module_progress_imaging_set_up() & shiny::isTruthy(input$phases_number))
     
-    shiny::req(ed_list$set_up$experiment_type == "time_lapse" & shiny::isTruthy(input$ed_phases_number))
+    shiny::req(
+      multiple_phases() &
+      shiny::isTruthy(input$phases_number)
+      )
     
-    
-    shiny::actionButton(inputId = ns("ed_phases_save"), label = "Save & Proceed")
+    shiny::actionButton(inputId = ns("phases_save"), label = "Save & Proceed")
     
   })
   
   
   ###--- well plate set up 
-  output$ed_added_well_plates <- shiny::renderUI({
+  output$added_well_plates <- shiny::renderUI({
     
     ns <- session$ns
     
     shinyWidgets::pickerInput(
-      inputId = ns("ed_added_well_plates"), 
+      inputId = ns("added_well_plates"), 
       label = NULL, 
       choices = base::names(well_plate_list()), 
       multiple = TRUE
@@ -493,19 +487,19 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
   })
   
   
-  output$ed_conditions <- shiny::renderUI({
+  output$conditions <- shiny::renderUI({
     
     ns <- session$ns
     
     shiny::req(module_progress_experiment_phases())
     
-    if(base::length(all_phases()) == 1){
+    if(n_phases() == 0){
       
       output_list <- 
         shiny::tagList(
           shiny::h5(shiny::strong("Condition:")),
           shiny::textInput(
-            inputId = ns("ed_conditions"), 
+            inputId = ns("conditions"), 
             label = NULL, 
             value = "", 
             placeholder = "condition"
@@ -514,19 +508,20 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
       
     } else {
       
+      phases <- base::seq_along(all_phases())
+      
       output_list <- 
-        purrr::map(.x = all_phases(), .f = function(p){
+        purrr::map(.x = phases, .f = function(p){
                      
+          ordinal_phase <- confuns::make_capital_letters(english::ordinal(p), collapse.with = NULL)
           
-          label <- stringr::str_c("Condition",
-                                  confuns::make_capital_letters(english::ordinal(p), collapse.with = NULL),
-                                  "Phase:",
-                                  sep = " ")
+          label <- 
+            stringr::str_c("Condition", ordinal_phase , "Phase:", sep = " ")
           
           shiny::tagList(
             shiny::h5(shiny::strong(label)), 
             shiny::textInput(
-              inputId = ns(stringr::str_c("ed_condition", p, sep = "_")), 
+              inputId = ns(stringr::str_c("condition", p, sep = "_")), 
               label = NULL, 
               value = "", 
               placeholder = "condition"
@@ -550,28 +545,38 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
   ###--- overall information 
   
   # save and proceed
-  oe <- shiny::observeEvent(input$ed_overall_info_save, {
+  oe <- shiny::observeEvent(input$overall_info_save, {
     
     checkpoint(
-      evaluate = shiny::isTruthy(ed_list$default_directory), 
-      case_false = "no_storage_directory"
+      evaluate = validate_experiment_name(exp_name = input$exp_name), 
+      case_false = "invalid_exp_name"
     )
     
-    checkpoint(
-      evaluate = input$ed_software %in% image_processing_softwares, 
-      case_false = "no_software_input"
-    )
+    exp_name <- remove_empty_space(string = input$exp_name)
     
-    ed_list$experiment_name <- input$ed_experiment_name
+    # set up new cypro object
+    cypro_object <- 
+      methods::new(
+        Class = input$exp_type,
+        experiment = exp_name
+        )
     
-    ed_list$storage_info$default_directory <- full_experiment_dir()
+    new_cypro_object(cypro_object)
     
-    ed_list$set_up$experiment_type <- input$ed_exp_type
+    # set up new experiment design
+    exp_design <- 
+      methods::new(
+        Class = "ExperimentDesign",
+        type = input$exp_type, 
+        experiment = exp_name
+        )
+    
+    new_exp_design(exp_design)
     
     # unlock subsequent steps
     module_progress_overall_information(TRUE)
     
-    if(ed_list$set_up$experiment_type == "time_lapse"){
+    if(input$exp_type != "CyproScreening"){
     
       # set to FALSE to make sure that changing experiment type does not make 
       # the respective input options appear
@@ -590,19 +595,7 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
         ui = "Overall information successfully stored. Proceed with well plate set up."
         )  
       
-      # no imaging set up needed
-      ed_list$set_up$nom <- NULL
-      ed_list$set_up$n_meas <- NULL
-      ed_list$set_up$itvl <- NULL
-      ed_list$set_up$itvl_u <- NULL
-      ed_list$set_up$image_string <- NULL
-      ed_list$set_up$measurement_string <- NULL
-      ed_list$set_up$time_string <- NULL
-      
-      # no phases set up needed
-      ed_list$set_up$phases <- list(first = "One Image")
-      
-      # unlock/skip subsequent steps if non time lapse
+      # skip subsequent steps if non time lapse
       module_progress_imaging_set_up(TRUE)
       module_progress_experiment_phases(TRUE)      
       
@@ -614,7 +607,7 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
   ###--- imaging set up 
   
   # save and proceed 
-  oe <- shiny::observeEvent(input$ed_imaging_set_up_save, {
+  oe <- shiny::observeEvent(input$imaging_set_up_save, {
     
     check_set_up_progress(
       progress_input = module_progress(),
@@ -623,23 +616,32 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
       )
     
     checkpoint(
-      evaluate = input$ed_meas_num > 0, 
-      case_false = "invalid_meas_number"
+      evaluate = input$n_frames > 0, 
+      case_false = "invalid_n_frames"
     )
     
-    measurements_string(stringr::str_c(time_string(), image_string(), sep = " / "))
+    exp_design <- new_exp_design()
     
-    ed_list$set_up$nom <- input$ed_meas_num
-    ed_list$set_up$n_meas <- input$ed_meas_num
-    ed_list$set_up$itvl <- input$ed_meas_interval
-    ed_list$set_up$itvl_u <- input$ed_interval_unit
-    ed_list$set_up$image_string <- image_string()
-    ed_list$set_up$measurement_string <- measurements_string()
-    ed_list$set_up$time_string <- time_string()
+    exp_design@interval <- input$interval
+    exp_design@interval_unit <- input$interval_unit
+    exp_design@n_frames <- input$n_frames
     
-    module_progress_imaging_set_up(TRUE)
+    new_exp_design(exp_design)
     
-    shiny_fdb(in_shiny = TRUE, ui = "Imaging set up successfully saved. Proceed with experiment phases.")
+    if(multiple_phases()){
+      
+      module_progress_imaging_set_up(TRUE)
+      
+      shiny_fdb(in_shiny = TRUE, ui = "Imaging set up successfully saved. Proceed with experiment phases.")
+      
+    } else {
+      
+      module_progress_imaging_set_up(TRUE)
+      module_progress_experiment_phases(TRUE) # set to TRUE as not needed
+      
+      shiny_fdb(in_shiny = TRUE, ui = "Imaging set up successfully saved. Proceed with well plate set up.")
+      
+    }
     
   })
   
@@ -647,9 +649,9 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
   ###--- experiment phases
   
   # save and proceed
-  oe <- shiny::observeEvent(input$ed_phases_save, {
+  oe <- shiny::observeEvent(input$phases_save, {
     
-    all_phases <- 1:input$ed_phases_number
+    all_phases <- 1:input$phases_number
         
     phase_list <- purrr::map(
       .x = all_phases,
@@ -657,11 +659,11 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
         
         if(p == 1){
           
-          res <- measurements_string()[1]
+          res <- time_frame_vec()[1]
           
         } else {
           
-          res <- input[[stringr::str_c("ed_phases_start", p, sep = "_")]]
+          res <- input[[stringr::str_c("phases_start", p, sep = "_")]]
           
         }
         
@@ -672,10 +674,15 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
       purrr::set_names(nm = english::ordinal(all_phases))
 
     # reset well plate data
-    well_plate_df(data.frame())
+    current_layout_df(data.frame())
     well_plate_list(list())
     
-    ed_list$set_up$phases <- phase_list
+    exp_design <- new_exp_design()
+    
+    exp_design@phases <- phase_list
+    
+    new_exp_design(exp_design)
+    
     module_progress_experiment_phases(TRUE)
     
     shiny_fdb(in_shiny = TRUE, ui = "Experiment phases successfully saved. Proceed with well plate set up.")
@@ -686,30 +693,31 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
   ###--- well plate set up 
   
   # new well plate
-  oe <- shiny::observeEvent(input$ed_new_well_plate, {
+  oe <- shiny::observeEvent(input$new_well_plate, {
     
     check_set_up_progress(progress_input = module_progress())
     
     # check input frame number per well
     checkpoint(
-      evaluate = input$ed_rois_per_well != 0,
-      case_false = "invalid_image_number"
+      evaluate = input$rois_per_well != 0,
+      case_false = "invalid_roi_number"
       )
     
     # check well plate name
-    wp_list_new <- well_plate_list()
-    wp_name <- input$ed_well_plate_name 
+    wp_list <- well_plate_list()
+    wp_name <- input$well_plate_name 
     
-    new_name <- !wp_name %in% base::names(wp_list_new)
-    valid_name <- !wp_name == ""
+    is_new_name <- !wp_name %in% base::names(wp_list)
+    is_valid_name <- validate_well_plate_name(wp_name)
     
     checkpoint(
-      evaluate = base::all(new_name, valid_name),
+      evaluate = base::all(is_new_name, is_valid_name),
       case_false = "invalid_wp_name"
       )
     
     # check if there is current well plate
-    if(is_modified_wp_df(wp_df = well_plate_df())){
+    if(isLayoutDf(df = current_layout_df()) &&
+       isModifiedLayoutDf(df = current_layout_df())){
       
       ns <- session$ns
       
@@ -724,11 +732,11 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
           ), 
           footer = shiny::tagList(
             act_button(
-              inputId = ns("ed_overwrite_well_plate_confirmed"),
+              inputId = ns("overwrite_well_plate_confirmed"),
               label = "New Well Plate"
               ),
             act_button(
-              inputId = ns("ed_overwrite_well_plate_cancelled"),
+              inputId = ns("overwrite_well_plate_cancelled"),
               label = "Cancel"
               )
           )
@@ -739,72 +747,78 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
       
     } 
     
-    # update current well plate name
-    well_plate_name(wp_name)
+    # update 
+    current_well_plate_name(wp_name)
+
+    layout_df <- 
+      createLayoutDf(
+        well_plate_name = wp_name, 
+        well_plate_type = input$well_plate_type, 
+        rois_per_well = input$rois_per_well,
+        n_phases = n_phases()
+      )
     
-    # data.frame (obs => well)
-    well_plate_df_new <- 
-      setUpWellPlateDf(type = input$ed_well_plate, phases = all_phases())
-    
-    # update well_plate_df()
-    well_plate_df(well_plate_df_new)
+    current_layout_df(layout_df)
     
   })
   
   # overwrite well plate 
-  oe <- shiny::observeEvent(input$ed_overwrite_well_plate_confirmed, {
+  oe <- shiny::observeEvent(input$overwrite_well_plate_confirmed, {
     
     shiny::removeModal()
     
-    # has been checked in observeEvent(input$ed_new_well_plate, ...) 
-    wp_name <- input$ed_well_plate_name
+    # has been checked in observeEvent(input$new_well_plate, ...) 
+    wp_name <- input$well_plate_name
     
     # update current well plate name
-    well_plate_name(wp_name)
+    current_well_plate_name(wp_name)
     
     # data.frame (obs => well)
-    well_plate_df_new <- 
-      setUpWellPlateDf(type = input$ed_well_plate, phases = all_phases())
+    layout_df<- 
+      createLayoutDf(
+        well_plate_name = wp_name, 
+        well_plate_type = input$well_plate_type, 
+        n_phases = n_phases()
+      )
     
-    # update well_plate_df()
-    well_plate_df(well_plate_df_new)
+    # update layout_df()
+    current_layout_df(layout_df)
     
   })
   
   # dont overwrite well plate
-  oe <- shiny::observeEvent(input$ed_overwrite_well_plate_cancelled, {
+  oe <- shiny::observeEvent(input$overwrite_well_plate_cancelled, {
     
     shiny::removeModal()
     
   })
   
   # add well information 
-  oe <- shiny::observeEvent(input$ed_add_well_info, {
+  oe <- shiny::observeEvent(input$add_well_info, {
     
-    # check all_wells()
-    checkpoint(evaluate = !base::identical(all_wells(), base::data.frame()), 
+    # check current_layout_df()
+    checkpoint(evaluate = !base::identical(current_layout_df(), base::data.frame()), 
                case_false = "no_well_plate_chosen")
     
-    checkpoint(evaluate = base::nrow(selected_wells()) != 0, 
+    checkpoint(evaluate = base::length(selected_wells()) != 0, 
                case_false = "no_wells_chosen")
     
-    # -
+    # check and assemble new info
+    new_cell_line <- input$cell_line
     
-    new_cell_line <- input$ed_cell_line
-    
-    if(base::length(all_phases()) > 1){
+    if(n_phases() > 1){
      
       new_condition <- 
-        purrr::map(.x = all_phases(), .f = function(p){
+        purrr::map(.x = 1:n_phases(), .f = function(p){
                      
-                     input[[stringr::str_c("ed_condition", p, sep = "_")]]
+                     input[[stringr::str_c("condition", p, sep = "_")]]
                      
                    }) %>% 
         purrr::flatten_chr()
       
     } else {
       
-      new_condition <- input$ed_conditions
+      new_condition <- input$conditions
       
     }
     
@@ -828,58 +842,19 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
       case_false = "cell_line_condition_overlap"
     )
     
-    selected_wells <- selected_wells()$well
-    
-    well_plate_df_new <- all_wells()
-    well_plate_df_new$selected <- well_plate_df_new$well %in% selected_wells
-    
-    if(new_cell_line != ""){
-      
-      well_plate_df_new <- 
-        dplyr::mutate(well_plate_df_new, 
-          cell_line = dplyr::case_when(
-            selected ~ {{new_cell_line}},
-            TRUE ~ cell_line
-            )
+    # set new info     
+    layout_df <- 
+      setWellInfo(
+        df = current_layout_df(),
+        selected_wells = selected_wells(), 
+        cell_line = new_cell_line, 
+        condition = new_condition, 
+        verbose = FALSE, 
+        in_shiny = TRUE
         )
-      
-    }
     
-    if(base::all(new_condition != "")){
-      
-      well_plate_df_new$condition <-
-        update_condition(
-          var_condition = well_plate_df_new$condition, 
-          var_selected = well_plate_df_new$selected, 
-          input_condition = new_condition
-          )
-      
-      
-      well_plate_df_new$condition_df <- 
-        update_condition_df(
-          var_condition_df = well_plate_df_new$condition_df, 
-          var_selected = well_plate_df_new$selected, 
-          input_condition = new_condition
-        )
-      
-    }
-    
-    
-    well_plate_df_final <- 
-      dplyr::mutate(.data = well_plate_df_new, 
-        cl_condition = stringr::str_c(cell_line, condition, sep = " & "),
-        information_status = base::as.character(information_status),
-        information_status = dplyr::case_when(
-            condition == "unknown" & cell_line == "unknown" ~ "Missing", 
-            condition != "unknown" & cell_line != "unknown" ~ "Complete", 
-            TRUE ~ "Incomplete"
-            ), 
-        information_status = base::factor(x = information_status, levels = c("Complete", "Incomplete", "Missing"))
-      ) %>% 
-      dplyr::select(-selected)
-    
-    # update well_plate_df()
-    well_plate_df(well_plate_df_final)
+    # update layout_df()
+    current_layout_df(layout_df)
     
     # give feedback 
     shiny_fdb(in_shiny = TRUE, ui = "Well info successfully added.")
@@ -887,116 +862,101 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
   })
   
   # delete well information 
-  oe <- shiny::observeEvent(input$ed_delete_well_info, {
+  oe <- shiny::observeEvent(input$delete_well_info, {
     
-    # check all_wells()
-    checkpoint(evaluate = !base::identical(all_wells(), base::data.frame()), 
+    # check current_layout_df()
+    checkpoint(evaluate = !base::identical(current_layout_df(), base::data.frame()), 
                case_false = "no_well_plate_chosen")
     
-    checkpoint(evaluate = base::nrow(selected_wells()) != 0, 
+    checkpoint(evaluate = base::length(selected_wells()) != 0, 
                case_false = "no_wells_chosen")
     
     # -
     
-    condition_df_exmpl <- all_wells()$condition_df[[1]]
-    phase_names <- base::colnames(condition_df_exmpl)
+    layout_df <- 
+      setWellInfo(
+        df = current_layout_df(), 
+        selected_wells = selected_wells(), 
+        cell_line = NA, 
+        condition = NA, 
+        verbose = FALSE, 
+        in_shiny = TRUE
+      )
     
-    # empty condition df
-    ecdf <-
-      purrr::map_df(.x = condition_df_exmpl, .f = function(phase){return(NA)}) %>% 
-      purrr::set_names(phase_names) %>% 
-      base::as.data.frame()
-    
-    well_plate_df_new <- 
-      dplyr::mutate(.data = all_wells(), 
-        selected = well %in% selected_wells()$well, 
-        condition = dplyr::case_when(selected ~ "unknown", TRUE ~ condition),
-        cell_line = dplyr::case_when(selected ~ "unknown", TRUE ~ cell_line),
-        cl_condition = stringr::str_c(cell_line, condition, sep = " & "),
-        condition_df = purrr::map2(.x = condition_df, .y = selected, ecdf = ecdf, .f = function(cdf, selected, ecdf){
-                
-              if(base::isTRUE(selected)){
-                        
-                        return(ecdf)
-                        
-                      } else{
-                        
-                        return(cdf)
-                        
-                      }
-                      
-                    }),
-        information_status = base::as.character(information_status),
-        information_status = dplyr::case_when(
-            condition == "unknown" & cell_line == "unknown" ~ "Missing", 
-            condition != "unknown" & cell_line != "unknown" ~ "Complete", 
-            TRUE ~ "Incomplete"
-            ), 
-        information_status = base::factor(x = information_status, levels = c("Complete", "Incomplete", "Missing"))
-      ) %>% 
-      dplyr::select(-selected)
-    
-    # update well_plate_df()
-    well_plate_df(well_plate_df_new)
+    # update layout_df()
+    current_layout_df(layout_df)
     
     shiny_fdb(in_shiny = TRUE, ui = "Well information successfully removed.")
     
   })
   
   # add well plate
-  oe <- shiny::observeEvent(input$ed_add_well_plate, {
+  oe <- shiny::observeEvent(input$add_well_plate, {
     
-    wp_list_new <- well_plate_list()
+    # check current_layout_df()
+    checkpoint(
+      evaluate = !base::identical(current_layout_df(), base::data.frame()), 
+      case_false = "no_well_plate_chosen"
+      )
     
-    # check all_wells()
-    checkpoint(evaluate = !base::identical(all_wells(), base::data.frame()), 
-               case_false = "no_well_plate_chosen")
+    checkpoint(
+      evaluate = isModifiedLayoutDf(df = current_layout_df()), 
+      case_false = "empty_well_plate"
+      )
     
+    # update exp design
+    exp_design <- new_exp_design()
     
-    checkpoint(evaluate = base::sum(all_wells()$information_status == "Complete") >= 1, 
-               case_false = "empty_well_plate")
-    
-    wp_df <- dplyr::mutate(.data = all_wells(), rois_per_well = input$ed_rois_per_well)
-    
-    # check information status
-    if(base::isFALSE(input$ed_dismiss_unknown)){
+    if(editing_well_plate()){
       
-      check <- check_wp_df_shiny(wp_df = wp_df)
+      well_plate <- 
+        setLayoutDf(
+          object = current_well_plate(),
+          layout_df = current_layout_df()
+          )
       
-      checkpoint(evaluate = check$evaluate, 
-                 case_false = "case_false", 
-                 error_notifications = check, 
-                 duration = 15) 
+      exp_design <- 
+        setWellPlate(
+          object = exp_design, 
+          well_plate = well_plate
+        )
       
-    } 
+    } else {
+      
+      exp_design <- 
+        addWellPlate(
+          object = exp_design, 
+          layout = current_layout_df(), 
+          name = current_well_plate_name()
+        )
+      
+    }
     
-    # add new well plate
-    wp_list_new[[well_plate_name()]][["wp_df"]] <- wp_df
+    new_exp_design(exp_design)
     
     # update reactive values
-    well_plate_list(wp_list_new)
-    well_plate_df(data.frame())
+    current_layout_df(data.frame())
+    current_well_plate(FALSE)
+    current_well_plate_name(character(1))
     
   })
   
   # save and proceed
-  oe <- shiny::observeEvent(input$ed_save_and_proceed, {
+  oe <- shiny::observeEvent(input$save_and_proceed, {
     
     checkpoint(
       evaluate = base::length(well_plate_list()) != 0,
       case_false = "no_well_plates_added"
       )
     
-    ed_list$proceed <- TRUE
-    
-    ed_list$object <- 
-      initiateEmptyCyproObject(
-        information = list(storage_directory = ed_list$default_directory),
-        name = ed_list$experiment_name,
-        set_up = ed_list$set_up, 
-        well_plates = well_plate_list()
+    cypro_object <- 
+      setExperimentDesign(
+        object = new_cypro_object(),
+        exp_design = new_exp_design()
       )
     
+    output_list$object <- cypro_object
+    output_list$proceed <- TRUE
     
     shiny_fdb(
       in_shiny = TRUE,
@@ -1010,11 +970,12 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
   
   ###--- save experiment design and proceed
   
-  oe <- shiny::observeEvent(input$ed_edit_well_plate, {
+  oe <- shiny::observeEvent(input$edit_well_plate, {
     
     ns <- session$ns
     
-    if(is_modified_wp_df(well_plate_df())){
+    if(isLayoutDf(df = current_layout_df()) &&
+       isModifiedLayoutDf(current_layout_df())){
       
       shiny::showModal(
         ui = shiny::modalDialog(
@@ -1027,11 +988,11 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
           ), 
           footer = shiny::tagList(
             act_button(
-              inputId = ns("ed_overwrite_well_plate2_confirmed"),
+              inputId = ns("overwrite_well_plate2_confirmed"),
               label = "Edit Well Plate"
               ),
             act_button(
-              inputId = ns("ed_overwrite_well_plate2_cancelled"),
+              inputId = ns("overwrite_well_plate2_cancelled"),
               label = "Cancel"
               )
           )
@@ -1040,12 +1001,23 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
       
     } else {
       
-      wp_df <- well_plate_list()[[input$ed_well_plate_select]]$wp_df
+      wp_name <- input$well_plate_select
       
-      wp_name <- input$ed_well_plate_select
+      well_plate <- 
+        getWellPlate(
+          object = new_exp_design(),
+          well_plate = wp_name
+        )
       
-      well_plate_name()
-      well_plate_df(wp_df)
+      layout_df <- 
+        getLayoutDf(
+          object = well_plate, 
+          well_plate = wp_name
+        )
+      
+      current_layout_df(layout_df)
+      current_well_plate(well_plate)
+      current_well_plate_name(wp_name)
       
     }
     
@@ -1053,27 +1025,34 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
   
   # overwrite the well plate that is currently being designed to edit 
   # a well plate that has been saved already 
-  oe <- shiny::observeEvent(input$ed_overwrite_well_plate2_confirmed, {
+  oe <- shiny::observeEvent(input$overwrite_well_plate2_confirmed, {
     
     shiny::removeModal()
     
-    wp_list <- well_plate_list()
-    wp_name <- input$ed_well_plate_select
+    wp_name <- input$well_plate_select
     
-    wp_df <- wp_list[[wp_name]]$wp_df
+    layout_df <- 
+      getLayoutDf(
+        object = exp_design(), 
+        well_plate = wp_name
+      )
     
-    well_plate_name(wp_name)
-    well_plate_df(wp_df)
+    well_plate <- 
+      getWellPlate(object = new_exp_design(), well_plate = wp_name)
+    
+    current_layout_df(layout_df)
+    current_well_plate(well_plate)
+    current_well_plate_name(wp_name)
     
   })
   
-  oe <- shiny::observeEvent(input$ed_overwrite_well_plate2_cancelled, {
+  oe <- shiny::observeEvent(input$overwrite_well_plate2_cancelled, {
     
     shiny::removeModal()
     
   })
   
-  oe <- shiny::observeEvent(input$ed_delete_well_plate, {
+  oe <- shiny::observeEvent(input$delete_well_plate, {
     
     ns <- session$ns
     
@@ -1082,32 +1061,34 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
         shiny::helpText(
           glue::glue(
             "A deleted well plate can not be restored and has to be designed ",
-            "again. Are you sure you want to remove well plate '{input$ed_well_plate_select}'?"
+            "again. Are you sure you want to remove well plate '{input$well_plate_select}'?"
           )
         ),
         footer = shiny::tagList(
-          act_button(inputId = ns("ed_delete_well_plate_confirmed"), label = "Yes, delete well plate"),
-          act_button(inputId = ns("ed_delete_well_plate_cancelled"), label = "No, cancel")
+          act_button(inputId = ns("delete_well_plate_confirmed"), label = "Yes, delete well plate"),
+          act_button(inputId = ns("delete_well_plate_cancelled"), label = "No, cancel")
         )
       )
     )
     
-    
   })
   
-  oe <- shiny::observeEvent(input$ed_delete_well_plate_confirmed, {
+  oe <- shiny::observeEvent(input$delete_well_plate_confirmed, {
     
     shiny::removeModal()
     
-    wp_list <- well_plate_list()
+    exp_design <- 
+      discardWellPlate(
+        object = new_exp_design(), 
+        well_plate = input$well_plate_select, 
+        verbose = FALSE
+      )
     
-    wp_list[[input$ed_well_plate_select]] <- NULL
-    
-    well_plate_list(wp_list)
+    new_exp_design(exp_design)
     
   })
   
-  oe <- shiny::observeEvent(input$ed_delete_well_plate_cancelled, {
+  oe <- shiny::observeEvent(input$delete_well_plate_cancelled, {
     
     shiny::removeModal()
     
@@ -1130,92 +1111,41 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
   
   ###--- overall information 
   
-  system_info <- base::Sys.info()
-  sysname <- system_info["sysname"]
-  
-  if(sysname == "Windows"){
+  exp_type <- shiny::eventReactive(input$overall_info_save, {
     
-    dir_roots <- shinyFiles::getVolumes()
-    
-  } else {
-    
-    dir_roots <- c("wd" = "~")
-    
-  }
-  
-  if(sysname == "Windows"){
-    
-    shinyFiles::shinyDirChoose(
-      input = input, 
-      id = "ed_experiment_dir", 
-      session = session, 
-      roots = dir_roots()
-    )
-    
-  } else {
-    
-    shinyFiles::shinyDirChoose(
-      input = input, 
-      id = "ed_experiment_dir", 
-      session = session, 
-      roots = dir_roots, 
-      restrictions = base::system.file(package = "base")
-    )
-    
-  }
-  
-  full_experiment_dir <- shiny::reactive({
-    
-    shiny::validate(
-      shiny::need(
-        expr = shiny::isTruthy(input$ed_experiment_name), 
-        message = "Experiment has not been named yet."
-      )
-    )
-    
-    shiny::validate(
-      shiny::need(expr = base::is.list(x = input$ed_experiment_dir), 
-                  message = "No folder chosen.")
-    )
-    
-    if(sysname == "Windows"){
-      
-      folder_dir <- hlpr_assemble_directory(input_list = input$ed_experiment_dir)
-      
-    } else {
-      
-      folder_dir <- shinyFiles::parseDirPath(roots = c(wd = "~"), input$ed_experiment_dir)
-      
-    }
-    
-    full_dir <- stringr::str_c(folder_dir, "/", input$ed_experiment_name, ".RDS", sep = "")
-    
-    ed_list$default_directory <- full_dir
-    
-    base::return(full_dir)
-    
-  })
-  
-  experiment_type <- shiny::eventReactive(input$ed_overall_info_save, {
-    
-    return(input$ed_exp_type)
+    base::class(new_cypro_object())
         
   })
   
-  ###--- imaging set up 
-  time_string <- shiny::reactive({
+  multiple_phases <- shiny::reactive({
     
-    stringr::str_c(1:input$ed_meas_num * input$ed_meas_interval,
-                   input$ed_interval_unit,
-                   sep = " ")
+    methods::is(new_cypro_object(), "CyproTimeLapseMP")
     
   })
   
-  image_string <- shiny::reactive({
+  ###--- imaging set up 
+  time_vec <- shiny::reactive({
     
-    english::ordinal(x = 1:input$ed_meas_num) %>% 
-      confuns::make_capital_letters(collapse.with = NULL) %>% 
-      stringr::str_c(., "Image", sep = " ")
+    make_time_vec(
+      n_frames = input$n_frames, 
+      interval = input$interval, 
+      interval_unit = input$interval_unit
+      )
+    
+  })
+  
+  frame_vec <- shiny::reactive({
+    
+    make_frame_vec(n_frames = input$n_frames)
+    
+  })
+  
+  time_frame_vec <- shiny::reactive({
+    
+    make_time_frame_vec(
+      time_vec = time_vec(), 
+      frame_vec = frame_vec()
+    )
     
   })
   
@@ -1223,21 +1153,46 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
   
   all_phases <- shiny::reactive({
     
-    base::seq_along(ed_list$set_up$phases)
+    shiny::req(new_exp_design())
+    
+    new_exp_design()@phases
+    
+  })
+  
+  n_phases <- shiny::reactive({
+    
+    shiny::req(all_phases())
+    
+    base::length(all_phases())
     
   })
   
   
   ###--- well plate set up
   
-  # well data.frames ---
-  all_wells <- shiny::reactive({
+  # well plate list 
+  
+  well_plate_list <- shiny::reactive({
     
-    well_plate_df()
+    shiny::req(new_exp_design())
+    
+    new_exp_design()@well_plates
     
   })
   
-  selected_wells <- shiny::reactive({
+  well_plate_names <- shiny::reactive({
+    
+    base::names(well_plate_list())
+    
+  })
+  
+  editing_well_plate <- shiny::reactive({
+    
+    current_well_plate_name() %in% well_plate_names()
+    
+  })
+  
+  selected_wells_layout_df <- shiny::reactive({
     
     xmin <- input$well_plate_brush$xmin
     xmax <- input$well_plate_brush$xmax
@@ -1255,15 +1210,21 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
     
     if(base::isTRUE(is_selected)){
       
-      selected_wells <- 
-      dplyr::filter(well_plate_df(),
+      selected_wells_layout_df <- 
+      dplyr::filter(current_layout_df(),
         dplyr::between(col_num, xmin, xmax),
         dplyr::between(row_num, ymin, ymax)
         )
       
     } 
     
-    base::return(selected_wells)
+    base::return(selected_wells_layout_df)
+    
+  })
+  
+  selected_wells <- shiny::reactive({
+    
+    selected_wells_layout_df()$well
     
   })
   
@@ -1290,7 +1251,7 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
     yh <- base::round(yh, digits = 0)
       
     hovered_well <- 
-      dplyr::filter(.data = well_plate_df(), row_num == yh & col_num == xh) %>% 
+      dplyr::filter(.data = current_layout_df(), row_num == yh & col_num == xh) %>% 
       dplyr::ungroup()
     
     shiny::validate(
@@ -1300,38 +1261,27 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
       )
     )
       
-    condition_df <- hovered_well$condition_df[[1]]
-    
-    if(base::ncol(condition_df) == 1){
+    if(multiple_phases()){
       
-      base::colnames(condition_df) <- "Condition"
+      df_res <- hovered_well_info_shiny_mp(df = hovered_well)
       
     } else {
       
-      base::colnames(condition_df) <- 
-        stringr::str_replace_all(
-          base::colnames(condition_df),
-          pattern = "Phase",
-          replacement = "Condition"
-          )
+      df_res <- hovered_well_info_shiny(df = hovered_well)
       
     }
     
-    condition_df <- 
-      purrr::map_df(.x = condition_df, .f = ~ tidyr::replace_na(data = .x, replace = "unknown"))
-    
-    well_cell_line_df <-
-      dplyr::select(hovered_well, `Well:` = well, Status = information_status, `Cell Line:` = cell_line)
-    
-    base::return(base::cbind(well_cell_line_df, condition_df))
+    base::return(df_res)
     
   })
   
-  well_plate_df2 <- shiny::reactive({
+  layout_df2 <- shiny::reactive({
     
-    wp_list <- well_plate_list()
-    
-    df <- wp_list[[input$ed_well_plate_select]]$wp_df
+    df <- 
+      getLayoutDf(
+        object = new_exp_design(),
+        well_plate = input$well_plate_select
+        )
     
     return(df)
     
@@ -1339,42 +1289,44 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
   
   # well plate visualization 
   
-  ed_well_plate_plot <- shiny::reactive({
+  well_plate_plot <- shiny::reactive({
     
     shiny::validate(
       shiny::need(
-        expr = !base::identical(all_wells(), base::data.frame()),
+        expr = !base::identical(current_layout_df(), base::data.frame()),
         message = "No well plate chosen.")
       )
     
     plot_well_plate_shiny(
-      wp_df = all_wells(),
-      selected_wells_df = selected_wells(),
-      aes_fill = "cl_condition",
-      aes_color = "information_status",
+      wp_df = current_layout_df(),
+      selected_wells_df = selected_wells_layout_df(),
+      aes_fill = "condition",
+      aes_color = "info_status",
       color_values = status_colors
       ) +
       ggplot2::labs(
-        color = "Information Status",
-        subtitle = stringr::str_c("Name:", well_plate_name(), sep = " ")
+        color = "Info Status",
+        subtitle = stringr::str_c("Name:", current_well_plate_name(), sep = " ")
         ) 
     
   })
   
-  ed_well_plate_plot2 <- shiny::reactive({
+  well_plate_plot2 <- shiny::reactive({
     
-    shiny::req(shiny::isTruthy(base::names(well_plate_list())))
+    shiny::req(well_plate_names())
+    shiny::req(input$well_plate_select %in% well_plate_names())
+    
     
     plot_well_plate_shiny(
-      wp_df = well_plate_df2(),
+      wp_df = layout_df2(),
       selected_wells_df = NULL,
-      aes_fill = input$ed_well_plate_plot2_color, 
-      aes_color = "information_status",
+      aes_fill = input$well_plate_plot2_color, 
+      aes_color = "info_status",
       color_values = status_colors
     ) +
       ggplot2::labs(
-        color = "Information Status",
-        subtitle = stringr::str_c("Name:", input$ed_well_plate_select, sep = " ")
+        color = "Info Status",
+        subtitle = stringr::str_c("Name:", input$well_plate_select, sep = " ")
       ) 
     
   })
@@ -1383,15 +1335,15 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
   
 # Plot outputs ------------------------------------------------------------
   
-  output$ed_well_plate_plot <- shiny::renderPlot({
+  output$well_plate_plot <- shiny::renderPlot({
     
-    ed_well_plate_plot()
+    well_plate_plot()
     
   })
   
-  output$ed_well_plate_plot2 <- shiny::renderPlot({
+  output$well_plate_plot2 <- shiny::renderPlot({
     
-    ed_well_plate_plot2()
+    well_plate_plot2()
     
   })
   
@@ -1399,19 +1351,20 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
   
 # Table outputs -----------------------------------------------------------
   
-  output$ed_well_info <- shiny::renderTable({
+  output$well_info <- shiny::renderTable({
     
     hovered_well_info()
     
   })
   
-  output$ed_well_plate_folders <- DT::renderDataTable({
+  output$well_plate_folders <- DT::renderDataTable({
+    
     
     df <- 
       data.frame(
         "Name" = base::names(well_plate_list()),
-        "Type" = purrr::map_chr(.x = well_plate_list(), ~ base::unique(.x[["wp_df"]][["type"]])), 
-        "ROIS per Well" = purrr::map_dbl(.x = well_plate_list(), ~ base::unique(.x[["wp_df"]][["rois_per_well"]]))
+        "Type" = purrr::map_chr(.x = well_plate_list(), ~ base::unique(.x@layout[["well_plate_type"]])), 
+        "ROIS per Well" = purrr::map_dbl(.x = well_plate_list(), ~ base::unique(.x@layout[["rois_per_well"]]))
       )
     
     base::rownames(df) <- NULL
@@ -1420,26 +1373,20 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
     
   })
   
-# Text outputs ------------------------------------------------------------
+  # -----
   
-  output$ed_chosen_dir <- shiny::renderText({
-    
-    well_plate_dir()
-    
-  })
+
   
-  output$ed_experiment_path <- shiny::renderText({
-    
-    full_experiment_dir()
-    
-  })
+  # -----
   
   
 # Module return value -----------------------------------------------------
   
-  base::return(ed_list)
+  base::return(output_list)
   
   })
+  
+  # -----
 
 }
 

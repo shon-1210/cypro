@@ -22,7 +22,7 @@ getPamConv(object, feature_set, phase = NULL, with_data = TRUE)
 getPamObject(object, feature_set, phase = NULL, with_data = TRUE)
 }
 \arguments{
-\item{object}{A valid cypro object.}
+\item{object}{Any S4-object for whose class a method has been defined.}
 
 \item{feature_set}{Character value. The name of the feature set of interest.}
 

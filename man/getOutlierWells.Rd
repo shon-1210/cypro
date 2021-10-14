@@ -7,7 +7,7 @@
 getOutlierWells(object, threshold = 0.75, verbose = NULL)
 }
 \arguments{
-\item{object}{A valid cypro object.}
+\item{object}{Any S4-object for whose class a method has been defined.}
 
 \item{threshold}{Numeric value. The minimum percentage of wells to which
 a wells distance must be assumed to be an outlier. Defaults to 0.75.}

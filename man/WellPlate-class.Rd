@@ -4,16 +4,16 @@
 \name{WellPlate-class}
 \alias{WellPlate-class}
 \alias{WellPlate}
-\title{Cypro Well Plate Design}
+\title{The WellPlate Class}
 \description{
-S4-objects that abstract the design of every well plate.
+S4-objects that abstracts a well plate.
 It additionally carries information about if and how the related data has been
 loaded.
 }
 \section{Slots}{
 
 \describe{
-\item{\code{experiment}}{character. The name of the \code{Cypro}-object it is part of.}
+\item{\code{experiment}}{character. The name of the \code{Cypro} object it is part of.}
 
 \item{\code{files}}{character. All spreadsheet-files directories that have been loaded
 for that well plate.}

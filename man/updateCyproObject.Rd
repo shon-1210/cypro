@@ -7,7 +7,7 @@
 updateCyproObject(object)
 }
 \arguments{
-\item{object}{A valid cypro object.}
+\item{object}{Any S4-object for whose class a method has been defined.}
 }
 \value{
 A cypro object whose architecture is up to date with the latest version.

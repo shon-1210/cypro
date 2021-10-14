@@ -7,7 +7,7 @@
 addVariableSet(object, variable_names, set_name, overwrite = FALSE)
 }
 \arguments{
-\item{object}{A valid cypro object.}
+\item{object}{Any S4-object for whose class a method has been defined.}
 
 \item{variable_names}{Character vector. Denotes the variable names that are part
 of the variable set.}

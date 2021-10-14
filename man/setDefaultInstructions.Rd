@@ -7,7 +7,7 @@
 setDefaultInstructions(object)
 }
 \arguments{
-\item{object}{A valid cypro object.}
+\item{object}{Any S4-object for whose class a method has been defined.}
 }
 \value{
 An updated version of the input \code{cypro}-object.

@@ -18,11 +18,14 @@ checkpoint(
     "Please load a valid example file and provide the information required.",     
     invalid_column_input =
     "If x-coordinates and y-coordinates are not part of the example file you must at least choose one additional column.",
+    invalid_exp_name =
+    "Invalid experiment name. Must start with a letter and must not contain empty space.",
     invalid_example_df = "The example data must have at least four columns.",
-    invalid_image_number = "The number of covered areas per well must not be 0.",
-    invalid_meas_number = "The number of measurements must not be 0.", invalid_wp_name =
-    "Invalid or already existing well plate name.", missing_both_inputs =
-    "Please specify at least one of cell line or condition input.",     
+    invalid_roi_number = "The number of regions of interest per well must not be 0.",
+    invalid_n_frames = "The number of frames must not be 0.", invalid_wp_name =
+    "Invalid or already existing well plate name. Must start with a letter and must not contain empty space or '-'.",
+         missing_both_inputs =
+    "Please specify at least one of cell line or condition input.",
     missing_condition_input =
     "Could not save well information. Please make sure to denote a condition for all phases before clicking on 'Add Info'.",
     missing_software = "Please choose the software from which the files derived.",
@@ -30,16 +33,16 @@ checkpoint(
     "Please denote the software you used to generate the data files.",
     no_storage_directory =
     "Please choose a folder in which to store the cypro object and name the experiment.",
-    no_well_plates_added = "No well plates have been added yet.", no_well_plate_chosen =
-    "Please choose a well plate first.",      no_wells_chosen =
+         no_well_plates_added = "No well plates have been added yet.",
+    no_well_plate_chosen = "Please choose a well plate first.", no_wells_chosen =
     "Could not save well information. Please select at least one well.", no_file_input =
     "Please select an input file first.", no_input_file_check =
     "Please assign the experiment design variables first.", no_example_df =
     "No example file has been loaded yet.", no_id_vars =
     "No identifier variables have been denoted yet.", no_module_vars =
-    "No module variables have been denoted yet.", no_add_vars =
+    "No module variables have been denoted yet.",      no_add_vars =
     "No additional variables haven been denoted yet.", incomplete_vardenotation =
-    "You need to complete the variable denotation first.",      no_set_up_saved =
+    "You need to complete the variable denotation first.", no_set_up_saved =
     "No experiment set up has been saved yet.", well_plates_not_ready =
     "There are still well plates left that do not match the requirements to be loaded.",
     no_data_read_in = "No files have been loaded yet.", no_cells_remaining =
