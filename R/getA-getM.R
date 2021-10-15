@@ -1,4 +1,4 @@
-#' @include S4-documentation.R
+#' @include S4-classes.R
 NULL
 
 #' @include S4-method-skeletons.R

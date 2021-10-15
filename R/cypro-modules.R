@@ -1,5 +1,5 @@
 
-#' @include compute-family.R logical-tests.R r-objects.R
+#' @include compute.R logical-tests.R r-objects.R
 #' 
 NULL
 

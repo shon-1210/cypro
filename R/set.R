@@ -473,7 +473,6 @@ setCondition.layout_df_mp <- function(df, condition, in_shiny = FALSE, verbose =
 
 
 
-
 # E -----------------------------------------------------------------------
 
 
@@ -651,6 +650,78 @@ setMethod(f = "setLayoutDf", signature = "Cypro", definition = function(object, 
   return(object)
   
 })
+
+
+
+# P -----------------------------------------------------------------------
+
+
+#' @title Set progress status
+#' 
+#' @description Sets logical values in the object's slot @@progress to keep 
+#' track of the progress made during the preparation process.
+#'
+#' @inherit setWellInfo params return
+#' @param designExperiment,assignVariables,loadData TRUE or FALSE.
+#' 
+#'
+#' @return The input object.
+#' @export
+#'
+
+setGeneric(name = "setProgress", def = function(object, ...){
+  
+  standardGeneric(f = "setProgress")
+  
+})
+
+#' @rdname setProgress
+#' @export
+setMethod(
+  f = "setProgress",
+  signature = "Cypro",
+  definition = function(object,
+                        designExperiment = NULL,
+                        assignVariables = NULL,
+                        loadData = NULL, 
+                        verbose = TRUE){
+    
+    if(base::isTRUE(designExperiment) | base::isFALSE(designExperiment)){
+      
+      methods::slot(object@progress, "designExperiment") <- designExperiment
+      
+      confuns::give_feedback(
+        msg = glue::glue("Progress status of function 'designExperiment()' hase been set to {designExperiment}."),
+        verbose = verbose
+      )
+      
+    }
+    
+    if(base::isTRUE(assignVariables) | base::isFALSE(assignVariables)){
+      
+      methods::slot(object@progress, "assignVariables") <- assignVariables
+      
+      confuns::give_feedback(
+        msg = glue::glue("Progress status of function 'assignVariables()' hase been set to {assignVariables}."),
+        verbose = verbose
+      )
+      
+    }
+    
+    if(base::isTRUE(loadData) | base::isFALSE(loadData)){
+      
+      methods::slot(object@progress, "loadData") <- loadData
+      
+      confuns::give_feedback(
+        msg = glue::glue("Progress status of function 'loadData()' hase been set to {loadData}."),
+        verbose = verbose
+      )
+      
+    }
+    
+    return(object)
+    
+  })
 
 
 # W -----------------------------------------------------------------------

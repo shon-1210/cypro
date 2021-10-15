@@ -101,18 +101,6 @@ designExperiment <- function(){
           
           ed_list <- shiny::reactiveValuesToList(ed_results)
           
-          check <- base::tryCatch({
-            
-            base::class(ed_list$object) == "cypro"
-            
-          }, error = function(error){
-            
-            FALSE
-            
-          })
-          
-          checkpoint(evaluate = check, case_false = "incomplete_cypro")
-          
           cypro_object <- ed_list$object
           
           cypro_object@set_up$progress$experiment_design <- TRUE
