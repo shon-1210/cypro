@@ -10,7 +10,7 @@ renameStatsDf(object, ...)
 renameStatsDfWith(object, ...)
 }
 \arguments{
-\item{object}{Any S4-object for whose class a method has been defined.}
+\item{object}{Any object for whose class a method has been defined.}
 
 \item{...}{Input for function \code{dplyr::rename_with()}. This includes the arguments
 \code{.fn} and \code{.cols}.}

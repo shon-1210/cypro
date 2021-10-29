@@ -10,7 +10,7 @@ discardClusterVariables(object, cluster_variables, phase = NULL)
 discardMetaVariables(object, meta_variables, phase = NULL)
 }
 \arguments{
-\item{object}{Any S4-object for whose class a method has been defined.}
+\item{object}{Any object for whose class a method has been defined.}
 
 \item{cluster_variables, meta_variables}{Character vector. The variables you want to discard.}
 

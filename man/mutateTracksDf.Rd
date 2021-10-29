@@ -7,7 +7,7 @@
 mutateTracksDf(object, ..., group_by = NULL)
 }
 \arguments{
-\item{object}{Any S4-object for whose class a method has been defined.}
+\item{object}{Any object for whose class a method has been defined.}
 
 \item{...}{Name-value pairs according to the syntax of \code{dplyr::mutate()}.
 This can be single or several expressions as well as usage of \code{dplyr::across()} if several

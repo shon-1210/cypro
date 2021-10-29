@@ -145,6 +145,36 @@ setStorageDirectory <- function(object, directory){
 
 
 
+#' @title Set additional variables
+#' 
+#' @description Sets the variable names that are supposed to be included 
+#' during the loading process. (In addition to what has been assigned to 
+#' the module related variables.)
+#'
+#' @inherit argument_dummy params
+#' @param var_names Character vector. 
+#'
+#' @return The input object. 
+#' @export
+
+setGeneric(name = "setAdditionalVariableNames", def = function(object, ...){
+  
+  standardGeneric(f = "setAdditionalVariableNames")
+  
+})
+
+
+#' @rdname setAdditionalVariables
+#' @export
+setMethod(f = "setAdditionalVariableNames", signature = "Cypro", definition = function(object, var_names){
+  
+  object@information$additional_variables <- var_names
+  
+  return(object)
+  
+})
+
+
 
 
 # C -----------------------------------------------------------------------
@@ -283,7 +313,7 @@ setCondition.layout_df <- function(df, condition, in_shiny = FALSE, verbose = TR
         msg = msg, 
         fdb.fn = "stop", 
         with.time = FALSE, 
-        in_shiny = in_shiny
+        in.shiny = in_shiny
       )
       
     } else {
@@ -295,7 +325,7 @@ setCondition.layout_df <- function(df, condition, in_shiny = FALSE, verbose = TR
           .data = df, 
           condition = dplyr::case_when(
             selected ~ {{condition}},
-            TRUE ~ cell_line
+            TRUE ~ condition
           )
         )
       
@@ -305,7 +335,7 @@ setCondition.layout_df <- function(df, condition, in_shiny = FALSE, verbose = TR
         msg = glue::glue("Set condition to '{condition}' in {n_wells} wells."),
         with.time = FALSE,
         verbose = verbose,
-        in_shiny = in_shiny
+        in.shiny = in_shiny
       )
       
     }
@@ -316,7 +346,7 @@ setCondition.layout_df <- function(df, condition, in_shiny = FALSE, verbose = TR
       msg = "Did not set condition as none has been defined.",
       with.time = FALSE,
       verbose = verbose, 
-      in_shiny = in_shiny, 
+      in.shiny = in_shiny, 
     )
     
   }
@@ -335,7 +365,7 @@ setCondition.layout_df_mp <- function(df, condition, in_shiny = FALSE, verbose =
       msg = "No wells are selected.",
       fdb.fn = "stop",
       with.time = FALSE, 
-      in_shiny = in_shiny
+      in.shiny = in_shiny
     )
     
   }
@@ -380,7 +410,7 @@ setCondition.layout_df_mp <- function(df, condition, in_shiny = FALSE, verbose =
         msg = msg, 
         fdb.fn = "stop", 
         with.time = FALSE,
-        in_shiny = in_shiny
+        in.shiny = in_shiny
       )
       
     }
@@ -395,7 +425,7 @@ setCondition.layout_df_mp <- function(df, condition, in_shiny = FALSE, verbose =
         msg = msg, 
         fdb.fn = "stop",
         with.time = FALSE,
-        in_shiny = in_shiny
+        in.shiny = in_shiny
       )
       
     } else {
@@ -445,7 +475,7 @@ setCondition.layout_df_mp <- function(df, condition, in_shiny = FALSE, verbose =
         msg = msg, 
         with.time = FALSE, 
         verbose = verbose, 
-        in_shiny = in_shiny
+        in.shiny = in_shiny
       )
       
     }
@@ -456,7 +486,7 @@ setCondition.layout_df_mp <- function(df, condition, in_shiny = FALSE, verbose =
       msg = "Did not set conditions as none have been defined.", 
       with.time = FALSE,
       verbose = verbose,
-      in_shiny = in_shiny
+      in.shiny = in_shiny
     )
     
   }
@@ -466,15 +496,7 @@ setCondition.layout_df_mp <- function(df, condition, in_shiny = FALSE, verbose =
 }
 
 
-
-
-
-
-
-
-
 # E -----------------------------------------------------------------------
-
 
 
 #' @title Set experiment design 
@@ -584,9 +606,91 @@ setInfoStatus.layout_df_mp <- function(df){
   
 }
 
+#' @title Set input example
+#' 
+#' @description Sets the input example during \code{assignVariables()} in 
+#' slot @@example_df of the S4-class \code{ExperimentDesign}.
+#' 
+#' @inherit argument_dummy params
+#' @param df The example data.frame
+#' @param dir Character value. The file directory of the loaded data.frame.
+#' @return The input object.
+#' 
+#' @export
+#'
+setGeneric(name = "setInputExample", def = function(object, df, dir){
+  
+  standardGeneric(f = "setInputExample")
+  
+})
+
+#' @rdname setInputExample
+#' @export
+setMethod(f = "setInputExample", signature = "ExperimentDesign", def = function(object, df, dir){
+  
+  confuns::is_value(x = dir, mode = "character")
+  
+  object@example_df <- df
+  object@example_dir <- dir
+  
+  return(object)
+  
+})
+
+#' @rdname setInputExample
+#' @export
+setMethod(f = "setInputExample", signature = "Cypro", def = function(object, df, dir){
+  
+  exp_design <- getExperimentDesign(object)
+  
+  exp_design <- 
+    setInputExample(
+      object = exp_design, 
+      df = df, 
+      dir = dir
+    )
+  
+  object <- setExperimentDesign(object, exp_design = exp_design)
+  
+  return(object)
+  
+})
+
+
 
 # L -----------------------------------------------------------------------
 
+
+#' @title Set layout data.frame attributes
+#' 
+#' @description Safely sets layout data.frame specific attributes. 
+#' 
+#' @param df A data.frame of class \code{layout_df}.
+#' @param attr A named list to be added to the attributes of input data.frame.
+#' 
+#' @return A data.frame.
+#' 
+#' @export
+
+setLayoutAttributes <- function(df, attr){
+  
+  attr_names <- 
+    confuns::keep_named(attr) %>% 
+    base::names()
+  
+  layout_attr <- base::attributes(df)
+  
+  for(name in attr_names){
+    
+    layout_attr[[name]] <- attr[[name]]
+    
+  }
+  
+  base::attributes(df) <- layout_attr
+  
+  return(df)
+  
+}
 
 #' @title Set layout data.frame
 #' 
@@ -652,6 +756,89 @@ setMethod(f = "setLayoutDf", signature = "Cypro", definition = function(object, 
 })
 
 
+# M -----------------------------------------------------------------------
+
+#' @title Set module activity
+#' 
+#' @description Sets slot @@used of the analysis modules which activates 
+#' or inactivates the respective modules.  
+#'
+#' @inherit argument_dummy params
+#' @param activity Logical vector. Must be named according to the modules for which
+#' slot @@activity is supposed to be set.  
+#'
+#' @return The input object
+#' @export
+#'
+
+setGeneric(name = "setModuleActivity", def = function(object, ...){
+  
+  standardGeneric("setModuleActivity")
+  
+})
+
+
+#' @rdname setModuleActivity
+#' @export
+setMethod(f = "setModuleActivity", signature = "Cypro", definition = function(object, activity, in_shiny = FALSE, verbose = TRUE){
+  
+  activity <- confuns::keep_named(input = activity)
+  
+  activity[base::names(activity) %in% c("identification", "identification_timelapse")] <- NULL
+  
+  names_activity <- base::names(activity) 
+  
+  confuns::check_one_of(
+    input = names_activity, 
+    against = base::names(object@modules)
+  )
+  
+  if(confuns::is_list(input = activity)){
+    
+    activity <- 
+      purrr::flatten_lgl(.x = activity) %>% 
+      purrr::set_names(nm = base::names(activity))
+    
+  }
+  
+  activity <- activity[!base::names(activity) == "identification"]
+  
+  for(module_name in base::names(activity)){
+
+    m_activity <- activity[module_name]
+    
+    if(object@modules[[module_name]]@active != m_activity){
+      
+      object@modules[[module_name]]@active <- m_activity
+      
+      ref_activity <- base::ifelse(test = m_activity, yes = "Activated", no = "Deactivated")
+      ref_module <- object@modules[[module_name]]@name_in_app
+      
+      if(base::isTRUE(in_shiny)){
+        
+        fdb_fn <- base::ifelse(test = m_activity, yes = "message", no = "warning")
+        
+      } else {
+        
+        fdb_fn <- "message"
+        
+      }
+      
+      confuns::give_feedback(
+        msg = glue::glue("{ref_activity} module '{ref_module}'."),
+        verbose = verbose, 
+        in.shiny = in_shiny, 
+        with.time = FALSE, 
+        fdb.fn = fdb_fn
+      )
+      
+    }
+    
+  }
+  
+  return(object)
+  
+})
 
 # P -----------------------------------------------------------------------
 
@@ -691,7 +878,7 @@ setMethod(
       methods::slot(object@progress, "designExperiment") <- designExperiment
       
       confuns::give_feedback(
-        msg = glue::glue("Progress status of function 'designExperiment()' hase been set to {designExperiment}."),
+        msg = glue::glue("Progress status of function 'designExperiment()' has been set to {designExperiment}."),
         verbose = verbose
       )
       
@@ -702,7 +889,7 @@ setMethod(
       methods::slot(object@progress, "assignVariables") <- assignVariables
       
       confuns::give_feedback(
-        msg = glue::glue("Progress status of function 'assignVariables()' hase been set to {assignVariables}."),
+        msg = glue::glue("Progress status of function 'assignVariables()' has been set to {assignVariables}."),
         verbose = verbose
       )
       
@@ -713,7 +900,7 @@ setMethod(
       methods::slot(object@progress, "loadData") <- loadData
       
       confuns::give_feedback(
-        msg = glue::glue("Progress status of function 'loadData()' hase been set to {loadData}."),
+        msg = glue::glue("Progress status of function 'loadData()' has been set to {loadData}."),
         verbose = verbose
       )
       
@@ -722,6 +909,131 @@ setMethod(
     return(object)
     
   })
+
+
+# V -----------------------------------------------------------------------
+
+
+#' @title Set variable assinment 
+#' 
+#' @description Only to use within \code{assignVariables()} as it is relying 
+#' on the input list that exists in active shiny sessions. 
+#' 
+#' Picks the variable assignment from the input list of the shiny session and 
+#' assigns it to the respective variable of the module.  
+#'
+#' @inherit argument_dummy params
+#' @param input_list The list to which one refers as \code{input} in shiny sessions
+#' outputted by \code{shiny::reactiveValuesToList()}.
+#'
+#' @return The input object. 
+#' @export
+#'
+setGeneric(name = "setVariableAssignmentShiny", def = function(object, ...){
+  
+  standardGeneric(f = "setVariableAssignmentShiny")
+  
+})
+
+#' @rdname setVariableAssignmentShiny
+#' @export
+setMethod(f = "setVariableAssignmentShiny", signature = "AnalysisModule", function(object, input_list){
+  
+  module_name <- object@name_in_cypro
+  
+  object@variables_optional <- 
+    purrr::map(
+      .x = object@variables_optional,
+      .f = ~ set_variable_assignment_shiny_hlpr(variable = .x, input_list = input_list, module_name = module_name)
+    )
+  
+  object@variables_required <- 
+    purrr::map(
+      .x = object@variables_required,
+      .f = ~ set_variable_assignment_shiny_hlpr(variable = .x, input_list = input_list, module_name = module_name)
+    )
+  
+  object@variables_computable <- 
+    purrr::map(
+      .x = object@variables_computable,
+      .f = ~ set_variable_assignment_shiny_hlpr(variable = .x, input_list = input_list, module_name = module_name)
+    )
+  
+  return(object)
+  
+})
+
+
+#' @rdname setVariableAssignmentShiny
+#' @export
+
+setMethod(
+  f = "setVariableAssignmentShiny",
+  signature = "Cypro",
+  definition = function(object, input_list, modules = NULL, validate = TRUE){
+    
+  object@modules <- 
+    purrr::map(
+      .x = object@modules,
+      .f = function(module){
+        
+        if(base::is.null(modules) | module@name_in_cypro %in% modules & base::isTRUE(module@active)){
+          
+          module <- setVariableAssignmentShiny(object = module, input_list = input_list)
+          
+        }
+        
+        return(module)
+        
+      })
+  
+  if(base::isTRUE(validate)){
+
+    validateVariableAssignment(
+      object = object, 
+      modules = modules, 
+      in_shiny = TRUE, 
+      stop_if_false = TRUE
+    )    
+    
+  }
+
+  
+  return(object)
+  
+})
+
+set_variable_assignment_shiny_hlpr <- function(variable, input_list, module_name){
+  
+  mpattern <- stringr::str_c(module_name, "$", sep = "")
+  
+  vpattern <- variable@name_in_cypro
+  
+  pattern <- stringr::str_c("vardenotation", vpattern, mpattern, sep = "-")
+  
+  name_in_example <- 
+    confuns::lselect(
+      lst = input_list,
+      matches(pattern)
+      #contains("vardenotation-") &
+        #matches(vpattern) &
+        #matches(mpattern)
+    ) %>% 
+    purrr::flatten_chr()
+  
+  if(name_in_example == "NA"){
+    
+    variable@name_in_example <- NA_character_
+    
+  } else {
+    
+    variable@name_in_example <- name_in_example
+    
+  }
+  
+  return(variable)
+  
+}
 
 
 # W -----------------------------------------------------------------------
@@ -785,7 +1097,7 @@ setWellInfo.layout_df <- function(df,
 #' slot of input for argument \code{object}.
 #'
 #' @inherit argument_dummy params
-#' @param well_plate Object of class \code{WellPlate}.
+#' @param well_plate_object Object of class \code{WellPlate}.
 #' 
 #' @details Slots @@name and @@experiment of the \code{WellPlate} object must not be empty.
 #' 
@@ -804,18 +1116,36 @@ setGeneric(name = "setWellPlate", def = function(object, ...){
 
 #' @rdname setWellPlate
 #' @export
-setMethod(f = "setWellPlate", signature = "ExperimentDesign", function(object, well_plate){
+setMethod(f = "setWellPlate", signature = "ExperimentDesign", function(object, well_plate_object){
   
-  base::stopifnot(object@experiment == well_plate@experiment)
+  base::stopifnot(object@experiment == well_plate_object@experiment)
   
   confuns::is_vec(
-    x = well_plate@name, 
-    ref = "well_plate@name",
+    x = well_plate_object@name, 
+    ref = "well_plate_object@name",
     mode = "character",
     of.length = 1
   )
   
-  object@well_plates[[well_plate@name]] <- well_plate
+  object@well_plates[[well_plate_object@name]] <- well_plate_object
+  
+  return(object)
+  
+})
+
+#' @rdname setWellPlate
+#' @export
+setMethod(f = "setWellPlate", signature = "Cypro", definition = function(object, well_plate_object){
+  
+  exp_design <- getExperimentDesign(object)
+  
+  exp_design <- 
+    setWellPlate(
+      object = exp_design, 
+      well_plate_object = well_plate_object
+    )
+  
+  object <- setExperimentDesign(object, exp_design = exp_design)
   
   return(object)
   

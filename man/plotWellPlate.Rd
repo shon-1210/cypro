@@ -28,7 +28,7 @@ plotWellPlate(
 )
 }
 \arguments{
-\item{object}{Any S4-object for whose class a method has been defined.}
+\item{object}{Any object for whose class a method has been defined.}
 
 \item{phase}{Character or numeric. If character, the ordinal value referring to the phase of interest (e.g. \emph{'first'}, \emph{'second'} etc.).
 referring to the phase of interest or \emph{'all'}. If numeric, the number referring to the phase.
@@ -36,6 +36,9 @@ referring to the phase of interest or \emph{'all'}. If numeric, the number refer
 If set to NULL takes the phase denoted as default with \code{adjustDefault()}.
 
 Ignored if the experiment design contains only one phase.}
+
+\item{well_plates}{Character vector. The names of the well plates of interest. Valid inputs can be obtained
+via \code{getWellPlateNames()}.}
 
 \item{plot_type}{Character value. Either \emph{'well'} or \emph{'tile'}.
 Affects the geometry with which the wells are displayed. (Either

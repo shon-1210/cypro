@@ -3,18 +3,18 @@
 \name{addWellPlate}
 \alias{addWellPlate}
 \alias{addWellPlate,ExperimentDesign-method}
-\title{Add well plate S4 object}
+\title{Add a well plate}
 \usage{
 addWellPlate(object, ...)
 
 \S4method{addWellPlate}{ExperimentDesign}(object, name, layout, ...)
 }
 \arguments{
-\item{object}{Any S4-object for whose class a method has been defined.}
+\item{object}{Any object for whose class a method has been defined.}
 
 \item{...}{Additional arguments given to \code{methods::new(Class = \emph{'WellPlate'}, ...)}.}
 
-\item{name, layout}{Input as described in documentation of class \code{WellPlate}.
+\item{name, layout}{Input for the \code{WellPlate} object as described in documentation of class \code{WellPlate}.
 See details for more information.}
 }
 \value{
@@ -26,7 +26,8 @@ slot of input for argument \code{object}.
 }
 \details{
 Slot @index of the new well plate is automatically defined by adding 1 to the sum of all well plates found.
-Slot @experiment of the new well plate is inherited by the
+Slot @experiment of the new well plate is inherited by the input for argument \code{object}. Slot @type
+is defined by the attribute \emph{well_plate_type} of the input for argument \code{layout} (which has to be a \code{layout_df}).
 
 Input for slot @name must not be already used by another well plate.
 }

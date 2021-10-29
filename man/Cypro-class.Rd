@@ -6,12 +6,13 @@
 \alias{Cypro}
 \title{The Cypro Class}
 \description{
-The \code{Cypro}-object is a representation of high-content-screening (HCS)
+The \code{Cypro} object is a representation of high-content-screening (HCS)
 and time-lapse-imaging experiment for R. In both cases images from cells have been
 made and the features of the captured cells have been quantified by image analyzing
 software such as \emph{CellProfer, CellTracker, ImageJ}.
 
-For details on slot @cdata see documentation for S4-classes \code{Cdata}.
+The \code{Cypro}-class is only the parent of the actual \code{Cypro}-classes that are
+used, namely \code{CyproScreening}, \code{CyproTimeLapse} and \code{CyproTimeLapseMP}.
 }
 \section{Slots}{
 
@@ -26,7 +27,7 @@ occupy the slots \emph{clustering}, \emph{correlation} and \emph{dim_red}.}
 in \code{cypro}.}
 
 \item{\code{default}}{list. Contains the object specific default input for recurring arguments. Can
-be savely modified via \code{adjustDefaultInstructions()}.}
+be safely modified via \code{adjustDefaultInstructions()}.}
 
 \item{\code{experiment}}{character. The name of the experiment.}
 
@@ -37,7 +38,7 @@ a \emph{feature_set}. Based on these features clustering and dimensional reducti
 performed. This allows to store several clustering results based on different features in one and the
 same \code{Cypro}-object.}
 
-\item{\code{information}}{list. Misellaneous information around the object.}
+\item{\code{information}}{list. Miscellaneous information around the object.}
 
 \item{\code{modules}}{list. Each slot is again a list representing one of the modules that has been denoted
 during \code{assignVariables()}. In addition to the variable denotation it can contain
@@ -45,7 +46,7 @@ module specific data, computation or analysis results.}
 
 \item{\code{progress}}{Progress. S4-object of class \code{Progress.}}
 
-\item{\code{qcheck}}{list. Contains results of quality check related results such as outlier detection.}
+\item{\code{quality_checks}}{list. Contains results of quality check related results such as outlier detection.}
 
 \item{\code{storage}}{character. Directory under which the \code{Cypro}-object is stored by default
 using \code{saveCyproObject()}.}
@@ -57,3 +58,6 @@ has gone through. See functions prefixed with \code{subsetBy*()}.}
 track of the version of the object and the latest version of the cypro package.}
 }}
 
+\seealso{
+\code{CyproScreening}-class, \code{CyproTimeLapse}-class, \code{CyproTimeLapseMP}-class
+}

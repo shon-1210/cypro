@@ -83,6 +83,9 @@ dim_red_df <- function(dim_red_df){}
 #' @param clrsp Character value. Specifies the color spectrum to be used to represent
 #' continuous values of numeric variables. Run \code{validColorSpectra()} to obtain
 #' valid input options.
+#' 
+#' @param cypro_nc Logical value. Denotes which regular expression to use and thus, the valid 
+#' naming conventions. If TRUE, only the naming convention of the \code{cypro}-package is considered valid.
 #'
 #' @param discrete_feature Character value. Specifies the name of the grouping variable
 #' of interest. Use \code{getGroupingOptions()} to obtain all valid input options.
@@ -106,6 +109,8 @@ dim_red_df <- function(dim_red_df){}
 #' @param grouping_variable Character value. Denotes the categorical variable - the grouping of cells - 
 #' of interest. Use \code{getGroupingVariableNames()} to obtain all valid input options. 
 #' @param image Numeric value. The well-image of interest. 
+#' @param info_status Character vector. Valid options are \emph{'Complete', 'Incomplete', 'Missing'}. Refers
+#' to the information status of a well regarding cell and condition.
 #' @param linesize Numeric value. Denotes the size of the lines drawn. 
 #' @param linetype Character value. Valid options are \emph{'solid', 'twodash', 'longdash', 'dotted'}
 #' and \emph{'dotdash'}.
@@ -135,10 +140,13 @@ dim_red_df <- function(dim_red_df){}
 #' @param method_pam Character vector (or value see details for more.) Denotes the algorithm of interest. 
 #' Valid input options are \emph{'euclidean'} and \emph{'manhattan'}.
 #' 
+#' @param module_name Character value. The name of the analysis module. Use \code{validModuleNames()} or 
+#' \code{getModuleNames()} to obtain valid input options.
+#' 
 #' @param n_cells Numeric calue. Determines the number of cells that are randomly chosen from 
 #' every group to be displayed. Useful to keep plots insightful and aesthetically pleasing.
 #' 
-#' @param object Any S4-object for whose class a method has been defined. 
+#' @param object Any object for whose class a method has been defined. 
 #' 
 #' @param overwrite Logical value. Must be set to TRUE in case of overlapping 
 #' variable names.
@@ -178,10 +186,10 @@ dim_red_df <- function(dim_red_df){}
 #' function is stopped via \code{stop()} printing an informative message. If FALSE the 
 #' resulting logical value is returned. 
 #'
-#' @param well_plate Character value. Denotes the well plate of interest. Use function \code{getWellPlateNames()}
-#' to obtain all valid input options.
 #' @param well Character value. The well of interest (e.g. \emph{'A1'}, \emph{'B12'})
 #' @param well_plate Character value. The name of the well plate of interest. Valid inputs can be obtained 
+#' via \code{getWellPlateNames()}.
+#' @param well_plates Character vector. The names of the well plates of interest. Valid inputs can be obtained
 #' via \code{getWellPlateNames()}.
 #' @param with_cluster Logical. If set to TRUE the discrete variables of the meta data slot are added
 #' to the output data.frame. 
@@ -194,6 +202,9 @@ dim_red_df <- function(dim_red_df){}
 #' or not.
 #' @param variable_set Character value. Denotes the variable set of interest. Use \code{getVariableSetNames()}
 #' to obtain all names of currently stored variable sets in your object.
+#' 
+#' @param vec A vector. 
+#' 
 #' @param verbose Logical. If set to TRUE informative messages regarding
 #' the computational progress will be printed.
 #'

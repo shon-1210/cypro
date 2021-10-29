@@ -10,7 +10,7 @@ setExperimentDesign(object, exp_design)
 \S4method{setExperimentDesign}{Cypro}(object, exp_design)
 }
 \arguments{
-\item{object}{Any S4-object for whose class a method has been defined.}
+\item{object}{Any object for whose class a method has been defined.}
 
 \item{exp_design}{An object of class \code{ExperimentDesign}.}
 }

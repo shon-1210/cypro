@@ -16,7 +16,7 @@ getFeatureSet(object, feature_set)
 \S4method{getFeatureSetNames}{Cypro}(object)
 }
 \arguments{
-\item{object}{Any S4-object for whose class a method has been defined.}
+\item{object}{Any object for whose class a method has been defined.}
 
 \item{feature_set}{Character value. The name of the feature set of interest.}
 }

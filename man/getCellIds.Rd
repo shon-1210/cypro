@@ -16,7 +16,7 @@ getCellIds(object, ...)
 \S4method{getCellIds}{CyproTimeLapseMP}(object, phase = NULL, ...)
 }
 \arguments{
-\item{object}{Any S4-object for whose class a method has been defined.}
+\item{object}{Any object for whose class a method has been defined.}
 
 \item{...}{<\code{\link[dplyr:dplyr_data_masking]{data-masking}}> Expressions that return a
 logical value, and are defined in terms of the variables in \code{.data}.

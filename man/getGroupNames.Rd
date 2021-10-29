@@ -16,7 +16,7 @@ getGroupNames(object, ...)
 \S4method{getGroupNames}{CyproTimeLapseMP}(object, grouping_variable, ..., phase = NULL)
 }
 \arguments{
-\item{object}{Any S4-object for whose class a method has been defined.}
+\item{object}{Any object for whose class a method has been defined.}
 
 \item{grouping_variable}{Character value. Denotes the categorical variable - the grouping of cells -
 of interest. Use \code{getGroupingVariableNames()} to obtain all valid input options.}

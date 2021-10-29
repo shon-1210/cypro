@@ -13,7 +13,7 @@ summarize_module_variables(stat_df, track_df, object, verbose)
 \item{track_df}{The already completed track data.frame complete_tracks() is
 currently working with.}
 
-\item{object}{Any S4-object for whose class a method has been defined.}
+\item{object}{Any object for whose class a method has been defined.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

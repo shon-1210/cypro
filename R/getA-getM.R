@@ -5,6 +5,63 @@ NULL
 NULL
 
 
+
+# A -----------------------------------------------------------------------
+
+#' @title Obtain names of active modules
+#' 
+#' @description Extracts the names of the modules for which variables
+#' have been assigned during \code{assignVariables()}.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return A character vector or NULL if no modules are active. 
+#' @export
+#'
+setGeneric(name = "getActiveModuleNames", def = function(object){
+  
+  standardGeneric(f = "getActiveModuleNames")
+  
+})
+
+
+#' @rdname getUsedModuleNames
+#' @export
+setMethod(f = "getActiveModuleNames", signature = "Cypro", definition = function(object){
+  
+  purrr::keep(.x = object@modules, .p = ~ base::isTRUE(.x@active)) %>% 
+    base::names()
+  
+})
+
+#' @title Obtain additional variable names
+#' 
+#' @description Extracts variable names that have been denoted during 
+#' \code{assignVariables()} as unknown to \code{cypro} but of interest
+#' to the user. 
+#'
+#' @inherit argument_dummy params 
+#'
+#' @return Character vector.
+#' 
+#' @export
+#'
+setGeneric(name = "getAdditionalVariableNames", def = function(object){
+  
+  standardGeneric(f = "getAdditionalVariableNames")
+  
+})
+
+
+#' @rdname getAdditionalVariableNames
+#' @export
+setMethod(f = "getAdditionalVariableNames", signature = "Cypro", definition = function(object){
+  
+  return(object@information$additional_variables)
+  
+})
+
+
 # C -----------------------------------------------------------------------
 
 
@@ -389,6 +446,52 @@ setMethod(f = "getDefaultInstructions", signature = "Cypro", definition = functi
 # E -----------------------------------------------------------------------
 
 
+#' @title Obtain example data.frame
+#' 
+#' @description Extracts the data.frame that has been loaded as an 
+#' input example during \code{assingVariables()}.
+#' 
+#' @inherit argument_dummy params
+#' 
+#' @return A data.frame.
+#' 
+#' @export
+#' 
+setGeneric(name = "getExampleDf", def = function(object){
+  
+  standardGeneric(f = "getExampleDf")
+  
+})
+
+#' @rdname getExampleDf
+#' @export
+setMethod(f = "getExampleDf", signature = "ExperimentDesign", definition = function(object){
+  
+  df <- object@example_df
+  
+  if(base::nrow(df) == 0){
+    
+    warning("Data.frame of slot @example_df contains 0 rows.")
+    
+  }
+  
+  return(df)
+  
+})
+
+#' @rdname getExampleDf
+#' @export
+setMethod(f = "getExampleDf", signature = "Cypro", definition = function(object){
+  
+  df <- 
+    getExperimentDesign(object) %>% 
+    getExampleDf()
+  
+  return(df)
+  
+})
+
+
 #' @title Extract experiment design
 #' 
 #' @description Obtain the experiment design in form of an S4-class called 
@@ -728,6 +831,48 @@ setMethod(f = "getFeatureSetNames", signature = "Cypro", definition = function(o
 
 
 
+#' @title Obtain file directories
+#' 
+#' @description Extracts the directories that were used to load the cell data. 
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Character vector
+#' @export
+#'
+setGeneric(name = "getFileDirectories", def = function(object, ...){
+  
+  standardGeneric(f = "getFileDirectories")
+  
+})
+
+
+
+#' @rdname getFileDirectories
+#' @export
+
+setMethod(f = "getFileDirectories", signature = "layout_df", function(object, ...){
+  
+  df <- unnestLayoutDf(object)
+  
+  dirs <- df$dir
+  
+  base::names(dirs) <- df$well_roi
+  
+  return(dirs)
+  
+})
+
+#' @rdname getFileDirectories
+#' @export
+
+setMethod(f = "getFileDirectories", signature = "WellPlate", function(object){
+  
+  
+  
+})
+
+
 #' @title Extract frame time sequence
 #' 
 #' @description Obtain the time line of the time lapse experiment as a numeric vector.
@@ -935,7 +1080,89 @@ setMethod(
 )
 
 
+
+
+# I -----------------------------------------------------------------------
+
+
+
+#' @title Obtain variable assignment 
+#' 
+#' @inherit getVariableAssignment params description
+#' 
+#' @return A character vector. 
+#' 
+#' @export
+setGeneric(name = "getVariableAssignmentID", def = function(object, drop_na = FALSE){
+  
+  standardGeneric(f = "getVariableAssignmentID")
+  
+})
+
+
+#' @rdname getVariableAssignmentID
+#' @export
+setMethod(
+  f = "getVariableAssignmentID", 
+  signature = "CyproScreening", 
+  definition = function(object, drop_na = FALSE){
+    
+    res <- 
+      getVariableAssignment(
+        object = object,
+        modules = "identification",
+        flatten = TRUE,
+        drop_na = drop_na
+        )
+    
+    return(res)
+    
+  }
+)
+
+
+#' @rdname getVariableAssignmentID
+#' @export
+setMethod(
+  f = "getVariableAssignmentID", 
+  signature = "CyproTimeLapse", 
+  definition = function(object, drop_na = FALSE){
+    
+    res <- 
+      getVariableAssignment(
+        object = object,
+        modules = "identification_timelapse",
+        flatten = TRUE,
+        drop_na = drop_na
+        )
+    
+    return(res)
+    
+  }
+)
+
+
 # L -----------------------------------------------------------------------
+
+
+#' @title Obtain layout attributes
+#' 
+#' @description Extracts the well plate layout specific attributes
+#' from the input data.frame.
+#' 
+#' @param df A data.frame of class \code{layout_df}.
+#' 
+#' @return A named list. 
+#' 
+#' @export
+
+getLayoutAttributes<- function(df){
+  
+  base::attributes(df)[layout_df_attributes] %>% 
+    purrr::discard(.p = ~ base::is.null(.x))
+  
+}
+
 
 #' @title Extract well plate layout data.frame
 #' 
@@ -1148,3 +1375,45 @@ setMethod(
     
   }
 )
+
+
+
+
+#' @title Obtain analysis module
+#' 
+#' @description Extracts the complete S4-object of class \code{AnalysisModule} from 
+#' the \code{Cypro} object with all its content. 
+#' 
+#' @inherit argument_dummy params
+#' @param module_name Character value. The name of the analysis module. 
+#' 
+#' @return An object of class \code{AnalysisModule}.
+#' 
+#' @export
+#' 
+setGeneric(name = "getModule", def = function(object, module_name, ...){
+  
+  standardGeneric(f = "getModule")
+  
+})
+
+
+#' @rdname getAnalysisModule
+#' @export
+setMethod(f = "getModule", signature = "Cypro", definition = function(object, module_name, ...){
+  
+  confuns::check_one_of(
+    input = module_name, 
+    against = base::names(object@modules), 
+    fdb.opt = 2, 
+    ref.opt.2 = "names of analysis modules", 
+  )
+  
+  return(object@modules[[module_name]])
+  
+})
+
+
+
+
+

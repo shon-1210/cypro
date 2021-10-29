@@ -7,7 +7,7 @@
 createLayoutDf(
   well_plate_name = "wp",
   well_plate_type = "8x12",
-  rois_per_well = 1,
+  n_rois = 1,
   n_phases = 0
 )
 }

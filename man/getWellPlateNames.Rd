@@ -13,7 +13,7 @@ getWellPlateNames(object)
 \S4method{getWellPlateNames}{Cypro}(object)
 }
 \arguments{
-\item{object}{Any S4-object for whose class a method has been defined.}
+\item{object}{Any object for whose class a method has been defined.}
 }
 \value{
 A character vector.

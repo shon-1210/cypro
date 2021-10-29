@@ -10,7 +10,7 @@ getCdata(object)
 \S4method{getCdata}{Cypro}(object)
 }
 \arguments{
-\item{object}{Any S4-object for whose class a method has been defined.}
+\item{object}{Any object for whose class a method has been defined.}
 }
 \value{
 An object of class \code{Cdata}.

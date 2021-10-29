@@ -13,9 +13,9 @@ that can only be used in time lapse experiments.
 
 \describe{
 \item{\code{variables_summarized}}{list. Named list of summarizable variables represented by the
-S4-class \code{SummarizableVariables}. Names of list correspond to the repsective
+S4-class \code{SummarizableVariable}. Names of list correspond to the respective
 slot @name_in_cypro. Variable must be ordered according to the order in which they
-are supposed to be summarized. E.g. as the migration efficiancy (\emph{mgr_eff}) requires
+are supposed to be summarized. E.g. as the migration efficiency (\emph{mgr_eff}) requires
 the variable total distance (\emph{total_dist}) the total distance must be listed
 before migration efficiency.}
 }}

@@ -7,7 +7,7 @@
 renameGroups(object, grouping_variable = NULL, ..., phase = NULL)
 }
 \arguments{
-\item{object}{Any S4-object for whose class a method has been defined.}
+\item{object}{Any object for whose class a method has been defined.}
 
 \item{grouping_variable}{Character value. The name of the grouping variable
 whose groups you want to rename.}

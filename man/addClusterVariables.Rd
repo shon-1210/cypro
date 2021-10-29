@@ -27,7 +27,7 @@ addMetaVariables(
 )
 }
 \arguments{
-\item{object}{Any S4-object for whose class a method has been defined.}
+\item{object}{Any object for whose class a method has been defined.}
 
 \item{input_df}{A data.frame that contains the variables denoted in argument \code{variable_names}
 as well as a character variable named according to input of argument \code{by} that is used to match

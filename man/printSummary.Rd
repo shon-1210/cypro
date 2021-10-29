@@ -10,7 +10,7 @@ printSummary(object)
 printAnalysisSummary(object, slots = c("dim_red", "clustering"))
 }
 \arguments{
-\item{object}{Any S4-object for whose class a method has been defined.}
+\item{object}{Any object for whose class a method has been defined.}
 }
 \value{
 A printed message via \code{writeLines()}.

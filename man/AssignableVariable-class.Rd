@@ -18,37 +18,43 @@ the information regarding x- (and -y) coordinates since it is unclear which vari
 should be used as the names are not identical. Therefore, the user denotes
 the variable \emph{x} as the variable containing the x-coordinate information in
 \code{assignVariables()}. Afterwards, while being loaded every data file
-is checked for the variable \emph{x}, which es then renamed to \code{x_coords} and added
+is checked for the variable \emph{x}, which is then renamed to \code{x_coords} and added
 to the cell data of the \code{Cypro} object.
 
-All variables that have a specific meaning and are recurrently used in \code{cypro} are
-handled this way. Two further (S4-Classes) exist that differentiate between two types of
-assignable data variables: \code{RequiredVariable}, \code{ComputableVariable}.
+All data variables that have a specific meaning and are recurrently used in \code{cypro} are
+handled this way. Further (S4-Classes) exist that differentiate between three types of
+assignable data variables: \code{RequiredVariable}, \code{OptionalVariable}, \code{ComputableVariable}.
 }
 \section{Slots}{
 
 \describe{
 \item{\code{check_candidate}}{function. A function that takes a vector as input and
 returns a single TRUE if the vector meets the requirements described in
-slot @description or a single FALSE if not. This only refers to superficial things
+slot @descr_requirements or a single FALSE if not. This only refers to superficial things
 like class and types.
 
 The function must have only one argument, namely \code{var}.}
 
-\item{\code{check_content}}{function. A more sophisticated function that takes several things
-into consideration to check if the content of the variable fits the modules requirements.}
+\item{\code{check_var}}{function. A more sophisticated function that takes several things
+into consideration to check if the content of the assigned variable fits the requirements.
+It takes a data.frame, extracts the assigned variable, checks the variable's content,
+adjusts it if necessary/possible and returns the variable or an informative message about
+the content's flaws.
+
+See details of the \code{check_var_*()}-function documentation for more information.}
 
 \item{\code{descr_requirements}}{character. Text that describes the class requirements (e.g.
 numeric, character).}
 
-\item{\code{descr_variable}}{character. Text that describes what the variable stands for.}
-
-\item{\code{name_in_app}}{character. Pretty name to be used as reference in application.}
+\item{\code{descr_variable}}{character. Text that describes what the data variable represents.}
 
 \item{\code{name_in_example}}{character. Name the variable carried in the example
 data set uploaded in \code{assignVariables()}.}
+
+\item{\code{valid}}{logical. Indicates if the content of the assigned variable meets the
+variable specific requirements and is valid.}
 }}
 
 \seealso{
-\code{RequiredVariable}, \code{ComputableVariable}, \code{SummarizableVariable}
+\code{RequiredVariable}, \code{ComputableVariable}, \code{OptionalVariable}, \code{SummarizableVariable}
 }

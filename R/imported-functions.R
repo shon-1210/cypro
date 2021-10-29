@@ -1,6 +1,10 @@
 
 
-# confuns helpers ---------------------------------------------------------
+
+# confuns -----------------------------------------------------------------
+
+
+# a -----------------------------------------------------------------------
 
 #' @title Valid colorpanels & -spectra
 #' @export
@@ -10,12 +14,26 @@ allColorpalettes <- confuns::all_color_palettes
 #' @export
 allColorspectra <- confuns::all_color_spectra
 
+
+# g -----------------------------------------------------------------------
+
+# exported
+
+# not exported
+give_feedback <- confuns::give_feedback
+
+
+
+
+# s -----------------------------------------------------------------------
+
 # not exported 
 scollapse <- confuns::scollapse
 
 
-# tidyselect helpers ------------------------------------------------------
 
+
+# tidyselect --------------------------------------------------------------
 
 #' @title Imported selection helpers from package 'tidyselect'
 #' 

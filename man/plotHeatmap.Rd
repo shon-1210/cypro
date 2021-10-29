@@ -18,7 +18,7 @@ plotHeatmap(
 )
 }
 \arguments{
-\item{object}{Any S4-object for whose class a method has been defined.}
+\item{object}{Any object for whose class a method has been defined.}
 
 \item{across}{Character value, character vector or NULL (see details for more).
 Specifies the grouping variable of interest.

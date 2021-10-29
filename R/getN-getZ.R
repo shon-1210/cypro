@@ -1,4 +1,6 @@
 
+#' @include S3-classes.R
+NULL
 #' @include S4-classes.R
 NULL
 #' @include S4-method-skeletons.R
@@ -348,7 +350,80 @@ setMethod(
 )
 
 
+
+# U -----------------------------------------------------------------------
+
 # W -----------------------------------------------------------------------
+
+#' @title Obtain well levels
+#' 
+#' @description Extracts a vector of well names in their natural order. 
+#'
+#' @inherit argument_dummy params 
+#'
+#' @return A character vector.
+#' @export
+#'
+setGeneric(name = "getWellLevels", def = function(object){
+  
+  standardGeneric(f = "getWellLevels")
+  
+})
+
+#' @rdname getWellLevels
+#' @export
+setMethod(f = "getWellLevels", signature = "WellPlate", definition = function(object){
+  
+  wp_df <- object@layout 
+  
+  return(wp_df$well)
+  
+})
+
+#' @rdname getWellLevels
+#' @export
+setMethod(f = "getWellLevels", signature = "ExperimentDesign", function(object){
+  
+  base::stopifnot(nWellPlates(object) >= 1)
+  
+  well_plate_list <- object@well_plates
+  
+  biggest_wp <- 
+    purrr::map_df(.x = well_plate_list, .f = function(well_plate){
+      
+      df <- 
+        data.frame(
+          well_plate = well_plate@name,
+          n_wells = base::nrow(well_plate@layout)
+        )
+      
+    }) %>% 
+    dplyr::filter(n_wells == base::max(n_wells)) %>% 
+    dplyr::slice_head(n = 1) %>% 
+    dplyr::pull(well_plate) %>% 
+    base::as.character()
+  
+  well_plate <- well_plate_list[[biggest_wp]]
+  
+  well_levels <- getWellLevels(well_plate)
+  
+  return(well_levels)
+  
+})
+
+#' @rdname getWellLevels
+#' @export
+setMethod(f = "getWellLevels", signature = "Cypro", function(object){
+  
+  base::stopifnot(nWellPlates(object) >= 1)
+  
+  well_levels <- 
+    getExperimentDesign(object) %>% 
+    getWellLevels()
+  
+  return(well_levels)
+  
+})
 
 #' @title Extract well plate
 #' 
@@ -368,7 +443,7 @@ setGeneric(name = "getWellPlate", def = function(object, well_plate){
 
 #' @rdname getWellPlate
 #' @export
-setMethod(f = "getWellPlate", signature = "ExperimentDesign", function(object, well_plate){
+setMethod(f = "getWellPlate", signature = "ExperimentDesign", definition = function(object, well_plate){
   
   confuns::check_one_of(
     input = well_plate, 
@@ -383,7 +458,7 @@ setMethod(f = "getWellPlate", signature = "ExperimentDesign", function(object, w
 
 #' @rdname getWellPlate
 #' @export
-setMethod(f = "getWellPlate", signature = "Cypro", function(object, well_plate){
+setMethod(f = "getWellPlate", signature = "Cypro", definition = function(object, well_plate){
   
   confuns::check_one_of(
     input = well_plate, 
@@ -395,6 +470,64 @@ setMethod(f = "getWellPlate", signature = "Cypro", function(object, well_plate){
     getWellPlate(well_plate = well_plate)
   
   return(wp)
+  
+})
+
+
+#' @title Obtain list of WellPlate objects
+#' 
+#' @description Extracts a list of \code{WellPlate} objects.
+#' 
+#' @inherit argument_dummy params
+#' 
+#' @return A named list of \code{WellPlate} objects. 
+#' 
+#' @export
+#' 
+
+setGeneric(name = "getWellPlates", def = function(object, well_plates = NULL){
+  
+  standardGeneric(f = "getWellPlates")
+  
+})
+
+
+#' @rdname getWellPlates
+#' @export
+setMethod(f = "getWellPlates", signature = "ExperimentDesign", definition = function(object, well_plates = NULL){
+  
+  well_plate_list <- object@well_plates
+  
+  if(base::length(well_plate_list) == 0){
+    
+    warning("Well plate list is empty.")
+    
+  }
+  
+  if(base::is.character(well_plates) & base::length(well_plate_list) >= 1){
+    
+    confuns::check_one_of(
+      input = well_plates, 
+      against = base::names(well_plate_list)
+    )
+    
+    well_plate_list <- well_plate_list[well_plates]
+    
+  }
+  
+  return(well_plate_list)
+  
+})
+
+#' @rdname getWellPlates
+#' @export
+setMethod(f = "getWellPlates", signature = "Cypro", definition = function(object, well_plates = NULL){
+  
+  exp_design <- getExperimentDesign(object)
+  
+  well_plate_list <- getWellPlates(object = exp_design, well_plates = well_plates)
+  
+  return(well_plate_list)
   
 })
 
@@ -456,13 +589,12 @@ setGeneric(name = "getWellPlateIndices", def = function(object, ...){
 #' @export
 setMethod(f = "getWellPlateIndices", signature = "Cypro", definition = function(object, return = "tibble"){
   
-  wps <- object@design@well_plates
+  wps <- getWellPlates(object)
   
   wp_names <- base::names(wps)
   
   wp_indices <- 
-    purrr::map_int(.x = wps, .f = ~ methods::slot(.x, "index"))
-  
+    purrr::map_int(.x = wps, .f = ~ methods::slot(.x, "index") %>% base::as.integer())
   
   if(return == "tibble"){
     
@@ -555,3 +687,273 @@ setMethod(f = "getWellPlateVariableNames", signature = "Cypro", definition = fun
   return(wp_names)
   
 })
+
+
+
+#' @title Obtain well plate type
+#' 
+#' @description Extracts the type of the well plate. 
+#'
+#' @inherit argument_dummy params 
+#'
+#' @return
+#' @export
+#'
+setGeneric(name = "getWellPlateType", def = function(object, ...){
+  
+  standardGeneric(f = "getWellPlateType")
+  
+})
+
+#' @rdname getWellPlateType
+#' @export
+setMethod(f = "getWellPlateType", signature = "WellPlate", function(object, ...){
+  
+  return(object@type)
+  
+})
+
+#' @rdname getWellPlateType
+#' @export
+setMethod(f = "getWellPlateType", signature = "layout_df", function(object, ...){
+  
+  wp_type <- base::attr(x = object, which = "well_plate_type")
+  
+  return(wp_type)
+  
+})
+
+
+
+#' @title Obtain wells and well rois
+#' 
+#' @description Extracts unique well or well regions of interest of a well plate 
+#' in form of a vector. 
+#'
+#' @inherit argument_dummy params 
+#'
+#' @return A character vector.
+#' @export
+#'
+
+setGeneric(name = "getWells", def = function(object,  info_status = info_status_levels){
+  
+  standardGeneric(f = "getWells")
+  
+})
+
+#' @rdname getWells
+#' @export
+setMethod(f = "getWells", signature = "layout_df", definition = function(object, info_status = info_status_levels){
+  
+  nestLayoutDf(object) %>% 
+    dplyr::filter(info_status %in% {{info_status}}) %>% 
+    dplyr::pull(var = "well") %>% 
+    base::as.character()
+  
+})
+
+#' @rdname getWells
+#' @export
+setMethod(f = "getWells", signature = "WellPlate", definition = function(object, info_status = info_status_level){
+  
+  getLayoutDf(object) %>% 
+    getWells() %>% 
+    base::as.character()
+  
+})
+
+#' @rdname getWells
+#' @export
+setGeneric(name = "getWellRois", def = function(object, info_status = info_status_levels){
+  
+  standardGeneric(f = "getWellRois")
+  
+})
+
+#' @rdname getWells
+#' @export
+setMethod(f = "getWellRois", signature = "layout_df", definition = function(object, info_status = info_status_levels){
+  
+  unnestLayoutDf(object) %>% 
+    dplyr::filter(info_status %in% {{info_status}}) %>% 
+    dplyr::pull(var = "well_roi") %>% 
+    base::as.character()
+  
+})
+
+#' @rdname getWells
+#' @export
+setMethod(f = "getWellRois", signature = "WellPlate", definition = function(object, info_status = info_status_level){
+  
+  getLayoutDf(object) %>% 
+    getWellRois() 
+    
+})
+
+
+
+
+
+
+
+
+# V -----------------------------------------------------------------------
+
+#' @title Obtain variable assignment
+#' 
+#' @description Extracts the variable names of the experiment data that has been
+#' assigned to the data variables that \code{cypro} knows. 
+#'
+#' @inherit argument_dummy params
+#' @param required,optional,computable Logical values. Indicate if the respective 
+#' variable type should be included or not. 
+#' @param variables,modules Character vector or NULL. If character vector only 
+#' the variables and modules mentioned are included.
+#' @param drop_na Logical. If set to TRUE all empty values are discarded. 
+#' @param flatten Logical. If set to TRUE the list is flattened to a character vector 
+#' via \code{purrr::flatten_chr()}.
+#' 
+#' @return A named list or a named character vector. 
+#' @export
+
+setGeneric(name = "getVariableAssignment", def = function(object, ...){
+  
+  standardGeneric(f = "getVariableAssignment")
+  
+})
+
+
+#' @rdname getVariableAssignment
+#' @export
+setMethod(
+  f = "getVariableAssignment", 
+  signature = "AnalysisModule",
+  definition = function(object,
+                        variables = NULL, 
+                        required = TRUE,
+                        optional = TRUE,
+                        computable = TRUE){
+    
+    all_var_assignments <- base::vector(mode = "character")
+    
+    module <- object
+    
+    all_var_assignments <- 
+      get_variable_assignment_hlpr(
+        variable_list = module@variables_required,
+        check = required, 
+        variables = variables, 
+        assignments = all_var_assignments
+      )
+    
+    all_var_assignments <- 
+      get_variable_assignment_hlpr(
+        variable_list = module@variables_optional, 
+        check = optional, 
+        variables = variables, 
+        assignments = all_var_assignments
+      )
+    
+    all_var_assignments <-
+      get_variable_assignment_hlpr(
+        variable_list = module@variables_computable,
+        check = computable, 
+        variables = variables, 
+        assignments = all_var_assignments
+      )
+    
+    return(all_var_assignments)
+    
+  })
+
+#' @rdname getVariableAssignment
+#' @export
+setMethod(
+  f = "getVariableAssignment", 
+  signature = "Cypro", 
+  definition = function(object, 
+                        required = TRUE, 
+                        optional = TRUE,
+                        computable = TRUE,
+                        modules = NULL, 
+                        variables = NULL, 
+                        drop_na = FALSE, 
+                        flatten = FALSE,
+                        reverse = FALSE){
+    
+    module_names <- base::names(object@modules)
+    
+    assignments <- 
+      base::vector(mode = "list",length = base::length(module_names)) %>% 
+      purrr::set_names(nm = module_names)
+    
+    for(module_name in module_names){
+      
+      if(base::is.null(modules) | module_name %in% modules){
+        
+        module <- object@modules[[module_name]]
+        
+        if(base::isTRUE(module@active)){
+          
+          assignments[[module_name]] <- 
+            getVariableAssignment(
+              object = module, 
+              required = required, 
+              optional = optional,
+              computable = computable, 
+              variables = variables
+            )
+          
+        }
+        
+      }
+      
+    }
+    
+    if(base::isTRUE(drop_na)){
+      
+      assignments <- 
+        purrr::keep(.x = assignments, .p = ~ shiny::isTruthy(.x)) %>% 
+        purrr::map(.x = ., .f = ~ purrr::keep(.x = .x, .p = ~ shiny::isTruthy(x = .x)))
+      
+    }
+    
+    if(base::isTRUE(flatten) | base::is.character(variables)){
+      
+      assignments <- purrr::flatten_chr(.x = assignments)
+      
+    }
+    
+    return(assignments)
+    
+  }
+)
+
+get_variable_assignment_hlpr <- function(variable_list, variables, assignments, check){
+  
+  if(base::isTRUE(check)){
+    
+    for(i in base::seq_along(variable_list)){
+      
+      vr <- variable_list[[i]]
+      
+      var_name <- vr@name_in_cypro
+      
+      if(base::is.null(variables) | var_name %in% variables){
+        
+        var_assignment <- purrr::set_names(x = vr@name_in_example, nm = var_name)
+        
+        assignments <- c(assignments, var_assignment)
+        
+      }
+      
+    }
+    
+  }
+  
+  return(assignments)
+  
+}
+
+

@@ -7,7 +7,7 @@
 getData(object, data_slot, phase)
 }
 \arguments{
-\item{object}{Any S4-object for whose class a method has been defined.}
+\item{object}{Any object for whose class a method has been defined.}
 
 \item{data_slot}{Character value. One of \emph{'stats', 'tracks', 'meta'} or \emph{'cluster'}.}
 

@@ -8,7 +8,8 @@
 evaluate_file_availability_shiny(
   wp_list,
   recursive = TRUE,
-  keep_filetype = "csv$"
+  keep_filetype = "csv$",
+  object = NULL
 )
 
 evaluate_file_content_shiny(

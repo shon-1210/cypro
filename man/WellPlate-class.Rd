@@ -13,23 +13,21 @@ loaded.
 \section{Slots}{
 
 \describe{
+\item{\code{directory}}{character. The directory assigned to the well plate during \code{loadData()}.
+Is either a directory leading to a folder that contains the files to read in or a directory leading
+to a single file. Depends on the loading modality.}
+
 \item{\code{experiment}}{character. The name of the \code{Cypro} object it is part of.}
 
-\item{\code{files}}{character. All spreadsheet-files directories that have been loaded
-for that well plate.}
-
-\item{\code{folder}}{character. Only relevant in case of usage of \code{loadFilesByWellRoi()}.
-Contains the directory to the folder from which the files have been loaded.}
-
-\item{\code{loaded_by}}{character. The function that has been used to load data for this
-well plate.}
+\item{\code{files}}{list. List of lists named according to all files the directory of @slot folder
+contains. Each slot contains an object of class \code{LoadedFile}.}
 
 \item{\code{index}}{numeric. The ordinal well plate number. E.g. if @index = 2, it was the second
 well plate that has been designed.}
 
 \item{\code{name}}{character. The well plate name.}
 
-\item{\code{set_up}}{data.frame. A data.frame carrying and additonal S3-class \code{wp_design_df} or
+\item{\code{set_up}}{data.frame. A data.frame carrying and additional S3-class \code{wp_design_df} or
 \code{wp_design_mp_df} in case of multiple phase experiments.}
 
 \item{\code{type}}{character. The well plate type. Currently one of

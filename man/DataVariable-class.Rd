@@ -8,23 +8,34 @@
 \description{
 The S4-class \code{DataVariable} is an object oriented approach to
 solve the problem of different image analysis software following different
-naming conventions.
+naming conventions for data variables that are used and known across platforms.
+See details for more.
 }
 \details{
 The 'Variable-Ecosystem' of \code{cypro} attempts to solve the problem of different
 image analysis software following different naming conventions. The reasoning behind this goes
-as follows: Columns that refer to certain data variables such as x- and y-coordinates, frame number, cell perimeter,
-etc. complicate writing specific code. E.g. cellular migration is
-commonly visualized by rose plots (see function \code{plotRosePlot()}). This function refers to
-x- and y-coordinates. If the input data, however, can refer to coordinates in different ways like
-\emph{x}, \emph{x_coordinates}, \emph{x-coordinates}, the code becomes unreliable. While
-unspecific data variables visualized by boxplots or density plots can follow arbitrary
-naming conventions variables that are used repeatedly in \code{cypro}-intern code must follow a
-consistent system to ensure flexibility regarding the data input while maintaining reliable code.
+as follows: Columns in data tables that refer to certain data variables such as x- and y-coordinates,
+frame number, cell perimeter, etc. are often named inconsistent across image analysis software which
+complicates writing module specific code.
+E.g. cellular migration is commonly visualized by rose plots (see function \code{plotRosePlot()}).
+This function refers to x- and y-coordinates. If the input data, however, can refer to coordinates in different ways like
+\emph{x}, \emph{x_coordinates}, \emph{x-coordinates}, the code becomes unreliable.
+Unspecific data variables visualized by boxplots or density plots can follow arbitrary
+naming conventions. However, variables that are used repeatedly in \code{cypro}-intern code must follow a
+consistent system to assure reliable code.
+
+Therefore, to ensure flexibility regarding the data input, data variables of the input data tables
+are assigned to the variables \code{cypro} knows by assigning their names. This is done interactively
+in \code{assignVariables()} where an example file of the input is loaded. Then the individually named
+variables/columns of the input data are assigned to variables \code{cypro} knows. This assignment is
+considered at all data loading steps and variables/columns of data fiels are immediately renamed while beeing read into
+\code{cypro}. The assignment is stored and can be obtained via \code{getVariableAssignment()}.
 }
 \section{Slots}{
 
 \describe{
+\item{\code{name_in_app}}{character. Pretty name to be used as reference in application.}
+
 \item{\code{name_in_cypro}}{character. Short name to be used as reference throughout
 \code{cypro}. Should follow underscore-naming-convention (e.g. \emph{x_coords} instead of
 \emph{xCoords} or \emph{x-coords})}

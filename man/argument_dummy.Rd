@@ -7,7 +7,7 @@
 argument_dummy(object, phase, pt_alpha, pt_clr, pt_clrp, pt_clrsp, pt_size)
 }
 \arguments{
-\item{object}{Any S4-object for whose class a method has been defined.}
+\item{object}{Any object for whose class a method has been defined.}
 
 \item{phase}{Character or numeric. If character, the ordinal value referring to the phase of interest (e.g. \emph{'first'}, \emph{'second'} etc.).
 referring to the phase of interest or \emph{'all'}. If numeric, the number referring to the phase.
@@ -62,6 +62,9 @@ represent the group.}
 continuous values of numeric variables. Run \code{validColorSpectra()} to obtain
 valid input options.}
 
+\item{cypro_nc}{Logical value. Denotes which regular expression to use and thus, the valid
+naming conventions. If TRUE, only the naming convention of the \code{cypro}-package is considered valid.}
+
 \item{discrete_feature}{Character value. Specifies the name of the grouping variable
 of interest. Use \code{getGroupingOptions()} to obtain all valid input options.}
 
@@ -95,6 +98,9 @@ of interest. Use \code{getGroupingVariableNames()} to obtain all valid input opt
 
 \item{image}{Numeric value. The well-image of interest.}
 
+\item{info_status}{Character vector. Valid options are \emph{'Complete', 'Incomplete', 'Missing'}. Refers
+to the information status of a well regarding cell and condition.}
+
 \item{linesize}{Numeric value. Denotes the size of the lines drawn.}
 
 \item{linetype}{Character value. Valid options are \emph{'solid', 'twodash', 'longdash', 'dotted'}
@@ -125,6 +131,9 @@ Use \code{validOutlierDetectionMethods()} to obtain all valid input options.}
 
 \item{method_pam}{Character vector (or value see details for more.) Denotes the algorithm of interest.
 Valid input options are \emph{'euclidean'} and \emph{'manhattan'}.}
+
+\item{module_name}{Character value. The name of the analysis module. Use \code{validModuleNames()} or
+\code{getModuleNames()} to obtain valid input options.}
 
 \item{n_cells}{Numeric calue. Determines the number of cells that are randomly chosen from
 every group to be displayed. Useful to keep plots insightful and aesthetically pleasing.}
@@ -170,6 +179,9 @@ resulting logical value is returned.}
 \item{well_plate}{Character value. The name of the well plate of interest. Valid inputs can be obtained
 via \code{getWellPlateNames()}.}
 
+\item{well_plates}{Character vector. The names of the well plates of interest. Valid inputs can be obtained
+via \code{getWellPlateNames()}.}
+
 \item{with_cluster}{Logical. If set to TRUE the discrete variables of the meta data slot are added
 to the output data.frame.}
 
@@ -185,6 +197,8 @@ or not.}
 
 \item{variable_set}{Character value. Denotes the variable set of interest. Use \code{getVariableSetNames()}
 to obtain all names of currently stored variable sets in your object.}
+
+\item{vec}{A vector.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

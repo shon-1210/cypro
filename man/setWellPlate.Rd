@@ -3,16 +3,19 @@
 \name{setWellPlate}
 \alias{setWellPlate}
 \alias{setWellPlate,ExperimentDesign-method}
+\alias{setWellPlate,Cypro-method}
 \title{Set well plate S4 object}
 \usage{
 setWellPlate(object, ...)
 
-\S4method{setWellPlate}{ExperimentDesign}(object, well_plate)
+\S4method{setWellPlate}{ExperimentDesign}(object, well_plate_object)
+
+\S4method{setWellPlate}{Cypro}(object, well_plate_object)
 }
 \arguments{
-\item{object}{Any S4-object for whose class a method has been defined.}
+\item{object}{Any object for whose class a method has been defined.}
 
-\item{well_plate}{Object of class \code{WellPlate}.}
+\item{well_plate_object}{Object of class \code{WellPlate}.}
 }
 \value{
 The input object.

@@ -47,7 +47,7 @@ getFeatureDf(object, ...)
 )
 }
 \arguments{
-\item{object}{Any S4-object for whose class a method has been defined.}
+\item{object}{Any object for whose class a method has been defined.}
 
 \item{with_cluster}{Logical. If set to TRUE the discrete variables of the meta data slot are added
 to the output data.frame.}

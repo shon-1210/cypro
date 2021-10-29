@@ -31,7 +31,7 @@ plotTimeLineplot(
 )
 }
 \arguments{
-\item{object}{Any S4-object for whose class a method has been defined.}
+\item{object}{Any object for whose class a method has been defined.}
 
 \item{variables}{Character vector. Denotes the track variables whoose summary you
 want to display over time. Use \code{getTrackVariableNames()} to obtain all

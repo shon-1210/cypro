@@ -10,11 +10,11 @@ Subclass of \code{DataVariable}. See details for more information.
 }
 \details{
 Computable variables do not have to be part of the input data in order
-to use their associated analysis modules. As long as the required variables of
+to use the analysis modules they are part of. As long as the required variables of
 the analysis module exist in the input data they can be computed using the function
 of slot @compute_with.
 
-E.g. the variable distance from last point (\emph{dflp}) is part of the migration analysis module.
+E.g. the data variable distance from last point (\emph{dflp}) is part of the migration analysis module.
 It describes the distance a cell has traveled during the time that passed between
 two frames. The output of some image analysis software (e.g. CellTracker) contain
 this by default. Others do not. As the distance from last point can be computed via
@@ -26,7 +26,7 @@ x- and y-coordinates it is a computable variable.
 \item{\code{compute_with}}{function. A function that takes the input data as the first
 argument \code{df} and the \code{Cypro} object as the second argument and uses
 the information of both to compute the variable. The function must return only
-the input data.frame with the variable that has just been computed.}
+the input data.frame now containing the variable that has just been computed.}
 }}
 
 \seealso{

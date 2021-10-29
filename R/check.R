@@ -417,3 +417,605 @@ check_wp_name <- function(object, well_plate){
 
 
 
+
+
+
+
+# a -----------------------------------------------------------------------
+
+
+
+
+# f -----------------------------------------------------------------------
+
+
+
+
+
+
+
+# m -----------------------------------------------------------------------
+
+check_module_cell_id_frame_num <- function(df, object){
+  
+  if(FALSE){ # isActive(object, module_name = "mitosis")
+    
+    out <- NULL
+    
+  } else {
+    
+    name_in_example_cell_id <-
+      getVariableAssignment(object, variables = "cell_id") %>%
+      base::unname()
+    
+    name_in_example_frame_num <-
+      getVariableAssignment(object, variables = "frame_num") %>%
+      base::unname()
+    
+    name_in_app <- "Frame number' & 'Cell ID"
+    
+    if(name_in_example_cell_id %in% base::colnames(df)){
+      
+      identifier_df <- 
+        dplyr::select(df, dplyr::all_of(c(name_in_example_frame_num, name_in_example_cell_id)))
+      
+      n_obs <- base::nrow(identifier_df)
+      
+      n_unique_obs <- 
+        dplyr::distinct(identifier_df) %>% 
+        base::nrow()
+      
+      if(n_obs > n_unique_obs){
+        
+        id_vars <-
+          getVariableAssignment(
+            object = object,
+            modules = "identification_timelapse", 
+            flatten = TRUE, 
+            drop_na = TRUE
+            ) %>% 
+          confuns::scollapse()
+        
+        out <- 
+          glue::glue(
+            "Identification variables '{id_vars}' do not ", 
+            "uniquely identify each observation."
+          ) %>% 
+          write_variable_problem(name_in_app = name_in_app)
+        
+      } else {
+        
+        out <- NULL
+        
+      } 
+      
+    } else {
+      
+      out <- 
+        glue::glue(
+          "Can not validate content of Frame-variable '{name_in_example_frame_num}' ",
+          "as Cell ID-variable '{name_in_example_cell_id}' is missing.") %>% 
+        write_variable_problem(name_in_app = name_in_app)
+      
+    }
+    
+  }
+  
+  return(out)
+  
+}
+
+# v -----------------------------------------------------------------------
+
+
+
+#' @title Variable specific content checks
+#' 
+#' @description These functions make sure that the content of the data.frame
+#' variables assigned to variables known by \code{cypro}. See details for more.
+#' 
+#' @param df The input data.frame. 
+#' @param name_in_cypro Character value. The name of the data variable 
+#' as \code{cypro} knows it.
+#' @param object The \code{Cypro} object.
+#' 
+#' @details These functions are added to the @@slot check_content of each 
+#' \code{DataVariable} object. They are called mainly during \code{validateInputDf()}.
+#' See it's documentation for more information of how it works. 
+#' 
+#' Every \code{check_var_*()} function must take the same arguments: \code{df}, 
+#' \code{name_in_cypro} and \code{object} in that order. It must do the following: 
+#' 
+#' 1. Extract the assigned variable from the data.frame. 
+#' 2. Make sure that the variable fits the basic requirements regarding class / type. If it 
+#' does not fit the class and type requirements but is convertible the function converts it.
+#' 3. Beyond class/type requirements the function checks the content for variable required
+#' specifics. E.g. the content of \code{var_well} can not be a collection of any strings but has to 
+#' meet the proper well naming conventions. 
+#' 
+#' Output: The output is one of the following two options: 
+#' 
+#' a) If the variable passed everything (or could be adjusted to be valid) and is valid 
+#' the \code{check_var_()*}-function only returns the variable valid variable (not the data.frame.)
+#' b) If anything did not work out or the output variable is invalid the function
+#' returns an informative message about what went wrong in form of a character value. 
+
+check_var_angle <- function(df, name_in_cypro, object = NULL){
+  
+  name_in_example <- 
+    getVariableAssignment(object, variables = name_in_cypro) %>% 
+    base::unname()
+  
+  if(base::is.na(name_in_example)){
+    
+    out <- NULL
+    
+  } else {
+    
+    name_in_app <- cypro_variable_names[[name_in_cypro]]
+    
+    var <- df[[name_in_example]]
+    
+    check_res <- check_and_convert_numeric_var(var = var, ref = name_in_example)
+    
+    if(base::is.null(check_res$problem)){
+      
+      var <- check_res$var
+      
+      min_var <- base::min(var, na.rm = TRUE)
+      
+      max_var <- base::max(var, na.rm = TRUE)
+      
+      if(min_var < 0 | max_var > 360){
+        
+        out <- 
+          glue::glue("Values of {name_in_app}-variable '{name_in_example}' do not range from 0 to 360.") %>% 
+          write_variable_problem(name_in_app = name_in_app)
+        
+      } else {
+        
+        out <- var
+        
+      }
+      
+    } else {
+      
+      out <- write_variable_problem(problem = check_res$problem, name_in_app = name_in_app)
+      
+    }
+    
+  }
+  
+  return(out)
+  
+}
+
+
+#' @rdname check_var_angle
+#' @section Function details:
+#' Constructs and outputs a preliminary cell id from all assigned optional identifier
+#' variables to make sure that the variables identify cells uniquely across all regions
+#' of interest if the example data.frame loaded contains data from more than one ROI. 
+check_var_cell_id <- function(df, name_in_cypro, object = NULL){
+  
+  # (must not be NA therefore no if else)
+  
+  name_in_example <- 
+    getVariableAssignment(object, variables = "cell_id") %>%
+    base::unname()
+  
+  name_in_app <- cypro_module_names[[name_in_cypro]]
+  
+  var <- df[[name_in_example]]
+  
+  check_res <- check_and_convert_grouping_var(var = var, ref = name_in_example)
+  
+  if(base::is.null(check_res$problem)){
+    
+    layout_vars <- 
+      getVariableAssignment(
+        object = object,
+        variables = c("well_plate", "well", "roi", "well_roi")
+        )
+      
+    if(!base::any(base::is.na(layout_vars[c("well", "roi")]))){
+      
+      layout_vars <- layout_vars[layout_vars != layout_vars["well_roi"]]
+      
+    } else if(!base::is.na(layout_vars["well_roi"])){
+      
+      layout_vars <- layout_vars[layout_vars %in% layout_vars[c("well", "roi")]]
+      
+    }
+    
+    layout_vars <- purrr::discard(.x = layout_vars, .p = base::is.na)
+    
+    id_vars <- base::unname(c(name_in_example, layout_vars))
+    
+    out <- 
+      dplyr::select(.data = df, dplyr::all_of(x = id_vars)) %>% 
+      tidyr::unite(col = "final_id", dplyr::all_of(id_vars), sep = "_") %>% 
+      dplyr::pull(name = "final_id")
+    
+  } else {
+    
+    out <- write_variable_problem(problem = check_res$problem, name_in_app = name_in_app)
+    
+  }
+  
+  return(out)
+  
+}
+
+check_var_character <- function(df, name_in_cypro, object = NULL){
+  
+  name_in_example <- getVariableAssignment(object, variables = name_in_cypro)
+  
+  if(base::is.na(name_in_example)){
+    
+    out <- NULL
+    
+  } else {
+    
+    name_in_app <- cypro_variable_names[[name_in_cypro]]
+    
+    var <- df[[name_in_example]]
+    
+    check_res <- check_and_convert_grouping_var(var = var, ref = name_in_example)
+    
+    if(base::is.null(check_res$problem)){
+      
+      out <- check_res$var
+      
+    } else {
+      
+      out <- write_variable_problem(problem = check_res$problem, name_in_app = name_in_app)
+      
+    }
+    
+  }
+  
+  return(out)
+  
+}
+
+check_var_frame_num <- function(df, name_in_cypro, object = NULL){
+  
+  # (must not be NA therefore no if else)
+  
+  name_in_example <- 
+    getVariableAssignment(object, variables = "frame_num") %>%
+    base::unname()
+  
+  var <- df[[name_in_example]]
+  
+  check_res <- check_and_convert_numeric_var(var = var, ref = name_in_example)
+  
+  if(base::is.null(check_res$problem)){
+  
+    var <- check_res$var
+    
+    min_var <- base::min(var, na.rm = TRUE)
+    
+    if(min_var == 0){
+      
+      out <- var + 1
+      
+      out <- base::as.integer(out)
+      
+    } else if(min_var == 1){
+      
+      out <- var
+      
+    } else {
+      
+      out <- 
+        glue::glue("Values of 'Frame number'-variable '{name_in_example}' must have their minimum at 1 (or 0) not at {min_var}.") %>% 
+        write_variable_problem(name_in_app = "Frame number")
+      
+    } 
+    
+  } else {
+    
+    out <- write_variable_problem(problem = check_res$problem, name_in_app = "Frame number")
+    
+  }
+  
+  return(out)
+  
+}
+
+check_var_numeric <- function(df, name_in_cypro, object = NULL){
+  
+  name_in_example <- getVariableAssignment(object, variables = name_in_cypro) %>% base::unname()
+  
+  if(base::is.na(name_in_example)){
+    
+    out <- NULL
+    
+  } else {
+    
+    name_in_app <- cypro_variable_names[[name_in_cypro]]
+    
+    var <- df[[name_in_example]]
+    
+    check_res <- check_and_convert_numeric_var(var = var, ref = name_in_example)
+    
+    if(base::is.null(check_res$problem)){
+      
+      out <- check_res$var
+      
+    } else {
+      
+      out <- write_variable_problem(problem = check_res$problem, name_in_app = name_in_app)
+      
+    }
+    
+  }
+  
+  return(out)
+  
+}
+
+check_var_roi <- function(df, name_in_cypro, object = NULL){
+  
+  name_in_example <- getVariableAssignment(object, variables = name_in_cypro) %>% base::unname()
+  
+  if(base::is.na(name_in_example)){
+    
+    out <- NULL
+    
+  } else {
+    
+    name_in_app <- cypro_variable_names[[name_in_cypro]]
+    
+    var <- df[[name_in_example]]
+    
+    check_res <- check_and_convert_grouping_var(var = var, ref = name_in_example)
+    
+    if(base::is.null(check_res$problem)){
+      
+      var <- check_res$var
+      
+      var <- 
+        extractRoiInfo(var) %>% 
+        adjustRoiInfo()
+      
+      all_valid <- validateRois(var) %>% base::all()
+      
+      if(base::isTRUE(all_valid)){
+        
+        out <- var
+        
+      } else {
+        
+        out <- 
+          glue::glue("Attempt to extract ROI information resulted in NAs.") %>% 
+          write_variable_problem(name_in_app = name_in_app)
+        
+      }
+      
+    } else {
+      
+      out <- write_variable_problem(problem = check_res$problem, name_in_app = name_in_app)
+      
+    }
+    
+  }
+  
+
+  
+}
+
+check_var_well <- function(df, name_in_cypro, object = NULL){
+  
+  name_in_example <- getVariableAssignment(object, variables = name_in_cypro) %>% base::unname()
+  
+  if(base::is.na(name_in_example)){
+    
+    out <- NULL
+    
+  } else {
+    
+    name_in_app <- cypro_variable_names[[name_in_cypro]]
+    
+    var <- df[[name_in_example]]
+    
+    check_res <- check_and_convert_grouping_var(var = var, ref = name_in_example)
+    
+    if(base::is.null(check_res$problem)){
+      
+      var <- check_res$var
+      
+      var <- 
+        extractWellInfo(var) %>% 
+        adjustWellInfo()
+      
+      all_valid <- validateWells(var) %>% base::all()
+      
+      if(base::isTRUE(all_valid)){
+        
+        out <- var
+        
+      } else {
+        
+        out <- 
+          glue::glue("Attempt to extract well information resulted in NAs.") %>% 
+          write_variable_problem(name_in_app = name_in_app)
+        
+      }
+      
+    } else {
+      
+      out <- write_variable_problem(problem = check_res$problem, name_in_app = name_in_app)
+      
+    }
+    
+  }
+  
+}
+
+check_var_well_roi <- function(df, name_in_cypro, object = NULL){
+  
+  var_assignment <- 
+    getVariableAssignment(
+      object = object,
+      variables = c("cell_id", "well", "roi", "well_roi")
+    )
+  
+  name_in_example <- 
+    getVariableAssignment(object, variables = name_in_cypro) %>%
+    base::unname()
+  
+  if(base::all(base::is.na(var_assignment[c("well", "roi", "well_roi")]))){
+    
+    out <- NULL
+    
+  } else if(base::any(base::is.na(var_assignment[c("well", "roi")]))){
+      
+      if(base::is.na(name_in_example)){
+        
+        out <- NULL
+        
+      } else {
+        
+        name_in_app <- cypro_variable_names[[name_in_cypro]]
+        
+        var <- df[[name_in_example]]
+        
+        check_res <- check_and_convert_grouping_var(var = var, ref = name_in_example)
+        
+        if(base::is.null(check_res$proble)){
+          
+          var <- check_res$var
+          
+          var <- 
+            extractWellRoiInfo(var) %>% 
+            adjustWellRoiInfo()
+          
+          all_valid <- validateWellRois(var) %>% base::all()
+          
+          if(base::isTRUE(all_valid)){
+            
+            out <- var
+            
+          } else {
+            
+            out <- 
+              glue::glue("Attempt to extract well-roi information resulted in NAs.") %>% 
+              write_variable_problem(name_in_app = name_in_app)
+            
+          }
+          
+          
+        } else {
+          
+          out <- write_variable_problem(problem = check_res$problem, name_in_app = name_in_app)
+          
+        }
+        
+      }
+      
+    } else {
+      
+      # single variables 'well' and 'roi' hold priority over the combined var
+      well_in_example <- var_assignment["well"]
+      roi_in_example <- var_assignment["roi"]
+      
+      # the data.frame df contains already checked variables 
+      # well and roi, if the checking resulted in errors the 
+      # output of this funciton isn't going to be used anyway
+      well_var <- df[[well_in_example]]
+      roi_var <- df[[roi_in_example]]
+      
+      out <- stringr::str_c(well_var, roi_var, sep = "_")
+      
+    }
+  
+  return(out)
+  
+}
+
+check_var_well_plate <- function(df, name_in_cypro, object = NULL){
+  
+  well_plate_names <- getWellPlateNames(object)
+  
+  if(nWellPlates(object) == 1){
+    
+    out <- base::rep(well_plate_names, base::nrow(df))
+    
+  } else {
+    
+    name_in_example <- getVariableAssignment(object, variables = name_in_cypro) %>% base::unname()
+    
+    if(base::is.na(name_in_example)){
+      
+      out <- NULL
+      
+    } else {
+      
+      name_in_app <- cypro_variable_names[[name_in_cypro]]
+      
+      var <- df[[name_in_example]]
+      
+      check_res <- check_and_convert_grouping_var(var = var, ref = name_in_example)
+      
+      if(base::is.null(check_res$problem)){
+        
+        var <- check_res$var
+        
+        var_well_plate_names <- base::unique(var) %>% base::sort()
+        
+        unknown_well_plates <- var_well_plate_names[!var_well_plate_names %in% well_plate_names]
+        
+        if(base::length(unknown_well_plates) >= 1){
+          
+          ref <- confuns::scollapse(unknown_well_plates)
+          
+          out <- 
+            glue::glue("Unkown well plates: '{ref}'") %>% 
+            write_variable_problem(name_in_app = name_in_app)
+          
+        } else {
+          
+          out <- var
+          
+        }
+        
+        
+      } else {
+        
+        out <- write_variable_problem(problem = check_res$problem, name_in_app)
+        
+      }
+      
+    }
+    
+  }
+  
+  return(out)
+  
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

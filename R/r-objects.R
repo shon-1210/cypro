@@ -1,4 +1,7 @@
 
+#' @include S4-objects-variables.R
+#' 
+NULL
 
 
 
@@ -22,6 +25,9 @@ well_regex <- "[A-Z]{1}\\d{1,2}"
 well_roi_regex <- "[A-Z]{1}\\d{1,2}_\\d{1}"
 file_regex <- "[A-Z]{1}\\d{1,2}_\\d{1}\\.(csv|xls|xlsx)$"
 
+
+
+
 # -----
 
 # Column names ------------------------------------------------------------
@@ -38,16 +44,53 @@ short_ct_variables <- c("well_roi", "condition", "cell_line", "cell_id", "x_coor
 
 # -----
 
-# Miscellaneuos -----------------------------------------------------------
+
+
+
+# a -----------------------------------------------------------------------
 
 analysis_methods <- list(
   dim_red = c("pca", "tsne", "umap"), 
   clustering = c("hclust", "kmeans", "pam")
 )
 
+analysis_module_descr <-
+  list(
+    identification = glue::glue(
+      "Data derived from image analysis needs a cell id variable to identify each cell in an image. ",
+      "The Cell ID that identifies a cell across the whole experiment is eventually created by combining ", 
+      "the actuall ID with the well plate-, well- and region of interest."
+    ) %>% base::as.character(), 
+    identification_timelapse = glue::glue(
+      "Data derived from time lapse image analysis needs an additional variable that identifies the frame - ",
+      "the 'Frame number' variable."
+    ) %>% base::as.character(), 
+    localisation = "Uses coordinates of cells to, for one thing, analyze their positioning in relation to other cells ", 
+    "of the same image stack.",
+    migration_localisation = glue::glue(
+      "Uses coordinates of cells to, for one thing, analyze their positioning in relation to other cells ", 
+      "of the same image stack. Additionally, the cellulars movement along the experiments duration is ", 
+      "analyzed using several common migration related metrics and visualization techniques."
+    )
+  )
+
+analysis_module_descr_short <- 
+  list(
+    identification = "Constructs a cell ID that labels every imaged cell uniquely.",
+    identification_timelapse = glue::glue(
+      "Uses a frame number in combination with the cell ID to keep track of a cell ", 
+      "throughout the experiments duration/images."
+      ) %>% base::as.character(), 
+    localisation = "Quantifies and analyzes localisation and positioning.",
+    migration_localisation = "Quantifies and analyzes localisation, positioning and locomotion."
+  )
+
 app_title <- "Cypro"
 
 ambiguity_colors <- c("Clear" = "#1CE35B", "Ambiguous" = "#E02424", "Dismissed" = "lightgrey")
+
+
+# c -----------------------------------------------------------------------
 
 cdata_slots <- c("cluster", "meta", "stats", "tracks", "well_plate")
 
@@ -66,7 +109,18 @@ colors_information_status = c("Complete" = "forestgreen",
 
 current_version <- list(major = 0, minor = 3, patch = 0)
 
-info_status_levels <- c("Complete", "Incomplete", "Missing")
+
+cypro_classes <- c("Cypro", "CyproScreening", "CyproTimeLapse", "CyproTimeLapseMP")
+
+# cypro_modules defined in S4-objects-modules.R
+# cypro_module_names defined in S4-objects-modules.R
+
+# cypro_variables defined in S4-objects-variables.R
+# cypro_variable_names defined in S4-objects-variables.R
+
+# d -----------------------------------------------------------------------
+
+data_status_levels <- c("Complete", "Incomplete", "Missing", "Ambiguous", "Dimissed")
 
 debug_ct <- FALSE
 
@@ -111,7 +165,7 @@ default_logical_values <- c("make_pretty", "with_cluster", "with_meta", "with_we
 
 default_numeric_values <- c("pt_alpha", "pt_size")
 
-
+debug <- TRUE
 
 # f -----------------------------------------------------------------------
 
@@ -121,13 +175,25 @@ feedback_list <- list(
   
 )
 
-filetypes <- c("csv$", "xls$", "xlsx$")
+file_status_levels <- c("Missing", "Ambiguous", "Valid")
+
+filetypes <- c("csv$", "txt$", "xls$", "xlsx$")
+
+filetypes_named <- purrr::set_names(x = filetypes, nm = c(".csv", ".txt", ".xls", ".xlsx"))
 
 
 # h -----------------------------------------------------------------------
 
 
 helper_content <- list(
+  
+  additional_variables = c(
+    "Choose the variables that you want to analyze beyond those that have specific module related meaning. ",
+    "All files that you load later on are checked for these variables. If any files have missing variables
+    you will be told during the loading process.", 
+    "Make sure to select all variables that you are interested in as variables that are not denoted/assigned here
+    will be discarded during the loading process."
+  ),
   
   # designExperiment()
   
@@ -261,12 +327,18 @@ image_processing_softwares <-
 
 imp_filter_criteria <- c("total_meas", "skipped_meas", "first_meas", "last_meas")
 
+info_status_levels <- c("Complete", "Incomplete", "Missing")
+
 interval_options <- c("weeks", "days", "hours", "minutes", "seconds", "miliseconds")
 
 invalid_groups <- c("cell_id", "well_plate_name", "well_plate_index", "well", "well_roi")
 
 
+
+
 # l -----------------------------------------------------------------------
+
+layout_df_attributes <- c("class", "roi_info_vars", "well_plate_type")
 
 legend_titles <- c("ambiguity_status" = "Ambiguity Status", 
                    "cl_condition" = "Cell Line & Condition", 
@@ -274,6 +346,9 @@ legend_titles <- c("ambiguity_status" = "Ambiguity Status",
                    "cell_line" = "Cell Line")
 
 levels_info_status <- c("Complete", "Incomplete", "Missing")
+
+loading_modalities <- list("by_roi", "by_well", "by_well_plate", "by_file")
+
 
 # m -----------------------------------------------------------------------
 
@@ -325,9 +400,30 @@ if(exists(x = "cypro_modules")){
 
 # r -----------------------------------------------------------------------
 
-req_numeric_var <- "Must be numeric or convertable to numeric. (Must not contain character values.)"
+# regular expressions, regex
+
+
+rgx_file <- "\\.(csv|txt|xls|xlsx)$"
+
+rgx_roi <- "[0-9]{0,1}[1-9]{1,2}"
+rgx_roi_cypro <- "[1-9]{1,2}"
+
+rgx_well <- "[A-Z]{1}0{0,1}[1-9]{1,2}[0-9]{0,1}" # fits both naming conventions A1 & A01
+rgx_well_cypro <- "[A-Z]{1}[1-9]{1,2}[0-9]{0,1}" # fits only cypro naming convention A1
+
+rgx_well_file <- stringr::str_c(rgx_well, rgx_file, sep = "")
+
+rgx_well_roi <- stringr::str_c(rgx_well, rgx_roi, sep = "(-|_)")
+rgx_well_roi_cypro <- stringr::str_c(rgx_well_cypro, rgx_roi_cypro, sep = "_")
+
+rgx_well_roi_file <- stringr::str_c(rgx_well_roi, rgx_file, sep = "")
+rgx_well_roi_file_cypro <- stringr::str_c(rgx_well_roi_cypro, rgx_file, sep = "")
 
 req_grouping_var <- "Must be of type character or be convertable to type character. (Must not contain decimal numbers.)"
+
+req_numeric_var <- "Must be numeric or convertable to numeric. (Must not contain character values.)"
+
+required_modules <- c("identification", "identification_timelapse")
 
 
 # s -----------------------------------------------------------------------
@@ -366,6 +462,29 @@ testable_plottypes <- c("boxplot", "violinplot")
 
 # v -----------------------------------------------------------------------
 
+variable_content_descr <- 
+  list(
+    roi = glue::glue(
+      "Variable that contains info about the region of interest belonging of the cell." , 
+      "Only used if the variable 'Well' is denoted, too. If so, the variable 'Well ROI' ",
+      "is constructed from both. Else the variables 'Well' and 'Region of interest (ROI)' ", 
+      "are constructed from the variable 'Well ROI'."
+    ),
+    well = glue::glue(
+      "Variable that contains info about the well belonging of the cell. ",
+      "Only used if the variable 'Region of interest (ROI)' is denoted, too. If so, the variable 'Well ROI' ",
+      "is constructed from both. Else the variables 'Well' and 'Region of interest (ROI)' ", 
+      "are constructed from the variable 'Well ROI'."
+    ),
+    well_roi = glue::glue(
+      "Variable that contains info about the well-ROI belonging of the cell. ",
+      "Represents a combination of variable 'Well' and 'Region of interest (ROI)'. If both are denoted ",
+      "this variable assignment is ignored and the variable is constructed. Else the data of this ", 
+      "variable is used to construct the variables 'Well' and 'Region of interest (ROI)."
+      )
+  
+  )
+
 variable_relevance_descr <- 
   list(
     "needed" = glue::glue(
@@ -387,7 +506,15 @@ well_plate_vars <- c("well_plate_name", "well_plate_index", "well",  "well_roi")
 
 
 
-# -----
+
+
+
+
+
+
+
+
+
 
 
 # Pretty names ------------------------------------------------------------

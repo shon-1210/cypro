@@ -3,18 +3,22 @@
 \name{nWellPlates}
 \alias{nWellPlates}
 \alias{nWellPlates,ExperimentDesign-method}
-\title{Number of NAs by cell id  (in stats)}
+\alias{nWellPlates,Cypro-method}
+\title{Number of well plates}
 \usage{
 nWellPlates(object)
 
 \S4method{nWellPlates}{ExperimentDesign}(object)
+
+\S4method{nWellPlates}{Cypro}(object)
 }
 \arguments{
-\item{object}{Any S4-object for whose class a method has been defined.}
+\item{object}{Any object for whose class a method has been defined.}
 }
 \value{
 Numeric value.
 }
 \description{
-Returns the number of well plates.
+Returns the number of well plates the experiment
+design includes.
 }

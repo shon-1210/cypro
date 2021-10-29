@@ -7,7 +7,7 @@
 setStorageDirectory(object, directory)
 }
 \arguments{
-\item{object}{Any S4-object for whose class a method has been defined.}
+\item{object}{Any object for whose class a method has been defined.}
 
 \item{directory}{Character value. The directory under which
 the object is supposed to be stored via \code{saveCyproObject()}.}

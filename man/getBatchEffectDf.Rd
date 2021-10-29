@@ -10,7 +10,7 @@ getBatchEffectDf(object, reduce = TRUE, verbose = NULL)
 getBatchEffectDist(object, verbose = NULL)
 }
 \arguments{
-\item{object}{Any S4-object for whose class a method has been defined.}
+\item{object}{Any object for whose class a method has been defined.}
 
 \item{reduce}{Logical value. If set to TRUE (the default) the data.frame
 is reduced to the unique combinations of well plate well, else each combination

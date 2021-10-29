@@ -25,7 +25,7 @@ traveled from frame to frame. (The so called distance from last point is referre
 argument \code{df}, the summarized data as the second argument \code{stat_df}
 and the \code{Cypro} object as the third argument. It uses
 the information of both to compute the variable. The function must only return the
-stat data.frame with the additional variable that has just been summarized.}
+stat data.frame now containing the additional variable that has just been summarized.}
 }}
 
 \seealso{

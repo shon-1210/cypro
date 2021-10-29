@@ -1,5 +1,8 @@
 
 
+
+# C -----------------------------------------------------------------------
+
 #' @title Number of miscellaneous content
 #' 
 #' @description These functions return a numeric value describing the number
@@ -70,6 +73,10 @@ nConditions <- function(object, phase = NULL){
 
 
 
+
+
+# F -----------------------------------------------------------------------
+
 #' @title Number of files read in 
 #' 
 #' @inherit nCells description
@@ -96,6 +103,10 @@ nFiles <- function(object){
   
 }
 
+
+
+
+# M -----------------------------------------------------------------------
 
 
 #' @title Number of NAs by cell id  (in tracks)
@@ -201,19 +212,55 @@ nMissingValuesStats <- function(object, phase = NULL){
 }
 
 
+# R -----------------------------------------------------------------------
 
-
-
-
-
-
-
-
-
-
-#' @title Number of NAs by cell id  (in stats)
+#' @title Number of regions of interest
 #' 
-#' @description Returns the number of well plates.
+#' @description Returns the number of regions of interest set during 
+#' \code{designExperiment()}.
+#'
+#' @param object 
+#'
+#' @return Numeric value.
+#' @export
+#'
+setGeneric(name = "nRois", def = function(object){
+  
+  standardGeneric(f = "nRois")
+  
+})
+
+#' @rdname nRois
+#' @export
+setMethod(f = "nRois", signature = "WellPlate", function(object){
+  
+  out <- 
+    getLayoutDf(object = object) %>% 
+    dplyr::pull(var = "n_rois") %>% 
+    base::unique()
+  
+  return(out)
+  
+})
+
+#' @rdname nRois
+#' @export
+setMethod(f = "nRois", signature = "layout_df", function(object){
+  
+  base::unique(object$n_rois)
+  
+})
+
+
+
+# W -----------------------------------------------------------------------
+
+
+
+#' @title Number of well plates
+#' 
+#' @description Returns the number of well plates the experiment 
+#' design includes.
 #'
 #' @inherit argument_dummy params
 #' 
@@ -230,12 +277,76 @@ setGeneric(name = "nWellPlates", def = function(object){
 
 #' @rdname nWellPlates
 #' @export
-
 setMethod(f = "nWellPlates", signature = "ExperimentDesign", definition = function(object){
   
   base::length(object@well_plates)
   
 })
 
+#' @rdname nWellPlates
+#' @export
+setMethod(f = "nWellPlates", signature = "Cypro", definition = function(object){
+  
+  res <- 
+    getExperimentDesign(object) %>% 
+    nWellPlates()
+  
+  return(res)
+  
+})
 
 
+
+
+#' @title Number of wells and well rois
+#' 
+#' @description Returns the absolute number of wells or well rois of a well plate.
+#'
+#' @inherit argument_dummy params 
+#'
+#' @return Numeric value.
+#' @export
+
+setGeneric(name = "nWells", def = function(object, info_status = info_status_levels){
+  
+  standardGeneric(f = "nWells")
+  
+})
+
+
+#' @rdname nWells
+#' @export
+setMethod(f = "nWells", signature = "layout_df", definition = function(object, info_status = info_status_levels){
+  
+  nestLayoutDf(object) %>% 
+    dplyr::filter(info_status %in% {{info_status}}) %>% 
+    base::nrow()
+  
+})
+
+#' @rdname nWells
+#' @export
+setMethod(f = "nWells", signature = "WellPlate", function(object, info_status = info_status_levels){
+  
+  getLayoutDf(object, info_status = info_status) %>% 
+    nWells()
+  
+})
+
+#' @rdname nWells
+#' @export
+setGeneric(name = "nWellRois", def = function(object, info_status = info_status_levels){
+  
+  standardGeneric(f = "nWellRois")
+  
+})
+
+#' @rdname nWells
+#' @export
+setMethod(f = "nWellRois", signature = "layout_df", definition = function(object, info_status = info_status_levels){
+  
+  unnestLayoutDf(object) %>% 
+    dplyr::filter(info_status %in% {{info_status}}) %>% 
+    base::nrow()
+  
+})

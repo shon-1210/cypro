@@ -31,33 +31,53 @@ cypro <- setClass(Class = "cypro",
 
 #' @title The AnalysisModule Class
 #' 
-#' @description An analysis module in \code{cypro} represents a biological aspect
-#' of cells that can be described and explored using a fixed set of data variables. 
+#' @description An analysis module in \code{cypro} represents a biological/bioinformatic aspect
+#' around which can be programmed using a fixed set of data variables that are known to \code{cypro}.
 #' See details for more information and examples. 
 #' 
+#' @slot active logical. Denotes if a module is used or not. This is decided via the variable assignment
+#' in \code{assignVariables()} and/or \code{assignVariablesManually()}. An inactive module (@@active = FALSE)
+#' is ignored by all functions regarding all modules. E.g. \code{getVariableAssignment()}.
+#' @slot check_fns list. A list of functions that check the data variables of an input 
+#' data.frame that have been assigned to variables known by \code{cypro} against their 
+#' requirements. This differs from the variable specific functions of the slot @@check_var
+#' of each data variable in so far as that the functions from slot @@check_fns can refer to several 
+#' data variables at the same time. E.g. \emph{cell_id} and \emph{frame_num} combined must identify 
+#' each row of the input data.frame as a cell at a given point of time. A '@@check_fns-function' does that. 
+#' To make sure that the variable assigned to \emph{frame_num} is numeric is accomplished by 
+#' the function stored in slot @@check_var of its corresponding \code{AssignableVariable} object. 
 #' @slot data list. A named list that contains specific data, computations or analysis
 #' that does not fit into the regular \code{Cdata}-class.
 #' @slot descr character. Text that describes what the analysis module is about.
+#' @slot descr_short character. Short sentence that summarizes what the module is about.
 #' @slot name_in_app character. Pretty name to be used as reference in application.
-#' @slot name_in_cypro character. character. Short name to be used as reference throughout
+#' @slot name_in_cypro character. Short name to be used as reference throughout
 #' \code{cypro}. Should follow underscore-naming-convention (e.g. \emph{x_coords} instead of 
 #' \emph{xCoords} or \emph{x-coords})
-#' @slot variables_computed list. Named list of computable variables represented by the S4-Class
+#' @slot variables_computable list. Named list of computable variables represented by the S4-Class
 #' \code{ComputableVariable}.  Names of list correspond to the respective slot @@name_in_cypro.
-#' Variable must be ordered according to the order in which they are supposed to be computed.
+#' Variables must be ordered according to the order in which they are supposed to be computed.
+#' @slot variables_optional list. Named list of optional variables represented by the S4-class 
+#' \code{OptionalVariable}. 
 #' @slot variables_required list. Named list of required variables represented by the S4-Class
 #' \code{RequiredVariable}.  Names of list correspond to the respective slot @@name_in_cypro.
 #' 
 #' @details Example: Cellular migration 
 #' Cellular migration is a commonly explored aspect in time lapse image analysis.  
+#' 
+#' @seealso \code{AssignableVariable}, 
 
 AnalysisModule <- setClass(Class = "AnalysisModule", 
                            slots = list(
+                             active = "logical",
+                             check_fns = "list",
                              data = "list",
                              descr = "character",
+                             descr_short = "character",
                              name_in_app = "character",
                              name_in_cypro = "character",
-                             variables_computed = "list",
+                             variables_computable = "list",
+                             variables_optional = "list",
                              variables_required = "list")
                            )
 
@@ -68,9 +88,9 @@ AnalysisModule <- setClass(Class = "AnalysisModule",
 #' that can only be used in time lapse experiments.
 #'
 #' @slot variables_summarized list. Named list of summarizable variables represented by the 
-#' S4-class \code{SummarizableVariables}. Names of list correspond to the repsective
+#' S4-class \code{SummarizableVariable}. Names of list correspond to the respective
 #' slot @@name_in_cypro. Variable must be ordered according to the order in which they
-#' are supposed to be summarized. E.g. as the migration efficiancy (\emph{mgr_eff}) requires
+#' are supposed to be summarized. E.g. as the migration efficiency (\emph{mgr_eff}) requires
 #' the variable total distance (\emph{total_dist}) the total distance must be listed 
 #' before migration efficiency.
 #' 
@@ -197,22 +217,32 @@ CdataTimeLapseMP <- setClass(Class = "CdataTimeLapseMP",
 #' 
 #' @description The S4-class \code{DataVariable} is an object oriented approach to 
 #' solve the problem of different image analysis software following different
-#' naming conventions. 
-#' 
+#' naming conventions for data variables that are used and known across platforms.
+#' See details for more. 
+#'
+#' @slot name_in_app character. Pretty name to be used as reference in application.
 #' @slot name_in_cypro character. Short name to be used as reference throughout
 #' \code{cypro}. Should follow underscore-naming-convention (e.g. \emph{x_coords} instead of 
 #' \emph{xCoords} or \emph{x-coords})
 #' 
 #' @details The 'Variable-Ecosystem' of \code{cypro} attempts to solve the problem of different
 #' image analysis software following different naming conventions. The reasoning behind this goes 
-#' as follows: Columns that refer to certain data variables such as x- and y-coordinates, frame number, cell perimeter, 
-#' etc. complicate writing specific code. E.g. cellular migration is 
-#' commonly visualized by rose plots (see function \code{plotRosePlot()}). This function refers to 
-#' x- and y-coordinates. If the input data, however, can refer to coordinates in different ways like 
-#' \emph{x}, \emph{x_coordinates}, \emph{x-coordinates}, the code becomes unreliable. While 
-#' unspecific data variables visualized by boxplots or density plots can follow arbitrary 
-#' naming conventions variables that are used repeatedly in \code{cypro}-intern code must follow a
-#' consistent system to ensure flexibility regarding the data input while maintaining reliable code. 
+#' as follows: Columns in data tables that refer to certain data variables such as x- and y-coordinates,
+#' frame number, cell perimeter, etc. are often named inconsistent across image analysis software which 
+#' complicates writing module specific code.
+#' E.g. cellular migration is commonly visualized by rose plots (see function \code{plotRosePlot()}).
+#' This function refers to x- and y-coordinates. If the input data, however, can refer to coordinates in different ways like 
+#' \emph{x}, \emph{x_coordinates}, \emph{x-coordinates}, the code becomes unreliable.  
+#' Unspecific data variables visualized by boxplots or density plots can follow arbitrary 
+#' naming conventions. However, variables that are used repeatedly in \code{cypro}-intern code must follow a
+#' consistent system to assure reliable code. 
+#' 
+#' Therefore, to ensure flexibility regarding the data input, data variables of the input data tables
+#' are assigned to the variables \code{cypro} knows by assigning their names. This is done interactively 
+#' in \code{assignVariables()} where an example file of the input is loaded. Then the individually named
+#' variables/columns of the input data are assigned to variables \code{cypro} knows. This assignment is 
+#' considered at all data loading steps and variables/columns of data fiels are immediately renamed while beeing read into 
+#' \code{cypro}. The assignment is stored and can be obtained via \code{getVariableAssignment()}.
 #' 
 #' @seealso \code{AssignableVariable}, \code{RequiredVariable}, \code{ComputableVariable},
 #' \code{SummarizableVariable}
@@ -221,6 +251,7 @@ CdataTimeLapseMP <- setClass(Class = "CdataTimeLapseMP",
 #'
 DataVariable <- setClass(Class = "DataVariable", 
                          slots = list(
+                           name_in_app = "character",
                            name_in_cypro = "character"
                          )
 )
@@ -232,20 +263,26 @@ DataVariable <- setClass(Class = "DataVariable",
 #' 
 #' @slot check_candidate function. A function that takes a vector as input and
 #' returns a single TRUE if the vector meets the requirements described in 
-#' slot @@description or a single FALSE if not. This only refers to superficial things 
+#' slot @@descr_requirements or a single FALSE if not. This only refers to superficial things 
 #' like class and types. 
 #' 
 #' The function must have only one argument, namely \code{var}.
 #'
-#' @slot check_content function. A more sophisticated function that takes several things 
-#' into consideration to check if the content of the variable fits the modules requirements. 
+#' @slot check_var function. A more sophisticated function that takes several things 
+#' into consideration to check if the content of the assigned variable fits the requirements.
+#' It takes a data.frame, extracts the assigned variable, checks the variable's content, 
+#' adjusts it if necessary/possible and returns the variable or an informative message about
+#' the content's flaws.
+#' 
+#' See details of the \code{check_var_*()}-function documentation for more information.
+#'   
 #' @slot descr_requirements character. Text that describes the class requirements (e.g. 
 #' numeric, character).
-#' @slot descr_variable character. Text that describes what the variable stands for. 
-#' @slot name_in_app character. Pretty name to be used as reference in application.
+#' @slot descr_variable character. Text that describes what the data variable represents. 
 #' @slot name_in_example character. Name the variable carried in the example 
 #' data set uploaded in \code{assignVariables()}.
-
+#' @slot valid logical. Indicates if the content of the assigned variable meets the 
+#' variable specific requirements and is valid. 
 #' 
 #' @details 
 #' To x- and y-coordinates can be referred to in many ways like \emph{x-coordinates,
@@ -256,23 +293,23 @@ DataVariable <- setClass(Class = "DataVariable",
 #' should be used as the names are not identical. Therefore, the user denotes 
 #' the variable \emph{x} as the variable containing the x-coordinate information in 
 #' \code{assignVariables()}. Afterwards, while being loaded every data file
-#' is checked for the variable \emph{x}, which es then renamed to \code{x_coords} and added
+#' is checked for the variable \emph{x}, which is then renamed to \code{x_coords} and added
 #' to the cell data of the \code{Cypro} object.
 #' 
-#' All variables that have a specific meaning and are recurrently used in \code{cypro} are
-#' handled this way. Two further (S4-Classes) exist that differentiate between two types of
-#' assignable data variables: \code{RequiredVariable}, \code{ComputableVariable}.
+#' All data variables that have a specific meaning and are recurrently used in \code{cypro} are
+#' handled this way. Further (S4-Classes) exist that differentiate between three types of
+#' assignable data variables: \code{RequiredVariable}, \code{OptionalVariable}, \code{ComputableVariable}.
 #'  
-#' @seealso \code{RequiredVariable}, \code{ComputableVariable}, \code{SummarizableVariable} 
+#' @seealso \code{RequiredVariable}, \code{ComputableVariable}, \code{OptionalVariable}, \code{SummarizableVariable} 
 #' 
 AssignableVariable <- setClass(Class = "AssignableVariable", 
                                slots = list(
                                  check_candidate = "function", 
-                                 check_content = "function",
+                                 check_var = "function",
                                  descr_requirements = "character",
                                  descr_variable = "character", 
-                                 name_in_app = "character",
-                                 name_in_example = "character"),
+                                 name_in_example = "character",
+                                 valid = "logical"),
                                contains = "DataVariable"
                                )
 
@@ -297,6 +334,30 @@ RequiredVariable <- setClass(Class = "RequiredVariable",
                              contains = c("DataVariable", "AssignableVariable")
                              )
 
+
+#' @title The OptionalVariable Class
+#' 
+#' @description Subclass of \code{DataVariable}. Similar architecture to 
+#' \code{RequiredVariable} but it differs from this class regarding what it represents, 
+#' hence, the additional class. See details for more information.
+#' 
+#' @details A variable is considered optional if it is not required for a module to 
+#' work and if it can neither be computed using required variables. This applies for the variables 
+#' that assign a cell to their localisation on the well plate: \emph{well_plate}, 
+#' \emph{well}, \emph{well_roi}. These variables can be part of the input data files
+#' but do not have to be as there are other options to add this information to the 
+#' \code{Cypro} object. 
+#' 
+#' @seealso \code{AssignableVariable}, \code{RequiredVariable}, \code{SummarizableVariable}, 
+#' \code{loadDataFiles()}, \code{loadData()}. 
+#' 
+OptionalVariable <- setClass(Class = "OptionalVariable", 
+                             slots = list(), 
+                             contains = c("DataVariable", "AssignableVariable")
+                             )
+
+
+
 #' @title The ComputableVariable Class
 #' 
 #' @description Subclass of \code{DataVariable}. See details for more information.
@@ -304,14 +365,14 @@ RequiredVariable <- setClass(Class = "RequiredVariable",
 #' @slot compute_with function. A function that takes the input data as the first 
 #' argument \code{df} and the \code{Cypro} object as the second argument and uses 
 #' the information of both to compute the variable. The function must return only 
-#' the input data.frame with the variable that has just been computed.
+#' the input data.frame now containing the variable that has just been computed.
 #' 
 #' @details Computable variables do not have to be part of the input data in order
-#' to use their associated analysis modules. As long as the required variables of
+#' to use the analysis modules they are part of. As long as the required variables of
 #' the analysis module exist in the input data they can be computed using the function 
 #' of slot @@compute_with. 
 #' 
-#' E.g. the variable distance from last point (\emph{dflp}) is part of the migration analysis module. 
+#' E.g. the data variable distance from last point (\emph{dflp}) is part of the migration analysis module. 
 #' It describes the distance a cell has traveled during the time that passed between 
 #' two frames. The output of some image analysis software (e.g. CellTracker) contain 
 #' this by default. Others do not. As the distance from last point can be computed via
@@ -335,7 +396,7 @@ ComputableVariable <- setClass(Class = "ComputableVariable",
 #' argument \code{df}, the summarized data as the second argument \code{stat_df}
 #' and the \code{Cypro} object as the third argument. It uses 
 #' the information of both to compute the variable. The function must only return the 
-#' stat data.frame with the additional variable that has just been summarized.
+#' stat data.frame now containing the additional variable that has just been summarized.
 #' 
 #' @details Summarizable variables represent variables of time lapse experiments that can be 
 #' computed by summarizing other variables.
@@ -388,6 +449,8 @@ SummarizableVariable <- setClass(Class = "SummarizableVariable",
 #'
 ExperimentDesign <- setClass(Class = "ExperimentDesign", 
                              slots = list(
+                               example_df = "data.frame",
+                               example_dir = "character",
                                experiment = "character",
                                interval = "numeric", 
                                interval_unit = "character",
@@ -397,6 +460,37 @@ ExperimentDesign <- setClass(Class = "ExperimentDesign",
                                well_plates = "list"
                              ))
 
+# -----
+
+
+# DataFile --------------------------------------------------------------
+
+
+#' @title The DataFile Class
+#' 
+#' @description S4-object that contains the information about every file loaded. 
+#'
+#' @slot added logical. TRUE if all variables of slot @@content were valid and 
+#' the data has been integrated in the \code{Cypro} object slot @@cdata.
+#' @slot content list. Every file is loaded and every variable is checked for its
+#' content according to what has been assigned during \code{AssignVariables()}. 
+#' Slot @@content contains the output of all check functions of slot @@check_var.
+#' @slot directory character. The directory from which the file was loaded.
+#' @slot valid logical. TRUE if no variable of slot @@content is a value of class 
+#' \code{glue} - meaning that all @@check_var functions returned a valid variable
+#' and no error/feedback message.
+#'
+#' @export
+#'
+DataFile <- setClass(Class = "DataFile", 
+                       slots = list(
+                         content = "list",
+                         file_status = "character",
+                         directory = "character",
+                         loading_modality = "character",
+                         transferred = "logical",
+                         valid = "logical"
+                       ))
 
 
 # Progress ----------------------------------------------------------------
@@ -430,31 +524,32 @@ Progress <- setClass(Class = "Progress",
 #' @description S4-objects that abstracts a well plate. 
 #' It additionally carries information about if and how the related data has been 
 #' loaded.
-#'
+#' 
+#' @slot directory character. The directory assigned to the well plate during \code{loadData()}.
+#' Is either a directory leading to a folder that contains the files to read in or a directory leading 
+#' to a single file. Depends on the loading modality.
 #' @slot experiment character. The name of the \code{Cypro} object it is part of.
-#' @slot files character. All spreadsheet-files directories that have been loaded 
-#' for that well plate.
-#' @slot folder character. Only relevant in case of usage of \code{loadFilesByWellRoi()}.
-#' Contains the directory to the folder from which the files have been loaded.
-#' @slot loaded_by character. The function that has been used to load data for this 
-#' well plate. 
+#' @slot files list. List of lists named according to all files the directory of @@slot folder
+#' contains. Each slot contains an object of class \code{LoadedFile}. 
 #' @slot index numeric. The ordinal well plate number. E.g. if @@index = 2, it was the second
 #' well plate that has been designed.
 #' @slot name character. The well plate name.
-#' @slot set_up data.frame. A data.frame carrying and additonal S3-class \code{wp_design_df} or 
+#' @slot set_up data.frame. A data.frame carrying and additional S3-class \code{wp_design_df} or 
 #' \code{wp_design_mp_df} in case of multiple phase experiments.
 #' @slot type character. The well plate type. Currently one of
 #' \emph{'2x3 (6)', '3x4 (12)', '4x6 (24)', '6x8 (48)','8x12 (96)'}.
 #'
 WellPlate <- setClass(Class = "WellPlate", 
                       slots = list(
+                        directory = "character",
                         experiment = "character",
-                        files = "character",
-                        folder = "character",
+                        files = "list",
+                        filetypes = "character",
                         layout = "layout_df", 
-                        loaded_by = "character",
+                        loading_modality = "character",
                         index = "numeric",
                         name = "character",
+                        recursive = "logical",
                         type = "character"
                       ))
 
@@ -466,12 +561,13 @@ WellPlate <- setClass(Class = "WellPlate",
 
 #' @title The Cypro Class
 #' 
-#' @description The \code{Cypro}-object is a representation of high-content-screening (HCS)
+#' @description The \code{Cypro} object is a representation of high-content-screening (HCS)
 #' and time-lapse-imaging experiment for R. In both cases images from cells have been 
 #' made and the features of the captured cells have been quantified by image analyzing 
 #' software such as \emph{CellProfer, CellTracker, ImageJ}. 
 #' 
-#' For details on slot @@cdata see documentation for S4-classes \code{Cdata}.
+#' The \code{Cypro}-class is only the parent of the actual \code{Cypro}-classes that are 
+#' used, namely \code{CyproScreening}, \code{CyproTimeLapse} and \code{CyproTimeLapseMP}.
 #' 
 #' @slot analysis list. A list of three slots containing results of statistical and machine-learning
 #' techniques used on the numeric data of slot @@cdata. Currently implemented analysis pipelines
@@ -480,25 +576,27 @@ WellPlate <- setClass(Class = "WellPlate",
 #' @slot compatibility list. A list that can be used as a short term deposit for anything that isn't implemented
 #' in \code{cypro}.
 #' @slot default list. Contains the object specific default input for recurring arguments. Can 
-#' be savely modified via \code{adjustDefaultInstructions()}.
+#' be safely modified via \code{adjustDefaultInstructions()}.
 #' @slot experiment character. The name of the experiment. 
 #' @slot design ExperimentDesign. An S4-object of class \code{ExperimentDesign}.
 #' @slot feature_sets list. Each slot contains a character vector of names of numeric variables forming 
 #' a \emph{feature_set}. Based on these features clustering and dimensional reduction can be 
 #' performed. This allows to store several clustering results based on different features in one and the 
 #' same \code{Cypro}-object.
-#' @slot information list. Misellaneous information around the object.
+#' @slot information list. Miscellaneous information around the object.
 #' @slot modules list. Each slot is again a list representing one of the modules that has been denoted 
 #' during \code{assignVariables()}. In addition to the variable denotation it can contain 
 #' module specific data, computation or analysis results. 
 #' @slot progress Progress. S4-object of class \code{Progress.}
-#' @slot qcheck list. Contains results of quality check related results such as outlier detection.
+#' @slot quality_checks list. Contains results of quality check related results such as outlier detection.
 #' @slot storage character. Directory under which the \code{Cypro}-object is stored by default 
 #' using \code{saveCyproObject()}.
 #' @slot subsets list. Contains information of each subsetting process the \code{Cypro}-object
 #' has gone through. See functions prefixed with \code{subsetBy*()}.
 #' @slot version list. Three slots named \emph{patch, minor} and \emph{major} that keep 
 #' track of the version of the object and the latest version of the cypro package.
+#' 
+#' @seealso \code{CyproScreening}-class, \code{CyproTimeLapse}-class, \code{CyproTimeLapseMP}-class
 #'
 Cypro <- setClass(Class = "Cypro", 
                   slots = list(
@@ -509,10 +607,11 @@ Cypro <- setClass(Class = "Cypro",
                     experiment = "character",
                     experiment_design = "ExperimentDesign",
                     feature_sets = "list",
+                    image_directories = "data.frame",
                     information = "list",
                     modules = "list",
                     progress = "Progress", 
-                    qcheck = "list",
+                    quality_checks = "list",
                     storage = "character",
                     subsets = "list",
                     version = "list"
@@ -520,8 +619,20 @@ Cypro <- setClass(Class = "Cypro",
 )
 
 
-#' @rdname Cypro
+#' @title The CyproScreening Class
+#' 
+#' @description The abstraction of high content screening experiments in which cells were imaged
+#' only one time in contrast to time lapse experiments where cells are imaged several times in defined
+#' intervals to track them. 
+#' 
+#' In addition to slot @@cdata it contains all slots of class \code{Cypro}.
+#' 
+#' @slot cdata Object of class \code{CdataScreening}. 
+#' 
+#' @seealso \code{Cypro}-class, \code{CdataScreening}-class
+#' 
 #' @export
+#' 
 CyproScreening <- setClass(Class = "CyproScreening", 
                            slots = list(
                              cdata = "CdataScreening"
@@ -529,8 +640,22 @@ CyproScreening <- setClass(Class = "CyproScreening",
                            contains = "Cypro"
 )
 
-#' @rdname Cypro
+#' @title The CyproTimeLapse Class
+#' 
+#' @description The abstraction of time lapse imaging experiments in which cells were
+#' imaged several times in defined intervals to track them. In contrast to the class
+#' \code{CyproTimeLapseMP} where the suffix MP stands for multiple phases the condition 
+#' in which cells existed did not change over the course of the experiment. Meaning that 
+#' they were treated right before the imaging started.
+#' 
+#' In addition to slot @@cdata it contains all slots of class \code{Cypro}.
+#' 
+#' @slot cdata Object of class \code{CdataTimeLapse}. 
+#' 
+#' @seealso \code{Cypro}-class, \code{CdataTimeLapse}-class
+#' 
 #' @export
+#' 
 CyproTimeLapse <- setClass(Class = "CyproTimeLapse", 
                            slots = list(
                              cdata = "CdataTimeLapse"
@@ -538,8 +663,22 @@ CyproTimeLapse <- setClass(Class = "CyproTimeLapse",
                            contains = "Cypro"
 )
 
-#' @rdname Cypro
+#' @title The CyproTimeLapseMP Class
+#' 
+#' @description The abstraction of time lapse imaging experiments in which cells were
+#' imaged several times in defined intervals to track them. The suffix MP stands for multiple
+#' phases. This describes a special kind of experiment design in which the condition of the cells
+#' changes over time. E.g cells were treated with compound x right before the imaging started
+#' and after 10 hours compound y was added.  
+#' 
+#' In addition to slot @@cdata it contains all slots of class \code{Cypro}.
+#' 
+#' @slot cdata Object of class \code{CdataTimeLapseMP}. 
+#' 
+#' @seealso \code{Cypro}-class, \code{CdataTimeLapseMP}-class
+#' 
 #' @export
+#' 
 CyproTimeLapseMP <- setClass(Class = "CyproTimeLapseMP", 
                              slots = list(
                                cdata = "CdataTimeLapseMP"

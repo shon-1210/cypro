@@ -10,7 +10,7 @@ getWellPlateIndices(object, ...)
 \S4method{getWellPlateIndices}{Cypro}(object, return = "tibble")
 }
 \arguments{
-\item{object}{Any S4-object for whose class a method has been defined.}
+\item{object}{Any object for whose class a method has been defined.}
 
 \item{return}{Character value. Either \emph{'tibble'} or \emph{'vector'}.}
 }

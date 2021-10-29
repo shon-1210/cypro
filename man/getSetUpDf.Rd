@@ -10,7 +10,7 @@ getSetUpDf(object, ...)
 \S4method{getSetUpDf}{Cypro}(object, well_plate, ...)
 }
 \arguments{
-\item{object}{Any S4-object for whose class a method has been defined.}
+\item{object}{Any object for whose class a method has been defined.}
 
 \item{well_plate}{Character value. The name of the well plate of interest. Valid inputs can be obtained
 via \code{getWellPlateNames()}.}

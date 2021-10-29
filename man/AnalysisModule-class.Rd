@@ -6,8 +6,8 @@
 \alias{AnalysisModule}
 \title{The AnalysisModule Class}
 \description{
-An analysis module in \code{cypro} represents a biological aspect
-of cells that can be described and explored using a fixed set of data variables.
+An analysis module in \code{cypro} represents a biological/bioinformatic aspect
+around which can be programmed using a fixed set of data variables that are known to \code{cypro}.
 See details for more information and examples.
 }
 \details{
@@ -17,22 +17,43 @@ Cellular migration is a commonly explored aspect in time lapse image analysis.
 \section{Slots}{
 
 \describe{
+\item{\code{active}}{logical. Denotes if a module is used or not. This is decided via the variable assignment
+in \code{assignVariables()} and/or \code{assignVariablesManually()}. An inactive module (@active = FALSE)
+is ignored by all functions regarding all modules. E.g. \code{getVariableAssignment()}.}
+
+\item{\code{check_fns}}{list. A list of functions that check the data variables of an input
+data.frame that have been assigned to variables known by \code{cypro} against their
+requirements. This differs from the variable specific functions of the slot @check_var
+of each data variable in so far as that the functions from slot @check_fns can refer to several
+data variables at the same time. E.g. \emph{cell_id} and \emph{frame_num} combined must identify
+each row of the input data.frame as a cell at a given point of time. A '@check_fns-function' does that.
+To make sure that the variable assigned to \emph{frame_num} is numeric is accomplished by
+the function stored in slot @check_var of its corresponding \code{AssignableVariable} object.}
+
 \item{\code{data}}{list. A named list that contains specific data, computations or analysis
 that does not fit into the regular \code{Cdata}-class.}
 
 \item{\code{descr}}{character. Text that describes what the analysis module is about.}
 
+\item{\code{descr_short}}{character. Short sentence that summarizes what the module is about.}
+
 \item{\code{name_in_app}}{character. Pretty name to be used as reference in application.}
 
-\item{\code{name_in_cypro}}{character. character. Short name to be used as reference throughout
+\item{\code{name_in_cypro}}{character. Short name to be used as reference throughout
 \code{cypro}. Should follow underscore-naming-convention (e.g. \emph{x_coords} instead of
 \emph{xCoords} or \emph{x-coords})}
 
-\item{\code{variables_computed}}{list. Named list of computable variables represented by the S4-Class
+\item{\code{variables_computable}}{list. Named list of computable variables represented by the S4-Class
 \code{ComputableVariable}.  Names of list correspond to the respective slot @name_in_cypro.
-Variable must be ordered according to the order in which they are supposed to be computed.}
+Variables must be ordered according to the order in which they are supposed to be computed.}
+
+\item{\code{variables_optional}}{list. Named list of optional variables represented by the S4-class
+\code{OptionalVariable}.}
 
 \item{\code{variables_required}}{list. Named list of required variables represented by the S4-Class
 \code{RequiredVariable}.  Names of list correspond to the respective slot @name_in_cypro.}
 }}
 
+\seealso{
+\code{AssignableVariable},
+}

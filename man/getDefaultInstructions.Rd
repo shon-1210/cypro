@@ -10,7 +10,7 @@ getDefaultInstructions(object, ...)
 \S4method{getDefaultInstructions}{Cypro}(object, return = "list")
 }
 \arguments{
-\item{object}{Any S4-object for whose class a method has been defined.}
+\item{object}{Any object for whose class a method has been defined.}
 
 \item{return}{Character value. Either \emph{'list'} (default) or \emph{'S4'}.}
 }

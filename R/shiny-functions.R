@@ -433,7 +433,7 @@ css_status <- function(evaluate, case_true = "success", case_false = "warning"){
 #' to load the data. 
 #' 
 
-evaluate_file_availability_shiny <- function(wp_list, recursive = TRUE, keep_filetype = "csv$"){
+evaluate_file_availability_shiny <- function(wp_list, recursive = TRUE, keep_filetype = "csv$", object = NULL){
   
   directory <- wp_list$directory
   wp_df <- wp_list$wp_df
@@ -1016,9 +1016,11 @@ plot_well_plate_shiny <- function(wp_df,
   if(base::is.data.frame(selected_wells_df)){
     
     geom_point_add_on <-  
-      ggplot2::geom_point( data = selected_wells_df, fill = "red",
-                           size = pt_size, shape = 21, alpha = 1,
-                           stroke = pt_stroke ) 
+      ggplot2::geom_point(
+        data = selected_wells_df, fill = "red",
+        size = pt_size, shape = 21, alpha = 1,
+        stroke = pt_stroke
+        ) 
     
   } else {
     
@@ -1040,19 +1042,25 @@ plot_well_plate_shiny <- function(wp_df,
   } else {
     
     fill_add_on <- 
-      ggplot2::scale_fill_manual(values = fill_values, drop = FALSE, guide = FALSE) 
+      ggplot2::scale_fill_manual(
+        values = fill_values, 
+        drop = FALSE, 
+        guide = FALSE
+        ) 
     
   }
   
   if(base::isTRUE(color_guide)){
     
-    color_guide <- ggplot2::guide_legend(override.aes = list(size = 15, shape = 21))
+    color_guide <-
+      ggplot2::guide_legend(override.aes = list(size = 15, shape = 21))
     
   } 
   
   if(base::isTRUE(fill_guide)){
     
-    fill_guide <- ggplot2::guide_legend(override.aes = list(size = 15, shape = 21))
+    fill_guide <- 
+      ggplot2::guide_legend(override.aes = list(size = 15, shape = 21))
     
   } 
   
@@ -1186,8 +1194,6 @@ read_example_file_shiny <- function(directory){
     df <- utils::read.delim(file = directory, header = TRUE)
     
   }
-  
-  print(head(df))
   
   if(tibble::has_rownames(df)){
     

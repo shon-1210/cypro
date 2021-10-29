@@ -2,6 +2,58 @@
 
 
 
+
+# E -----------------------------------------------------------------------
+
+
+#' @title Create empty Cypro object
+#' 
+#' @description Wrapper for manual construction of the \code{Cypro} object. 
+#'
+#' @param class Character value. The Cypro class of the object. 
+#' @param exp_name Character value. The name of the experiment.
+#' @param ... Additional arguments given to the constructor function \code{methods::new()}.
+#'
+#' @return An object of the denoted class. 
+#' @export
+#'
+createEmptyCyproObject <- function(class = "CyproTimeLapse", exp_name = "test", ...){
+  
+  confuns::check_one_of(
+    input = class, 
+    against = cypro_classes
+  )
+  
+  confuns::is_value(x = exp_name, mode = "character")
+  
+  object <- methods::new(Class = class)
+  
+  object@experiment <- exp_name
+  
+  object@progress <- methods::new(Class = "Progress")
+  
+  if(stringr::str_detect(class, pattern = "TimeLapse")){
+    
+    object@modules <- cypro_modules$time_lapse
+    
+  } else if(class == "CyproScreening") {
+    
+    object@modules <- cypro_modules$screening
+    
+  } else {
+    
+    warning("Can not set module without information about the experiment design.")
+    
+  }
+  
+  return(object)
+  
+}
+
+
+
+# L -----------------------------------------------------------------------
+
 #' @title Create well plate layout
 #' 
 #' @description Creates a data.frame of class \code{layout_df} or \code{layout_df_mp}
@@ -22,7 +74,7 @@
 #'
 createLayoutDf <- function(well_plate_name = "wp", 
                            well_plate_type = "8x12",
-                           rois_per_well = 1,
+                           n_rois = 1,
                            n_phases = 0){
   
   confuns::are_values(c("well_plate_name", "well_plate_type"), mode = "character")
@@ -32,11 +84,9 @@ createLayoutDf <- function(well_plate_name = "wp",
     against = well_plate_info$type
   )
   
-  # row- and column number of current well plate
   well_plate_used <- 
     dplyr::filter(well_plate_info, type == {{well_plate_type}})
   
-  # data.frame (obs => well)
   layout_df <- 
     tidyr::expand_grid(
       row_num = 1:well_plate_used$rows, 
@@ -47,19 +97,32 @@ createLayoutDf <- function(well_plate_name = "wp",
       row_letter = base::LETTERS[row_num],
       well = stringr::str_c(row_letter, col_num, sep = ""), 
       info_status = base::factor(x = "Missing", levels = info_status_levels),
-      cell_line = NA,
-      condition = NA, 
-      cell_line = base::as.character(cell_line), 
-      condition = base::as.character(condition),
-      well_plate_type = {{well_plate_type}}, 
-      rois_per_well = {{rois_per_well}},
+      cell_line = NA_character_,
+      condition = NA_character_, 
+      n_rois = {{n_rois}},
+      n_files = 0,
+      data_status = base::factor(x = "Incomplete", levels = data_status_levels),
       selected = FALSE
     ) %>% 
     dplyr::select(
-      well_plate_name, well_plate_type, dplyr::everything()
+      well_plate_name, dplyr::everything()
     )
   
+  layout_df$roi_info <- purrr::map(.x = layout_df$well, .f = function(x){
+    
+    data.frame(well = x, roi = 1:n_rois) %>%  
+      dplyr::mutate(well_roi = stringr::str_c(well, roi, sep = "_")) %>% 
+      dplyr::select(-well) %>% 
+      tibble::as_tibble()
+    
+  })
+  
+  # set primary attributes
   base::attr(x = layout_df, which = "class") <- c("layout_df", base::class(layout_df))
+  
+  base::attr(x = layout_df, which = "roi_info_vars") <- c("well_roi") 
+  
+  base::attr(x = layout_df, which = "well_plate_type") <- well_plate_type
   
   if(n_phases != 0){
     

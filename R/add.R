@@ -8,6 +8,9 @@ add_family <- function(){}
 
 
 
+
+
+
 # Functions ---------------------------------------------------------------
 
 
@@ -618,20 +621,71 @@ addPamClusterVariables <- function(object,
 
 
 
+
+
+
+
+
+
+# a -----------------------------------------------------------------------
+
+
+
+# h -----------------------------------------------------------------------
+
+#' @title Add helping text 
+#'
+add_helper <- function(shiny_tag, content, title = "What do I have to do here?", type = "inline", size = "s", ...){
+  
+  
+  res <- 
+    shinyhelper::helper(shiny_tag = shiny_tag, 
+                        content = content, 
+                        title = title, 
+                        size = size,
+                        type = type, 
+                        ...)
+  
+  base::return(res)
+  
+}
+
+
+# r -----------------------------------------------------------------------
+
+add_roi_info_vars <- function(df, vars){
+  
+  attr <- base::attributes(df)
+  
+  attr$roi_info_vars <- c(attr$roi_info_vars, vars)
+  
+  base::attributes(df) <- attr
+  
+  return(df)
+  
+}
+
+
+
+# A -----------------------------------------------------------------------
+
+
 # W -----------------------------------------------------------------------
 
-#' @title Add well plate S4 object
+#' @title Add a well plate 
 #' 
 #' @description Creates and adds a new object of class \code{WellPlate} in the respective
 #' slot of input for argument \code{object}.
 #'
 #' @inherit argument_dummy params
-#' @param name,layout Input as described in documentation of class \code{WellPlate}.
+#' @param name,layout Input for the \code{WellPlate} object as described in documentation of class \code{WellPlate}.
 #' See details for more information. 
 #' 
 #' @param ... Additional arguments given to \code{methods::new(Class = \emph{'WellPlate'}, ...)}.
+#' 
 #' @details Slot @@index of the new well plate is automatically defined by adding 1 to the sum of all well plates found.
-#' Slot @@experiment of the new well plate is inherited by the 
+#' Slot @@experiment of the new well plate is inherited by the input for argument \code{object}. Slot @@type
+#' is defined by the attribute \emph{well_plate_type} of the input for argument \code{layout} (which has to be a \code{layout_df}).
 #' 
 #' Input for slot @@name must not be already used by another well plate.
 #' @return The input object.
@@ -670,6 +724,7 @@ setMethod(f = "addWellPlate", signature = "ExperimentDesign", function(object, n
       name = name,
       layout = layout,
       index = n_wps + 1,
+      type = getWellPlateType(layout),
       ...
     )
   

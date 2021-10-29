@@ -16,7 +16,7 @@ keepStatVariables(object, stat_variables, verbose = NULL)
 keepTrackVariables(object, track_variables, verbose = NULL)
 }
 \arguments{
-\item{object}{Any S4-object for whose class a method has been defined.}
+\item{object}{Any object for whose class a method has been defined.}
 
 \item{stat_variables}{Character vector. The variables from the cell statistics data you want to discard
 in case of \code{discardStatVariables()} or keep in case of \code{keepStatVariables()}.}
