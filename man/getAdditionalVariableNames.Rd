@@ -5,15 +5,18 @@
 \alias{getAdditionalVariableNames,Cypro-method}
 \title{Obtain additional variable names}
 \usage{
-getAdditionalVariableNames(object)
+getAdditionalVariableNames(object, with_grouping = TRUE, with_numeric = TRUE)
 
-\S4method{getAdditionalVariableNames}{Cypro}(object)
+\S4method{getAdditionalVariableNames}{Cypro}(object, with_grouping = TRUE, with_numeric = TRUE)
 }
 \arguments{
 \item{object}{Any object for whose class a method has been defined.}
+
+\item{with_grouping, with_numeric}{Logical values. Indicate the additional
+variable types that are supposed to be included in the output list.}
 }
 \value{
-Character vector.
+A list.
 }
 \description{
 Extracts variable names that have been denoted during

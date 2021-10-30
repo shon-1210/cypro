@@ -299,7 +299,7 @@ plotScatterplot <- function(object,
 #' @export
 #'
 
-plotWellPlate <- function(object, 
+plotWellPlateX <- function(object, 
                           phase = NULL, 
                           well_plates = NULL,
                           color_by = "condition", 

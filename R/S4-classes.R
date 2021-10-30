@@ -432,6 +432,7 @@ SummarizableVariable <- setClass(Class = "SummarizableVariable",
 #' @slot experiment character. The name of the \code{Cypro} object it is part of.
 #' @slot n_frames numeric. Only relevant in case of time lapse experiments. The total
 #' number of images that have been made for every well-region-of-interest (well-roi).
+#' @slot ias character. Name of the Image Analysis Software used. 
 #' @slot interval numeric. Only relevant in case of time lapse experiments. 
 #' The interval in between which the images were made. 
 #' @slot interval_unit character. Only relevant in case of time lapse experiments. 
@@ -439,8 +440,13 @@ SummarizableVariable <- setClass(Class = "SummarizableVariable",
 #' \emph{'days', 'hours', 'minutes', 'seconds'}.
 #' @slot type character. The experiment type. One of \emph{'screening', 'time_lapse',
 #' 'time_lapse_mp'}.
+#' @slot variables_grouping character. Contains variable names that were denoted as
+#' additional grouping variables.
+#' @slot variables_numeric character. Contains variable names that were denoted as
+#' additional numeric variables.
 #' @slot well_plates list. Contains as many S4-objects of class \code{WellPlate}
 #' as defined during the interactive session of \code{designExperiment()}.
+#' 
 #' 
 #' @details E.g. @@n_frames = 25, @@interval = 1, @@interval_unit = 'hours' means 
 #' that during the experiment every well region of interest was captured 25 times. 
@@ -452,11 +458,14 @@ ExperimentDesign <- setClass(Class = "ExperimentDesign",
                                example_df = "data.frame",
                                example_dir = "character",
                                experiment = "character",
+                               ias = "character",
                                interval = "numeric", 
                                interval_unit = "character",
                                n_frames = "numeric",
                                phases = "list",
                                type = "character",
+                               variables_grouping = "character",
+                               variables_numeric = "character", 
                                well_plates = "list"
                              ))
 

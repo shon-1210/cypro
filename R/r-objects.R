@@ -49,6 +49,14 @@ short_ct_variables <- c("well_roi", "condition", "cell_line", "cell_id", "x_coor
 
 # a -----------------------------------------------------------------------
 
+additional_variables_descr <- c(
+  "Choose the variables that you want to integrate in your analysis beyond those that have specific module related meaning.",
+  "All files that you load later on are checked for these variables. If any files have missing variables
+    you will be told during the loading process.", 
+  "Make sure to select all variables that you are interested in as variables that are not denoted/assigned here
+    will be discarded during the loading process."
+)
+
 analysis_methods <- list(
   dim_red = c("pca", "tsne", "umap"), 
   clustering = c("hclust", "kmeans", "pam")
@@ -94,6 +102,14 @@ ambiguity_colors <- c("Clear" = "#1CE35B", "Ambiguous" = "#E02424", "Dismissed" 
 
 cdata_slots <- c("cluster", "meta", "stats", "tracks", "well_plate")
 
+clr_by_well_plate_choices <- 
+  c("Condition" = "condition", 
+    "Cell Line" = "cell_line",
+    "Data Status" = "data_status",
+    "File Status" = "file_status",
+    "Info Status" = "info_status"
+    )
+
 colors_grey <- c("unknown" = "lightgrey",
                  "unknown & unknown" = "lightgrey",
                  "Dismissed" = "lightgrey")
@@ -111,6 +127,12 @@ current_version <- list(major = 0, minor = 3, patch = 0)
 
 
 cypro_classes <- c("Cypro", "CyproScreening", "CyproTimeLapse", "CyproTimeLapseMP")
+
+cypro_clrp_adjust <- 
+  list(
+    file_status = c("Missing" = "red", "Ambiguous" = "blue", "Valid" = "forestgreen"),
+    info_status = c("Missing" = "red", "Incomplete" = "yellow", "Complete" = "forestgreen")
+  )
 
 # cypro_modules defined in S4-objects-modules.R
 # cypro_module_names defined in S4-objects-modules.R
@@ -187,12 +209,16 @@ filetypes_named <- purrr::set_names(x = filetypes, nm = c(".csv", ".txt", ".xls"
 
 helper_content <- list(
   
-  additional_variables = c(
-    "Choose the variables that you want to analyze beyond those that have specific module related meaning. ",
-    "All files that you load later on are checked for these variables. If any files have missing variables
-    you will be told during the loading process.", 
-    "Make sure to select all variables that you are interested in as variables that are not denoted/assigned here
-    will be discarded during the loading process."
+  additional_variables_grouping = c(
+    additional_variables_descr, 
+    "", "", 
+    "Must be of type character or be convertable to type character. (Must not contain decimal numbers.)"
+    
+  ),
+  additional_variables_numeric = c(
+    additional_variables_descr, 
+    "", "", 
+    "Must be numeric or convertable to numeric. (Must not contain character values.)"
   ),
   
   # designExperiment()

@@ -9,7 +9,7 @@
 
 byFile <- function(object){
   
-  ld_fn <- suggestLoadingFunction(object)
+  ld_fn <- suggestLoadingModality(object)
   
   out <- ld_fn == "by_file"
   
@@ -19,7 +19,7 @@ byFile <- function(object){
 
 byFolder <- function(object){
   
-  ld_fn <- suggestLoadingFunction(object)
+  ld_fn <- suggestLoadingModality(object)
   
   out <- ld_fn %in% c("by_roi", "by_well")
   
@@ -29,7 +29,7 @@ byFolder <- function(object){
 
 byWellPlate <- function(object){
   
-  ld_fn <- suggestLoadingFunction(object)
+  ld_fn <- suggestLoadingModality(object)
   
   out <- ld_fn == "by_well_plate"
   

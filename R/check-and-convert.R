@@ -1,7 +1,7 @@
 
 
 
-check_and_convert_grouping_var <- function(var, ref, in_shiny = FALSE){
+check_and_convert_grouping_var <- function(var, ref, ...){
   
   n_nas <- base::is.na(var) %>% base::sum()
   

@@ -23,6 +23,8 @@ that no cells emerged due to mitosis or went missing due to imaging artifacts.
 \item{\code{n_frames}}{numeric. Only relevant in case of time lapse experiments. The total
 number of images that have been made for every well-region-of-interest (well-roi).}
 
+\item{\code{ias}}{character. Name of the Image Analysis Software used.}
+
 \item{\code{interval}}{numeric. Only relevant in case of time lapse experiments.
 The interval in between which the images were made.}
 
@@ -32,6 +34,12 @@ The unit of the numeric value specified in slot @interval. One of
 
 \item{\code{type}}{character. The experiment type. One of \emph{'screening', 'time_lapse',
 'time_lapse_mp'}.}
+
+\item{\code{variables_grouping}}{character. Contains variable names that were denoted as
+additional grouping variables.}
+
+\item{\code{variables_numeric}}{character. Contains variable names that were denoted as
+additional numeric variables.}
 
 \item{\code{well_plates}}{list. Contains as many S4-objects of class \code{WellPlate}
 as defined during the interactive session of \code{designExperiment()}.}

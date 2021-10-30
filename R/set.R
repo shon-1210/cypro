@@ -166,9 +166,53 @@ setGeneric(name = "setAdditionalVariableNames", def = function(object, ...){
 
 #' @rdname setAdditionalVariables
 #' @export
-setMethod(f = "setAdditionalVariableNames", signature = "Cypro", definition = function(object, var_names){
+setMethod(
+  f = "setAdditionalVariableNames",
+  signature = "ExperimentDesign",
+  definition = function(object, grouping_vars = NULL, numeric_vars = NULL, in_shiny = FALSE){
+    
+    validate_no_overlap_additional_vars(
+      grouping_vars = grouping_vars, 
+      numeric_vars = numeric_vars, 
+      in_shiny = in_shiny, 
+      stop_if_false = TRUE
+    )
+    
+    if(base::is.character(grouping_vars)){
+      
+      object@variables_grouping <- grouping_vars
+      
+    }
+    
+    if(base::is.character(numeric_vars)){
+      
+      object@variables_numeric <- numeric_vars
+      
+    }
+    
+    return(object)
+    
+  })
+
+
+#' @rdname setAdditionalVariables
+#' @export
+setMethod(
+  f = "setAdditionalVariableNames",
+  signature = "Cypro",
+  definition = function(object, grouping_vars = NULL, numeric_vars = NULL, in_shiny = FALSE){
+
+  exp_design <- getExperimentDesign(object)
   
-  object@information$additional_variables <- var_names
+  exp_design <- 
+    setAdditionalVariableNames(
+      object = exp_design, 
+      grouping_vars = grouping_vars, 
+      numeric_vars = numeric_vars, 
+      in_shiny = in_shiny
+    )
+  
+  object <- setExperimentDesign(object, exp_design = exp_design)
   
   return(object)
   

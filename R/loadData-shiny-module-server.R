@@ -94,7 +94,7 @@ moduleLoadDataServer <- function(id, object){
         
         if(byFolder(object)){
           
-          file_input_html <- 
+          dir_input_html <- 
             shiny::tagList(
               
               shiny::column( 
@@ -129,7 +129,7 @@ moduleLoadDataServer <- function(id, object){
             
         } else if(byWellPlate(object)){
           
-          file_input_html <- 
+          dir_input_html <- 
             shiny::tagList(
               
               hs(4, 
@@ -147,11 +147,20 @@ moduleLoadDataServer <- function(id, object){
         
         out_html <- 
           shiny::tagList(
-            hs(4, 
+            hs(3, 
                shiny::h5(shiny::strong("Choose Well Plate:")),
                shiny::uiOutput(outputId = ns("selected_well_plate"))
             ), 
-            file_input_html
+            hs(3,
+               shiny::h5(shiny::strong("Color by:")),
+               shiny::selectInput(
+                 inputId = ns("clr_by"), 
+                 label = NULL, 
+                 choices = clr_by_well_plate_choices, 
+                 selected = "cell_line"
+               )
+               ),
+            dir_input_html
           )
         
         return(out_html)
@@ -447,6 +456,8 @@ moduleLoadDataServer <- function(id, object){
         
       }
       
+      
+      
       # assembled directory 
       input_dir_string <- shiny::reactive({ 
         
@@ -475,22 +486,8 @@ moduleLoadDataServer <- function(id, object){
       
       # ---
       
-      # --- prepare data loading 
-      
-      # example data.frame 
-      example_df <- shiny::reactive({
-        
-        shiny::req(input$pdl_example_dir)
-        
-        input_file <- input$pdl_example_dir
-        directory <- input_file$datapath
-        
-        read_example_file_shiny(directory = directory)
-        
-      })
-      
       # current well plate
-      current_well_plate <- shiny::reactive({
+      well_plate <- shiny::reactive({
         
         shiny::req(input$selected_well_plate)
         
@@ -499,17 +496,15 @@ moduleLoadDataServer <- function(id, object){
       })
       
       # current, evaluated well-plate data.frame ready to be plotted
-      evaluated_wp_df <- shiny::reactive({
+      layout_df <- shiny::reactive({
         
         shiny::req(input$selected_well_plate)
         
-        shiny::validate(
-          shiny::need(
-            expr = base::is.data.frame(current_well_plate()[["wp_df_eval"]]), 
-            message = "No folder has been chosen for this well plate.")
-        )
+        layout_df <- getLayoutDf(object = well_plate())
         
-        current_well_plate()[["wp_df_eval"]]
+        print(layout_df)
+        
+        return(layout_df)
         
       })
       
@@ -530,17 +525,11 @@ moduleLoadDataServer <- function(id, object){
       # well plate plot visualizes the file availability
       well_plate_plot <- shiny::reactive({
         
-        plot_well_plate_shiny(
-          wp_df = evaluated_wp_df(), 
-          selected_wells_df = NULL, 
-          aes_fill = "availability_status", 
-          aes_color = "availability_status", 
-          fill_guide = TRUE,
-          fill_values = ggplot2::alpha(status_colors, .5),
-          color_values = ggplot2::alpha(status_colors, .5)
-        ) + 
-          ggplot2::labs(fill = "File Availability") + 
-          ggplot2::guides(color = FALSE)
+        plotWellPlate(
+          object = layout_df(), 
+          clr_by = input$clr_by, 
+          plot_type = "well"
+        )
         
       })
       
@@ -637,28 +626,30 @@ moduleLoadDataServer <- function(id, object){
         
         shiny::validate(
           shiny::need(
-            expr = !base::is.null(current_well_plate()[["missing_files"]]), 
+            expr = !base::is.null(well_plate()[["missing_files"]]), 
             message = "No folder has been chosen for this well plate."
           )
         )
         
         shiny::validate(
           shiny::need(
-            expr = base::length(current_well_plate()[["missing_files"]]) == 0, 
+            expr = base::length(well_plate()[["missing_files"]]) == 0, 
             message = "No missing files."
           )
         )
         
-        stringr::str_c(current_well_plate()[["missing_files"]], collapse = ", ")
+        stringr::str_c(well_plate()[["missing_files"]], collapse = ", ")
         
       })
       
       output$chosen_dir <- shiny::renderText({
         
         shiny::req(input$selected_well_plate)
-        shiny::req(current_well_plate()[["directory"]])
+        #shiny::req(well_plate()[["directory"]])
         
-        current_well_plate()[["directory"]]
+        #well_plate()[["directory"]]
+        
+        "change this"
         
       })
       
@@ -702,20 +693,20 @@ moduleLoadDataServer <- function(id, object){
         
         shiny::validate(
           shiny::need(
-            expr = current_well_plate()[["ambiguous_directories"]], 
+            expr = well_plate()[["ambiguous_directories"]], 
             message = "No folder has been chosen for this well plate."
           )
         )
         
         shiny::validate(
           shiny::need(
-            expr = !base::identical(current_well_plate()[["ambiguous_directories"]], base::data.frame()), 
+            expr = !base::identical(well_plate()[["ambiguous_directories"]], base::data.frame()), 
             message = "No ambiguous directories detected."
           )
         )
         
         # print output
-        current_well_plate()[["ambiguous_directories"]]
+        well_plate()[["ambiguous_directories"]]
         
       })
       

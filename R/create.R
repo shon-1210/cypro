@@ -68,7 +68,7 @@ createEmptyCyproObject <- function(class = "CyproTimeLapse", exp_name = "test", 
 #' from phase to phase.  
 #'
 #' @return A data.frame of class \code{layout_df} or \code{layout_df_mp} if 
-#' \code{phase} is numeric.
+#' \code{n_phases} is > 1.
 #' 
 #' @export
 #'
@@ -101,6 +101,8 @@ createLayoutDf <- function(well_plate_name = "wp",
       condition = NA_character_, 
       n_rois = {{n_rois}},
       n_files = 0,
+      file_dir = base::vector(mode = "list", length = base::nrow(.)),
+      file_status = base::factor("Missing", levels = file_status_levels),
       data_status = base::factor(x = "Incomplete", levels = data_status_levels),
       selected = FALSE
     ) %>% 
@@ -118,11 +120,10 @@ createLayoutDf <- function(well_plate_name = "wp",
   })
   
   # set primary attributes
-  base::attr(x = layout_df, which = "class") <- c("layout_df", base::class(layout_df))
+  layout_df <- as_layout_df(df = layout_df, well_plate_type = well_plate_type)
   
   base::attr(x = layout_df, which = "roi_info_vars") <- c("well_roi") 
   
-  base::attr(x = layout_df, which = "well_plate_type") <- well_plate_type
   
   if(n_phases != 0){
     
@@ -142,9 +143,7 @@ createLayoutDf <- function(well_plate_name = "wp",
                    
                  })
     
-    base::attr(x = layout_df, "n_phases") <- n_phases
-    
-    base::attr(x = layout_df, which = "class") <- c("layout_df_mp", base::class(layout_df))
+    layout_df <- as_layout_df_mp(layout_df, n_phases = n_phases)
     
   }
   

@@ -41,12 +41,14 @@ setMethod(f = "getActiveModuleNames", signature = "Cypro", definition = function
 #' to the user. 
 #'
 #' @inherit argument_dummy params 
+#' @param with_grouping,with_numeric Logical values. Indicate the additional 
+#' variable types that are supposed to be included in the output list. 
 #'
-#' @return Character vector.
+#' @return A list.
 #' 
 #' @export
 #'
-setGeneric(name = "getAdditionalVariableNames", def = function(object){
+setGeneric(name = "getAdditionalVariableNames", def = function(object, with_grouping = TRUE, with_numeric = TRUE){
   
   standardGeneric(f = "getAdditionalVariableNames")
   
@@ -55,9 +57,28 @@ setGeneric(name = "getAdditionalVariableNames", def = function(object){
 
 #' @rdname getAdditionalVariableNames
 #' @export
-setMethod(f = "getAdditionalVariableNames", signature = "Cypro", definition = function(object){
+setMethod(
+  f = "getAdditionalVariableNames",
+  signature = "Cypro",
+  definition = function(object, with_grouping = TRUE, with_numeric = TRUE){
   
-  return(object@information$additional_variables)
+  exp_design <- getExperimentDesign(object)
+  
+  out <- list()
+  
+  if(base::isTRUE(with_grouping)){
+    
+    out$grouping <- exp_design@variables_grouping
+    
+  }
+  
+  if(base::isTRUE(with_numeric)){
+    
+    out$numeric <- exp_design@variables_numeric
+    
+  }
+  
+  return(out)
   
 })
 

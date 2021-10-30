@@ -915,12 +915,16 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
         # update exp design
         exp_design <- new_exp_design()
         
+        layout_df <- 
+          current_layout_df() %>% 
+          dplyr::mutate(selected = FALSE)
+        
         if(editing_well_plate()){
           
           well_plate_obj <- 
             setLayoutDf(
               object = current_well_plate(),
-              layout_df = current_layout_df()
+              layout_df = layout_df
             )
           
           exp_design <- 
@@ -934,7 +938,7 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
           exp_design <- 
             addWellPlate(
               object = exp_design, 
-              layout = current_layout_df(), 
+              layout = layout_df, 
               name = current_well_plate_name()
             )
           
@@ -946,6 +950,8 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
         current_layout_df(data.frame())
         current_well_plate(FALSE)
         current_well_plate_name(character(1))
+        
+        shiny::updateNumericInput(session = session, inputId = "n_rois", value = 0)
         
       })
       

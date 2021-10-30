@@ -199,8 +199,14 @@ moduleAssignVariablesServer <- function(id, object){
         # update html
         exclude_from_choices <- used_analysis_variable_names()
         
-        choices <- 
+        choices_grouping <- 
           dplyr::select(example_df(), -dplyr::any_of(exclude_from_choices)) %>% 
+          dplyr::select_if(.predicate = is_grouping_candidate) %>% 
+          base::colnames()
+        
+        choices_numeric <- 
+          dplyr::select(example_df(), -dplyr::any_of(exclude_from_choices)) %>% 
+          dplyr::select_if(.predicate = is_numeric_candidate) %>% 
           base::colnames()
         
         html_and_css$additional_variables <- 
@@ -209,16 +215,29 @@ moduleAssignVariablesServer <- function(id, object){
               shiny::column(
                 width = 6,
                 shinyWidgets::pickerInput(
-                  inputId = ns("add_vars"), 
-                  label = "Additional Variables:", 
-                  choices = choices, 
-                  selected = choices, 
+                  inputId = ns("add_vars_grouping"), 
+                  label = "Additional Grouping Variables:", 
+                  choices = choices_numeric, 
                   multiple = TRUE, 
                   options = list(`live-search` = TRUE, `actions-box` = TRUE)
                 ) %>% 
                   add_helper(
-                    title = "Choose addtional variables:", 
-                    content = helper_content$additional_variables
+                    title = "Choose addtional grouping variables:", 
+                    content = helper_content$additional_variables_grouping
+                  )
+              ),
+              shiny::column(
+                width = 6,
+                shinyWidgets::pickerInput(
+                  inputId = ns("add_vars_numeric"), 
+                  label = "Additional Numeric Variables:", 
+                  choices = choices_numeric, 
+                  multiple = TRUE, 
+                  options = list(`live-search` = TRUE, `actions-box` = TRUE)
+                ) %>% 
+                  add_helper(
+                    title = "Choose addtional numeric variables:", 
+                    content = helper_content$additional_variables_numeric
                   )
             )
             ), 
@@ -226,7 +245,6 @@ moduleAssignVariablesServer <- function(id, object){
               shiny::column(
                 width = 3, 
                 shiny::actionButton(inputId = ns("add_vars_save"), label = "Save & Proceed")
-                
               )
             )
           )
@@ -246,14 +264,16 @@ moduleAssignVariablesServer <- function(id, object){
         object <- 
           setAdditionalVariableNames(
             object = cypro_object(), 
-            var_names = input$add_vars
+            grouping_vars = input$add_vars_grouping, 
+            numeric_vars = input$add_vars_numeric, 
+            in_shiny = TRUE
           )
         
         # update object
         cypro_object(object)
         
         all_var_names <- 
-          c(used_analysis_variable_names(), input$add_vars) %>% 
+          c(used_analysis_variable_names(), input$add_vars_grouping, input$add_vars_numeric) %>% 
           base::unname()
         
         # set value for reactive final_df()

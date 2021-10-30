@@ -42,7 +42,6 @@
 #' 
 #' @export
 
-
 setGeneric(name = "validateInputDf", def = function(object, df, ...){
   
   standardGeneric(f = "validateInputDf")
@@ -60,80 +59,116 @@ setMethod(
   
   out <- list()
   
-  for(m in base::seq_along(used_modules)){
+  # module specific vars
+  if(base::isTRUE(check_vars)){
     
-    module <- used_modules[[m]]
-    
-    res <- 
-      validate_variables_hlpr(
-        variables = module@variables_optional,
-        df = df,
-        out_list = out,
-        object = object
-      )
-    
-    df <- res$df
-    out <- res$out_list
-    
-    # required
-    res <- 
-      validate_variables_hlpr(
-        variables = module@variables_required,
-        df = df,
-        out_list = out,
-        object = object
-      )
-    
-    df <- res$df
-    out <- res$out_list
-    
-    # computable
-    res <- 
-      validate_variables_hlpr(
-        variables = module@variables_computable, 
-        df = df, 
-        out_list = out,
-        object = object
-      )
-    
-    df <- res$df 
-    out <- res$out_list
-    
-    add_out <- list()
-    
-    for(f in base::seq_along(module@check_fns)){
+    for(m in base::seq_along(used_modules)){
       
-      check_fn_name <-
-        base::names(module@check_fns)[f] %>% 
-        stringr::str_c("check", sep = "_")
+      module <- used_modules[[m]]
       
-      check_fn <- module@check_fns[[f]]
+      # optional
+      res <- 
+        validate_variables_hlpr(
+          variables = module@variables_optional,
+          df = df,
+          out_list = out,
+          object = object
+        )
       
-      add_out[[check_fn_name]] <- check_fn(df = df, object = object)
+      df <- res$df
+      out <- res$out_list
+      
+      # required
+      res <- 
+        validate_variables_hlpr(
+          variables = module@variables_required,
+          df = df,
+          out_list = out,
+          object = object
+        )
+      
+      df <- res$df
+      out <- res$out_list
+      
+      # computable
+      res <- 
+        validate_variables_hlpr(
+          variables = module@variables_computable, 
+          df = df, 
+          out_list = out,
+          object = object
+        )
+      
+      df <- res$df 
+      out <- res$out_list
+      
+      # additional variable spanning checks
+      add_out <- list()
+      
+      for(f in base::seq_along(module@check_fns)){
+        
+        check_fn_name <-
+          base::names(module@check_fns)[f] %>% 
+          stringr::str_c("check", sep = "_")
+        
+        check_fn <- module@check_fns[[f]]
+        
+        add_out[[check_fn_name]] <- check_fn(df = df, object = object)
+        
+      }
+      
+      out <- c(out, add_out)
       
     }
     
-    out <- c(out, add_out)
-    
   }
   
+  # additional
   if(base::isTRUE(check_additional)){
     
     additional_variable_names <- getAdditionalVariableNames(object)
     
     df_names <- base::colnames(df)
     
-    for(v in base::seq_along(additional_variable_names)){
+    # grouping
+    for(vg in base::seq_along(additional_variable_names$grouping)){
       
-      variable_name <- additional_variable_names[v]
+      variable_name <- additional_variable_names$grouping[vg]
       
-      if(variable_name %in% df_names){
+      var <- df[[variable_name]]
+      
+      res <- 
+        check_and_convert_grouping_var(var = var, ref = variable_name, in_shiny = in_shiny)
+      
+      if(base::is.null(res$problem)){
         
-        out[[variable_name]] <- df[[variable_name]]
+        out[[variable_name]] <- res$var
         
       } else {
         
-        out[[variable_name]] <- glue::glue("Additional variable '{variable_name}' is missing.")
+        out[[variable_name]] <- res$problem
+        
+      }
+      
+    }
+    
+    # numeric check
+    for(vn in base::seq_along(additional_variable_names$numeric)){
+      
+      variable_name <- additional_variable_names$numeric[vn]
+      
+      var <- df[[variable_name]]
+      
+      res <- 
+        check_and_convert_numeric_var(var = var, ref = variable_name, in_shiny = in_shiny)
+      
+      if(base::is.null(res$problem)){
+        
+        out[[variable_name]] <- res$var
+        
+      } else {
+        
+        out[[variable_name]] <- res$problem
         
       }
       
@@ -404,6 +439,73 @@ validate_experiment_name <- function(exp_name, stop_if_false = FALSE){
     ref_invalid = "experiment name", 
     stop_if_false = stop_if_false
   )
+  
+}
+
+
+
+# n -----------------------------------------------------------------------
+
+
+validate_no_overlap_additional_vars <- function(grouping_vars, numeric_vars, stop_if_false = TRUE, in_shiny = FALSE){
+  
+  used_names_vec <- c(grouping_vars, numeric_vars)
+  
+  used_names_count <- 
+    base::table(used_names_vec) %>% 
+    base::as.data.frame() 
+  
+  overlapping_names <- 
+    magrittr::set_colnames(used_names_count, value = c("name", "count")) %>% 
+    dplyr::mutate(name = base::as.character(name)) %>% 
+    dplyr::mutate(name = glue::glue("{name} ({count}x)")) %>% 
+    dplyr::filter(count > 1) %>% 
+    dplyr::pull(name)
+  
+  if(base::length(overlapping_names) >= 1){
+    
+    res <- FALSE
+    
+    if(base::isTRUE(stop_if_false)){
+      
+      ovlp <- confuns::scollapse(overlapping_names)
+      
+      if(base::is.character(modules)){
+        
+        modules <- object@modules[modules] 
+        
+      } else {
+        
+        modules <- object@modules
+        
+      } 
+      
+      msg <-
+        glue::glue(
+          "Duplicated variable assignment is not allowed. ",
+          "The following {ref} {ref2} several times: ",
+          "'{ovlp}'",
+          ref = confuns::adapt_reference(overlapping_names, "variable", "variables"),
+          ref2 = confuns::adapt_reference(overlapping_names, "exists", "exist")
+        )
+      
+      confuns::give_feedback(
+        msg = msg, 
+        fdb.fn = "stop",
+        with.time = FALSE,
+        in.shiny = in_shiny, 
+        duration = 20
+      )
+      
+    }
+    
+  } else { 
+    
+    res <- TRUE    
+    
+  }
+  
+  invisible(res)
   
 }
 

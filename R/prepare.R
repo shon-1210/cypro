@@ -74,6 +74,9 @@ prepare_data_loading_by_roi <- function(object,
     getLayoutDf(well_plate_obj) %>% 
     unnestLayoutDf()
   
+  layout_df$file_dir <- NULL
+  layout_df$file_status <- NULL
+  
   well_rois_all <- getWellRois(layout_df)
   well_rois_complete <- getWellRois(layout_df, info_status = "Complete")
   
@@ -164,6 +167,9 @@ prepare_data_loading_by_well <- function(object,
   well_plate_obj <- getWellPlate(object, well_plate = well_plate)
   
   layout_df <- getLayoutDf(well_plate_obj)
+  
+  layout_df$file_dir <- NULL
+  layout_df$file_status <- NULL
   
   wells_all <- getWells(layout_df)
   wells_complete <- getWells(layout_df, info_status = "Complete")
@@ -257,7 +263,9 @@ prepare_data_loading_by_well_plate <- function(object,
   well_plate_obj <- getWellPlate(object, well_plate = well_plate)
   
   layout_df <- getLayoutDf(well_plate_obj)
+  
   layout_df$file_dir <- directory
+  layout_df$file_status <- "Valid"
   
   well_plate_obj@directory <- directory
   
