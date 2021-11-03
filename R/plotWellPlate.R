@@ -36,6 +36,7 @@ setGeneric(name = "plotWellPlate", def = function(object,
 
 
 
+
 #' @rdname plotWellPlate
 #' @export
 setMethod(

@@ -1,4 +1,4 @@
-#' @include compute.R logical-tests.R r-objects.R check.R
+#' @include compute.R logical-tests.R r-objects.R check.R summarize.R
 #' 
 NULL
 
@@ -180,22 +180,23 @@ var_y_coords <-
 # -----
 
 
-# summarizable variables --------------------------------------------------
+
+# summary variables -------------------------------------------------------
 
 var_mgr_eff <- 
   methods::new(
-    Class = "SummarizableVariable",
+    Class = "SummaryVariable",
     name_in_app = "Migration efficiency",
     name_in_cypro = "mgr_eff", 
-    summarize_with = compute_var_mgr_eff
+    summarize_with = summarize_var_mgr_eff
   )
 
 var_total_dist <- 
   methods::new(
-    Class = "SummarizableVariable", 
+    Class = "SummaryVariable", 
     name_in_app = "Total distance",
     name_in_cypro = "total_dist", 
-    summarize_with = compute_var_total_dist 
+    summarize_with = summarize_var_total_dist 
   )
 
 # -----

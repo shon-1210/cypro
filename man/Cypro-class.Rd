@@ -29,6 +29,9 @@ in \code{cypro}.}
 \item{\code{default}}{list. Contains the object specific default input for recurring arguments. Can
 be safely modified via \code{adjustDefaultInstructions()}.}
 
+\item{\code{directory}}{character. Directory under which the \code{Cypro}-object is stored by default
+using \code{saveCyproObject()}.}
+
 \item{\code{experiment}}{character. The name of the experiment.}
 
 \item{\code{design}}{ExperimentDesign. An S4-object of class \code{ExperimentDesign}.}
@@ -36,7 +39,7 @@ be safely modified via \code{adjustDefaultInstructions()}.}
 \item{\code{feature_sets}}{list. Each slot contains a character vector of names of numeric variables forming
 a \emph{feature_set}. Based on these features clustering and dimensional reduction can be
 performed. This allows to store several clustering results based on different features in one and the
-same \code{Cypro}-object.}
+same \code{Cypro} object.}
 
 \item{\code{information}}{list. Miscellaneous information around the object.}
 
@@ -47,9 +50,6 @@ module specific data, computation or analysis results.}
 \item{\code{progress}}{Progress. S4-object of class \code{Progress.}}
 
 \item{\code{quality_checks}}{list. Contains results of quality check related results such as outlier detection.}
-
-\item{\code{storage}}{character. Directory under which the \code{Cypro}-object is stored by default
-using \code{saveCyproObject()}.}
 
 \item{\code{subsets}}{list. Contains information of each subsetting process the \code{Cypro}-object
 has gone through. See functions prefixed with \code{subsetBy*()}.}

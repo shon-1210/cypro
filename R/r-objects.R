@@ -128,8 +128,20 @@ current_version <- list(major = 0, minor = 3, patch = 0)
 
 cypro_classes <- c("Cypro", "CyproScreening", "CyproTimeLapse", "CyproTimeLapseMP")
 
+cypro_df_classes <-
+  c("cluster_df",
+    "cypro_df",
+    "feature_df",
+    "layout_df", "layout_df_mp",
+    "meta_df",
+    "stats_df",
+    "tracks_df",
+    "well_plate_df"
+    )
+
 cypro_clrp_adjust <- 
   list(
+    data_status = c("Missing" = "red", "Incomplete" = "yellow", "Ambiguous" = "blue", "Valid" = "forestgreen"),
     file_status = c("Missing" = "red", "Ambiguous" = "blue", "Valid" = "forestgreen"),
     info_status = c("Missing" = "red", "Incomplete" = "yellow", "Complete" = "forestgreen")
   )
@@ -140,9 +152,10 @@ cypro_clrp_adjust <-
 # cypro_variables defined in S4-objects-variables.R
 # cypro_variable_names defined in S4-objects-variables.R
 
+
 # d -----------------------------------------------------------------------
 
-data_status_levels <- c("Complete", "Incomplete", "Missing", "Ambiguous", "Dimissed")
+data_status_levels <- c("Complete", "Incomplete", "Missing", "Ambiguous", "Dismissed")
 
 debug_ct <- FALSE
 
@@ -488,6 +501,38 @@ testable_plottypes <- c("boxplot", "violinplot")
 
 # v -----------------------------------------------------------------------
 
+# var_names_dfs documented below vars_*_df
+
+vars_cypro_df <- 
+  list(
+    cell_id = "character"
+  )
+
+vars_tracks_df <- 
+  list(
+    frame_added = "logical", 
+    frame_num = "integer"
+  )
+
+vars_well_plate_df <- 
+  list(
+    well_plate_name = "factor", 
+    well_plate_index = "integer",
+    well = "factor", 
+    roi = "integer", 
+    well_roi = "factor"
+  )
+
+var_names_dfs <- 
+  list(
+    cypro = base::names(vars_cypro_df),
+    tracks = base::names(vars_tracks_df),
+    well_plate = base::names(vars_well_plate_df)
+  )
+
+# numeric feature variables do not represent cellular characteristics
+var_names_non_features <- c("aflp", "afo", "x_coords", "y_coords")
+
 variable_content_descr <- 
   list(
     roi = glue::glue(
@@ -528,7 +573,7 @@ variable_relevance_descr <-
 # w -----------------------------------------------------------------------
 
 
-well_plate_vars <- c("well_plate_name", "well_plate_index", "well",  "well_roi")
+well_plate_vars <- c("well_plate_name", "well_plate_index", "well", "roi", "well_roi")
 
 
 

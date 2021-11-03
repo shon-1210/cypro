@@ -23,5 +23,7 @@ Slot @content contains the output of all check functions of slot @check_var.}
 \item{\code{valid}}{logical. TRUE if no variable of slot @content is a value of class
 \code{glue} - meaning that all @check_var functions returned a valid variable
 and no error/feedback message.}
+
+\item{\code{well_plate}}{character. The well plate belonging.}
 }}
 

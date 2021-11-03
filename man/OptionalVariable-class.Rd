@@ -19,6 +19,6 @@ but do not have to be as there are other options to add this information to the
 \code{Cypro} object.
 }
 \seealso{
-\code{AssignableVariable}, \code{RequiredVariable}, \code{SummarizableVariable},
+\code{AssignableVariable}, \code{RequiredVariable}, \code{SummaryVariable},
 \code{loadDataFiles()}, \code{loadData()}.
 }

@@ -19,5 +19,7 @@ calls that have to be made in order to use a \code{Cypro}-object.
 \item{\code{assignVariables}}{logical.}
 
 \item{\code{loadData}}{logical.}
+
+\item{\code{processData}}{logical.}
 }}
 

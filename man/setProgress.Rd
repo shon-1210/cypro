@@ -12,11 +12,12 @@ setProgress(object, ...)
   designExperiment = NULL,
   assignVariables = NULL,
   loadData = NULL,
+  processData = NULL,
   verbose = TRUE
 )
 }
 \arguments{
-\item{designExperiment, assignVariables, loadData}{TRUE or FALSE.}
+\item{designExperiment, assignVariables, loadData, processData}{TRUE or FALSE.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

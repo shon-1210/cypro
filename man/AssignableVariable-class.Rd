@@ -56,5 +56,5 @@ variable specific requirements and is valid.}
 }}
 
 \seealso{
-\code{RequiredVariable}, \code{ComputableVariable}, \code{OptionalVariable}, \code{SummarizableVariable}
+\code{RequiredVariable}, \code{ComputableVariable}, \code{OptionalVariable}, \code{SummaryVariable}
 }

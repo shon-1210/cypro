@@ -43,5 +43,5 @@ considered at all data loading steps and variables/columns of data fiels are imm
 
 \seealso{
 \code{AssignableVariable}, \code{RequiredVariable}, \code{ComputableVariable},
-\code{SummarizableVariable}
+\code{SummaryVariable}
 }

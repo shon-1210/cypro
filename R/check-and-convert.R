@@ -49,7 +49,7 @@ check_and_convert_grouping_var <- function(var, ref, ...){
   
 }
 
-check_and_convert_numeric_var <- function(var, ref){
+check_and_convert_numeric_var <- function(var, ref, ...){
   
   n_nas <- base::is.na(var) %>% base::sum()
   

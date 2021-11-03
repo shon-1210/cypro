@@ -17,5 +17,5 @@ and \emph{y_coords} must be part of the input data as they can not be computed b
 on other variables.
 }
 \seealso{
-\code{AssignableVariable}, \code{ComputableVariable}, \code{SummarizableVariable}
+\code{AssignableVariable}, \code{ComputableVariable}, \code{SummaryVariable}
 }

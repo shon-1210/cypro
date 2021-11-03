@@ -60,9 +60,27 @@ setGeneric(name = "getStatsDf", def = function(object, ...){
 
 #' @rdname getStatsDf
 #' @export
-setMethod(f = "getStatsDf", signature = "CdataTimeLapse", definition = function(object, ...){
+setMethod(f = "getStatsDf", signature = "CdataTimeLapse", definition = function(object,
+                                                                                with_cluster = FALSE, 
+                                                                                with_meta = FALSE, 
+                                                                                with_well_plate = FALSE, 
+                                                                                ...){
   
-  return(object@features_stats)
+  df <- 
+    tibble::as_tibble(object@features_stats) %>% 
+    as_cypro_df() 
+  
+  df <- 
+    joinWith(
+      object = object, 
+      df = df, 
+      with_cluster = with_cluster, 
+      with_meta = with_meta, 
+      with_well_plate = with_well_plate, 
+      ...
+    )
+  
+  return(as_stats_df(df))
   
 })
 
@@ -72,7 +90,7 @@ setMethod(f = "getStatsDf", signature = "CdataTimeLapseMP", definition = functio
   
   confuns::check_one_of(
     input = phase, 
-    against = base::names(object@features_stats)
+    against = base::names(object@features_stats[[phase]])
   )
   
   return(object@features_stats)
@@ -81,7 +99,20 @@ setMethod(f = "getStatsDf", signature = "CdataTimeLapseMP", definition = functio
 
 #' @rdname getStatsDf
 #' @export
-setMethod(f = "getStatsDf", signature = "CyproTimeLapse", definition = get_stats_df)
+setMethod(f = "getStatsDf", signature = "CyproTimeLapse", definition = function(object, 
+                                                                                with_cluster = FALSE, 
+                                                                                with_meta = FALSE, 
+                                                                                with_well_plate = FALSE, 
+                                                                                ...){
+  
+  getCdata(object) %>% 
+    getStatsDf(
+      with_meta = with_meta, 
+      with_cluster = with_cluster, 
+      with_well_plate = with_well_plate
+    )
+  
+})
 
 #' @rdname getStatsDf
 #' @export
@@ -252,7 +283,11 @@ setMethod(f = "getSubsetList", signature = "Cypro", definition = function(object
 #' @export
 #'
 
-setGeneric(name = "getTracksDf", def = function(object, ...){
+setGeneric(name = "getTracksDf", def = function(object, 
+                                                with_cluster = FALSE,
+                                                with_meta = FALSE, 
+                                                with_well_plate = FALSE,
+                                                ...){
   
   standardGeneric(f = "getTracksDf")
   
@@ -260,28 +295,46 @@ setGeneric(name = "getTracksDf", def = function(object, ...){
 
 #' @rdname getTracksDf
 #' @export
-setMethod(f = "getTracksDf", signature = "CdataTimeLapse", definition = function(object, ...){
+setMethod(f = "getTracksDf", signature = "CdataTimeLapse", definition = function(object,
+                                                                                 with_cluster = FALSE,
+                                                                                 with_meta = FALSE, 
+                                                                                 with_well_plate = FALSE,
+                                                                                 ...){
   
-  return(object@features_tracks)
+  df <- 
+    tibble::as_tibble(object@features_tracks) %>% 
+    as_cypro_df() 
+  
+  df <- 
+    joinWith(
+      object = object, 
+      df = df, 
+      with_cluster = with_cluster, 
+      with_meta = with_meta, 
+      with_well_plate = with_well_plate, 
+      ...
+    )
+  
+  return(as_tracks_df(df))
   
 })
 
 #' @rdname getTracksDf
 #' @export
-setMethod(f = "getTracksDf", signature = "CdataTimeLapseMP", definition = function(object, phase, ...){
+setMethod(f = "getTracksDf", signature = "CyproTimeLapse", definition = function(object,
+                                                                                 with_cluster = FALSE,
+                                                                                 with_meta = FALSE, 
+                                                                                 with_well_plate = FALSE,
+                                                                                 ...){
   
-  confuns::check_one_of(
-    input = phase, 
-    against = base::names(object@features_tracks)
-  )
-  
-  return(object@features_stats)
+  getCdata(object) %>% 
+    getTracksDf(
+      with_meta = with_meta, 
+      with_cluster = with_cluster, 
+      with_well_plate = with_well_plate
+    )
   
 })
-
-#' @rdname getTracksDf
-#' @export
-setMethod(f = "getTracksDf", signature = "CyproTimeLapse", definition = get_tracks_df)
 
 #' @rdname getTracksDf
 #' @export
@@ -562,6 +615,51 @@ setMethod(f = "getWellPlateDf", signature = "Cypro", definition = function(objec
   wp_df <- getWellPlateDf(object = cdata_object)
   
   return(wp_df)
+  
+})
+
+
+#' @title Obtain well plate directories
+#' 
+#' @description Extracts the directories assigned to each well plate. 
+#' 
+#' @inherit argument_dummy params
+#' 
+#' @export
+
+setGeneric(name = "getWellPlateDirectories", def = function(object, ...){
+  
+  standardGeneric(f = "getWellPlateDirectories")
+  
+})
+
+#' @rdname getWellPlateDirectories
+#' @export
+setMethod(f = "getWellPlateDirectories", signature = "Cypro", definition = function(object, well_plates = NULL, named = TRUE){
+  
+  well_plate_list <- getWellPlates(object, well_plates = well_plates)
+  
+  wp_names <- base::names(well_plate_list)
+  
+  out <- 
+    purrr::map(.x = well_plate_list, .f = function(x){
+      
+      base::ifelse(
+        test = isOfLength(x@directory, 0), 
+        yes = NA_character_, 
+        no = x@directory
+      )
+      
+    }) %>%
+    purrr::flatten_chr()
+  
+  if(base::isTRUE(named)){
+    
+    out <- purrr::set_names(out, nm = wp_names)
+    
+  }
+  
+  return(out)
   
 })
 

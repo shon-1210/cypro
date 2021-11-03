@@ -15,24 +15,40 @@ allColorpalettes <- confuns::all_color_palettes
 allColorspectra <- confuns::all_color_spectra
 
 
+
+# a -----------------------------------------------------------------------
+
+adapt_reference <- confuns::adapt_reference
+
+# c -----------------------------------------------------------------------
+
+check_one_of <- confuns::check_one_of
+
+create_progress_bar <- confuns::create_progress_bar
+
+
 # g -----------------------------------------------------------------------
 
-# exported
-
-# not exported
 give_feedback <- confuns::give_feedback
 
 
 
+# i -----------------------------------------------------------------------
+
+is_value <- confuns::is_value
+
+is_vec <- confuns::is_vec
+
+
 # m -----------------------------------------------------------------------
+
+make_pretty_df <- confuns::make_pretty_df
 
 make_pretty_name <- confuns::make_pretty_name
 
 
-
 # s -----------------------------------------------------------------------
 
-# not exported 
 scollapse <- confuns::scollapse
 
 

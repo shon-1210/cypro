@@ -19,16 +19,14 @@ moduleLoadDataServer <- function(id, object){
       
       # Reactive values ---------------------------------------------------------
       
-      well_plate_list <- shiny::reactiveVal(value = getWellPlates(object))
-      well_plate_names <- shiny::reactiveVal(value = getWellPlateNames(object))
+      cypro_object <- shiny::reactiveVal(value = object)
       
       read_in_data <- shiny::reactiveVal(value = list())
       
       # - the return value of this module
-      ld_output <- shiny::reactiveValues(
+      output_list <- shiny::reactiveValues(
         
-        track_list = list(),
-        well_plate_list = list(),
+        object = object, 
         proceed = numeric()
         
       )
@@ -147,17 +145,17 @@ moduleLoadDataServer <- function(id, object){
         
         out_html <- 
           shiny::tagList(
-            hs(3, 
-               shiny::h5(shiny::strong("Choose Well Plate:")),
+            hs(2, 
+               shiny::h5(shiny::strong("Well Plate:")),
                shiny::uiOutput(outputId = ns("selected_well_plate"))
             ), 
-            hs(3,
+            hs(2,
                shiny::h5(shiny::strong("Color by:")),
                shiny::selectInput(
                  inputId = ns("clr_by"), 
                  label = NULL, 
                  choices = clr_by_well_plate_choices, 
-                 selected = "cell_line"
+                 selected = "condition"
                )
                ),
             dir_input_html
@@ -169,19 +167,12 @@ moduleLoadDataServer <- function(id, object){
       
       output$well_plate_errors <- shiny::renderUI({
         
-        shiny::validate(
-          shiny::need(
-            expr = base::is.list(read_in_data()) & base::length(read_in_data()) != 0, 
-            message = "No folders have been loaded yet."
-          )
-        )
-        
         shiny::req(well_plates_with_errors())
         
         ns <- session$ns
         
         shinyWidgets::pickerInput(
-          inputId = ns("well_plate_errors"), 
+          inputId = ns("well_plate_with_errors"), 
           label = "Well Plate:", 
           choices = well_plates_with_errors(), 
           choicesOpt = list(
@@ -195,16 +186,24 @@ moduleLoadDataServer <- function(id, object){
         
       })
       
-      output$well_image_errors <- shiny::renderUI({
+      output$file_with_errors <- shiny::renderUI({
         
         ns <- session$ns
         
         shiny::req(well_plates_with_errors())
         
+        
+        choices <- 
+          purrr::set_names(
+            x = files_with_errors(), 
+            nm = stringr::str_extract(files_with_errors(), pattern = ".{5,30}$") %>% stringr::str_c("~ ...", .)
+          )
+        
         shinyWidgets::pickerInput(
-          inputId = ns("well_image_errors"), 
-          label = "Failed Files:", 
-          choices = well_images_with_errors())
+          inputId = ns("file_with_errors"), 
+          label = "Files with errors:", 
+          choices = choices
+          )
         
       })
       
@@ -212,16 +211,6 @@ moduleLoadDataServer <- function(id, object){
       output$loading_box <- shiny::renderUI({
         
         ns <- session$ns 
-        
-        if(base::all(loading_status()[["Ready to load"]] == "Yes")){
-          
-          status <- "success"
-          
-        } else {
-          
-          status <- "warning"
-          
-        }
         
         shinydashboard::box(
           shiny::helpText("Check the progress you have made assigning folders to well plates.") %>%
@@ -241,7 +230,7 @@ moduleLoadDataServer <- function(id, object){
             )
           ),
           solidHeader = TRUE,
-          status = status,
+          status = "success",
           title = "Well Plate Status",
           width = 12
         ) 
@@ -267,8 +256,8 @@ moduleLoadDataServer <- function(id, object){
           shiny::helpText("Check for errors during the loading process.") %>%
             add_helper(content = helper_content$load_files_and_proceed, size = "m"),
           shiny::uiOutput(outputId = ns("well_plate_errors")),
-          shiny::uiOutput(outputId = ns("well_image_errors")),
-          shiny::textOutput(outputId = ns("error_message")),
+          shiny::uiOutput(outputId = ns("file_with_errors")),
+          shiny::verbatimTextOutput(outputId = ns("error_message")),
           shiny::HTML("<br>"),
           shiny::column(
             width = 12,
@@ -293,98 +282,63 @@ moduleLoadDataServer <- function(id, object){
       
       # Observe events ----------------------------------------------------------
       
-      
       # add new directory to well plate
       oe <- shiny::observeEvent(input_dir_string(), {
         
-        well_plate_list_new <- well_plate_list()
-        wp_name <- input$selected_well_plate
+        ns <- session$ns
         
-        well_plate_list_new[[wp_name]][["directory"]] <- input_dir_string()
+        dirs <- 
+          getWellPlateDirectories(cypro_object()) %>% 
+          purrr::keep(.p = ~isOfLength(.x, l = 1) & !base::is.na(.x))
         
-        well_plate_list_new[[wp_name]] <-
-          evaluate_file_availability_shiny(
-            wp_list = well_plate_list_new[[wp_name]],
-            recursive = input$recursive, 
-            keep = input$keep_filetype
+        object <- 
+          prepareDataLoading(
+            object = cypro_object(), 
+            directory = input_dir_string(), 
+            valid_filetypes = input$valid_filetypes,
+            well_plate = input$selected_well_plate, 
+            recursive = input$recursive,
+            in_shiny = TRUE
           )
         
-        check <- check_wp_directories(well_plate_list = well_plate_list_new)
-        
-        if(check != "unique"){
-          
-          message <-
-            glue::glue("There are well plates that share their directories: '{check}'
-                       Please assign an unambiguous directory to each well plate.")
-          
-          shiny::showNotification(
-            ui = message, 
-            type = "warning",
-            duration = 20
-          )
-          
-        }
-        
-        # update well_plate_list and -names
-        well_plate_list(well_plate_list_new)
-        well_plate_names(base::names(well_plate_list()))
-        
+        cypro_object(object)
+
       })
       
       # load data
       oe <- shiny::observeEvent(input$load_data,{
         
-        checkpoint(evaluate = base::all(loading_status()[["Ready to load"]] == "Yes"),
-                   case_false = "well_plates_not_ready")
+        validate_no_overlap_directories(
+          directories = getWellPlateDirectories(cypro_object()),
+          fdb_if_false = TRUE, 
+          fdb_fn = "stop", 
+          in_shiny = TRUE
+        )
         
-        data_list <- 
-          purrr::map2(.x = well_plate_list(),
-                      .y = well_plate_names(),
-                      .f = load_data_files_shiny, 
-                      assembled_module_info_lists = amils(),
-                      used_variable_names = used_names_all(),
-                      mitosis_module_used = FALSE, # !!!
-                      object = object, 
-                      session = session)
+        object <- 
+          loadDataFiles(
+            object = cypro_object(),
+            in_shiny = TRUE, 
+            check_additional = TRUE,
+            check_vars = TRUE
+            )
+        
+        debug_assign(object, "object_new")
+        
+        cypro_object(object)
         
         shiny::showNotification(ui = "Reading done.", type = "message")
-        
-        #assign("data_list", data_list, envir = .GlobalEnv)
-        
-        # update read_in_data
-        read_in_data(data_list)
         
       })
       
       # save and proceed 
       oe <- shiny::observeEvent(input$save_and_proceed, {
         
-        checkpoint(evaluate = base::is.list(read_in_data()) & base::length(read_in_data()) != 0,
-                   case_false = "no_data_read_in")
+        output_list$proceed <- input$save_and_proceed
         
-        output$well_plate_list <- well_plate_list()
-        output$track_list <- track_list()
+        output_list$object <- cypro_object()
         
-        object@well_plates <- well_plate_list()
-        
-        object@cdata$tracks <- track_list()
-        
-        object@information$all_cell_ids <- 
-          purrr::map(.x = track_list(), .f = ~ dplyr::pull(.x, var = "cell_id")) %>% 
-          purrr::flatten_chr() %>% 
-          base::unique()
-        
-        output$proceed <- input$save_and_proceed
-        
-        object <-
-          add_vardenotation_to_cypro_object_shiny(
-            object = object, 
-            amils = amils()
-          )
-        
-        output$object <- object
-        
-        shiny_fdb(in_shiny = TRUE, ui = "Results have been saved. Click on 'Return Cypro Object' and proceed with checkDataQuality().")
+        shiny_fdb(in_shiny = TRUE, ui = "Results have been saved. Click on 'Return Cypro Object'.")
         
       })
       
@@ -486,7 +440,7 @@ moduleLoadDataServer <- function(id, object){
       
       # ---
       
-      # current well plate
+      # well plates
       well_plate <- shiny::reactive({
         
         shiny::req(input$selected_well_plate)
@@ -495,14 +449,28 @@ moduleLoadDataServer <- function(id, object){
         
       })
       
+      well_plate_list <- shiny::reactive({
+        
+        getWellPlates(object = cypro_object())
+        
+      })
+      
+      well_plate_names <- shiny::reactive({
+        
+        getWellPlateNames(cypro_object())
+        
+      })
+      
       # current, evaluated well-plate data.frame ready to be plotted
       layout_df <- shiny::reactive({
         
         shiny::req(input$selected_well_plate)
         
-        layout_df <- getLayoutDf(object = well_plate())
-        
-        print(layout_df)
+        layout_df <- 
+          getLayoutDf(
+            object = cypro_object(),
+            well_plate = input$selected_well_plate
+            )
         
         return(layout_df)
         
@@ -510,20 +478,16 @@ moduleLoadDataServer <- function(id, object){
       
       # loading status
       loading_status <- shiny::reactive({
-        
-        shiny::validate(
-          shiny::need(
-            expr = well_plate_names(), 
-            message = "No well plates have been added yet."
-          )
-        )
-        
-        loading_status_table_shiny(well_plate_list = well_plate_list())
+
+        getLoadingStatusDf(object = cypro_object()) %>% 
+          make_pretty_df()
         
       })
       
       # well plate plot visualizes the file availability
       well_plate_plot <- shiny::reactive({
+        
+        shiny::req(layout_df())
         
         plotWellPlate(
           object = layout_df(), 
@@ -535,75 +499,49 @@ moduleLoadDataServer <- function(id, object){
       
       # read in data error processing ---
       
-      failed_list <- shiny::reactive({
+      error_list <- shiny::reactive({
         
-        shiny::req(read_in_data())
-        
-        purrr::map(.x = read_in_data(), .f = ~ .x$failed)
+        getErrors(object = cypro_object())
         
       })
       
       well_plates_with_errors <- shiny::reactive({
         
-        base::names(failed_list())
+        base::names(error_list())
         
       })
       
       well_plate_error_count <- shiny::reactive({
         
-        shiny::req(failed_list())
+        shiny::req(error_list())
         
-        purrr::map_int(.x = failed_list(), .f = base::length) %>% 
+        purrr::map_int(.x = error_list(), .f = base::length) %>% 
           base::unname()
         
       })
       
-      well_images_with_errors <- shiny::reactive({
+      files_with_errors <- shiny::reactive({
         
-        shiny::req(input$well_plate_errors)
+        shiny::req(input$well_plate_with_errors)
         
-        base::names(failed_list()[[input$well_plate_errors]])
-        
-      })
-      
-      well_image_error_message <- shiny::reactive({
-        
-        shiny::req(input$well_image_errors)
-        
-        failed_list()[[input$well_plate_errors]][[input$well_image_errors]] %>% 
-          base::as.character()
+        base::names(error_list()[[input$well_plate_with_errors]])
         
       })
       
-      # ---
-      
-      # assemble results lists depending on data input type
-      
-      track_list <- shiny::reactive({
+      file_error_messages <- shiny::reactive({
         
-        if(isTimeLapseExp(object)){
-          
-          track_list <-
-            assemble_tracks_time_lapse_shiny(
-              track_data_list = read_in_data(),
-              well_plate_list = well_plate_list(),
-              object = object
-            )
-          
-        } else {
-          
-          track_list <-
-            assemble_tracks_one_time_imaging_shiny(
-              stat_data_list = read_in_data(),
-              well_plate_list = well_plate_list(),
-              object = object
-            )
-          
-        }
+        shiny::req(input$file_with_errors)
         
-        #assign("track_list", track_list, envir = .GlobalEnv)
+        errors_occured <- 
+          error_list()[[input$well_plate_with_errors]][[input$file_with_errors]]
         
-        base::return(track_list)
+        shiny::req(errors_occured)
+        
+        out <- 
+          purrr::flatten_chr(errors_occured) %>% 
+          stringr::str_c(collapse = "\n")
+        
+        return(out)
         
       })
       
@@ -649,15 +587,21 @@ moduleLoadDataServer <- function(id, object){
         
         #well_plate()[["directory"]]
         
-        "change this"
+        getWellPlateDirectories(cypro_object(), well_plates = input$selected_well_plate) %>% 
+          base::unname()
         
       })
       
       output$error_message <- shiny::renderText({
         
-        shiny::req(well_plates_with_errors())
+        shiny::validate(
+          shiny::need(
+            expr = containsData(cypro_object()), 
+            message = "No data has been loaded yet."
+          )
+        )
         
-        well_image_error_message()
+        file_error_messages()
         
       })
       
@@ -665,29 +609,7 @@ moduleLoadDataServer <- function(id, object){
       
       
       # Table outputs -----------------------------------------------------------
-      
-      output$pdl_example_table <- DT::renderDataTable({
-        
-        shiny::validate(
-          shiny::need(
-            expr = example_df(), 
-            message = "No example data has been loaded yet."
-          )
-        )
-        
-        utils::head(example_df())
-        
-      }, options = list(scrollX = TRUE))
-      
-      
-      output$pdl_final_df <- DT::renderDataTable({
-        
-        shiny::req(final_df())
-        
-        utils::head(final_df())
-        
-      }, options = list(scrollX = TRUE))
-      
+
       
       output$ambiguous_directories <- DT::renderDataTable({
         
@@ -718,7 +640,7 @@ moduleLoadDataServer <- function(id, object){
       
       # Module return value -----------------------------------------------------
       
-      base::return(output)
+      return(output_list)
       
     })
   

@@ -4,46 +4,24 @@
 \alias{getFeatureDf}
 \alias{getFeatureDf,CdataScreening-method}
 \alias{getFeatureDf,CyproScreening-method}
-\alias{getFeatureDf,CyproTimeLapse-method}
-\alias{getFeatureDf,CyproTimeLapseMP-method}
 \title{Extract numeric cell data}
 \usage{
 getFeatureDf(object, ...)
 
-\S4method{getFeatureDf}{CdataScreening}(object, ...)
-
-\S4method{getFeatureDf}{CyproScreening}(
+\S4method{getFeatureDf}{CdataScreening}(
   object,
-  drop_na = FALSE,
-  with_grouping = NULL,
-  with_cluster = NULL,
-  with_meta = NULL,
-  with_well_plate = NULL,
-  verbose = NULL,
+  with_cluster = FALSE,
+  with_meta = FALSE,
+  with_well_plate = FALSE,
   ...
 )
 
-\S4method{getFeatureDf}{CyproTimeLapse}(
+\S4method{getFeatureDf}{CyproScreening}(
   object,
-  slot = "stats",
-  drop_na = FALSE,
-  with_grouping = NULL,
   with_cluster = NULL,
   with_meta = NULL,
   with_well_plate = NULL,
-  verbose = NULL
-)
-
-\S4method{getFeatureDf}{CyproTimeLapseMP}(
-  object,
-  slot = "stats",
-  drop_na = FALSE,
-  with_grouping = NULL,
-  with_cluster = NULL,
-  with_meta = NULL,
-  with_well_plate = NULL,
-  phase = NULL,
-  verbose = NULL
+  ...
 )
 }
 \arguments{
@@ -58,18 +36,6 @@ to the output data.frame.}
 \item{with_well_plate}{Logical values. Denoting
 if the respective grouping information should be joined to the output data.frame
 or not.}
-
-\item{verbose}{Logical. If set to TRUE informative messages regarding
-the computational progress will be printed.
-
-(Warning messages will always be printed.)}
-
-\item{phase}{Character or numeric. If character, the ordinal value referring to the phase of interest (e.g. \emph{'first'}, \emph{'second'} etc.).
-referring to the phase of interest or \emph{'all'}. If numeric, the number referring to the phase.
-
-If set to NULL takes the phase denoted as default with \code{adjustDefault()}.
-
-Ignored if the experiment design contains only one phase.}
 }
 \value{
 A data.frame.

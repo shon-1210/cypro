@@ -41,7 +41,8 @@ extractRoiInfo <- function(vec, cypro_nc = FALSE){
       test = base::isTRUE(cypro_nc), 
       yes = rgx_roi_cypro, 
       no = rgx_roi
-    )
+    ) %>% 
+    stringr::str_c(., "$")
   
   stringr::str_extract(string = vec, pattern = pattern)
   

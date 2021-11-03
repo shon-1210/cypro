@@ -2,112 +2,146 @@
 
 
 
-#' @title Step 2: Assign variables
+#' @title Set up \code{Cypro} object: Step 2
 #' 
-#' @description something
+#' @inherit designExperiment description 
 #'
-#' @param object An object of class \code{Cypro}.
+#' @inherit argument_dummy params
+#' 
+#' @details The \code{cypro} framework ensures compatibility with the output
+#' of virtually every image analysis software like \emph{CellTracker}, \emph{CellProfiler}, 
+#' \emph{ImageJ}. The structure of their outputted data files is similar in 
+#' so far as that each row represents a cell and every column (or data variable) represents 
+#' either a quantified cellular feature or meta data such as cell ID, well belonging, condition etc. 
+#' 
+#' The outputted data files differ, however, in their naming conventions. Data 
+#' variables that are used throughout the analysis of high content screening,
+#' such as \emph{x-} and \emph{y-coordinates}, \emph{cell ID}, \emph{frame number}
+#' are named differently from image analysis software to image analysis software. 
+#' 
+#' To account for these differing naming conventions cypro \emph{"knows"} certain 
+#' data variables - like those that are exemplarily mentioned and printed in
+#' italic in the previous paragraph. 
+#' 
+#' In order for \code{cypro} to know which of the data variables of the input data
+#' are those that are repeatedly used they need to be assigned. The function 
+#' \code{assignVariables()} therefore opens an interactive application in which 
+#' an example input file is loaded.  By assigning variable names of the input
+#' manually to the variables \code{cypro} knows the user can then declare which of the 
+#' variables \code{cypro} knows are part of the input that will be loaded later on.
+#' 
+#' See documentation for S4-classes in the @@seealso section for a more detailed 
+#' description of how the \code{DataVariable} ecosystem is programmatically 
+#' implemented.
+#' 
+#' @seealso \code{DataVariable}, \code{AssignableVariable}, \code{ComputableVariable}, 
+#' \code{OptionalVariable}, \code{SummaryVariable}, \code{AnalysisModule}
 #'
 #' @return The input object.
 #' @export
-#'
-assignVariables <- function(object = createEmptyCyproObject()){
+
+setGeneric(name = "assignVariables", def = function(object){
   
-  #check_object(object, set_up_req = "experiment_design")
+  standardGeneric(f = "assignVariables")
   
-  shiny::runApp(
-    shiny::shinyApp(
-      ui = function(){
-        shinydashboard::dashboardPage(
-          
-          header = shinydashboard::dashboardHeader(title = app_title), 
-          
-          sidebar = shinydashboard::dashboardSidebar(
-            collapsed = TRUE, 
-            shinydashboard::sidebarMenu(
-              shinydashboard::menuItem(
-                text = "New Session", 
-                tabName = "new_session", 
-                selected = TRUE
+})
+
+#' @rdname assignVariables
+#' @export
+setMethod(
+  f = "assignVariables",
+  signature = "Cypro",
+  definition = function(object){
+    
+    shiny::runApp(
+      shiny::shinyApp(
+        ui = function(){
+          shinydashboard::dashboardPage(
+            
+            header = shinydashboard::dashboardHeader(title = app_title), 
+            
+            sidebar = shinydashboard::dashboardSidebar(
+              collapsed = TRUE, 
+              shinydashboard::sidebarMenu(
+                shinydashboard::menuItem(
+                  text = "New Session", 
+                  tabName = "new_session", 
+                  selected = TRUE
+                )
               )
-            )
-          ), 
-          
-          body = shinydashboard::dashboardBody(
+            ), 
             
-            shinybusy::add_busy_spinner(spin = "cube-grid", margins = c(0,10), color = "red"),
-            
-            shinydashboard::tabItems(
-              shinydashboard::tabItem(tabName = "new_session",
-                                      
-                                      moduleAssignVariablesUI(id = "av"), 
-                                      shiny::fluidRow(
-                                        shiny::column(width = 12, align = "center", 
-                                                      
-                                                      shiny::uiOutput(outputId = "return_cypro")
-                                                      
+            body = shinydashboard::dashboardBody(
+              
+              shinybusy::add_busy_spinner(spin = "cube-grid", margins = c(0,10), color = "red"),
+              
+              shinydashboard::tabItems(
+                shinydashboard::tabItem(tabName = "new_session",
+                                        
+                                        moduleAssignVariablesUI(id = "av"), 
+                                        shiny::fluidRow(
+                                          shiny::column(width = 12, align = "center", 
+                                                        
+                                                        shiny::uiOutput(outputId = "return_cypro")
+                                                        
+                                          )
                                         )
-                                      )
+                )
               )
+              
             )
             
           )
+        }, 
+        server = function(input, output, session){
           
-        )
-      }, 
-      server = function(input, output, session){
-        
-        # shiny helper 
-        shinyhelper::observe_helpers()
-        
-        av_results <- moduleAssignVariablesServer(id = "av", object = object)
-        
-        output$return_cypro <- shiny::renderUI({
+          # shiny helper 
+          shinyhelper::observe_helpers()
           
-          av_list <- shiny::reactiveValuesToList(av_results)
+          av_results <- moduleAssignVariablesServer(id = "av", object = object)
           
-          if(shiny::isTruthy(av_list$proceed)){
+          output$return_cypro <- shiny::renderUI({
             
-            color <- "success"
+            av_list <- shiny::reactiveValuesToList(av_results)
             
-          } else {
+            if(shiny::isTruthy(av_list$proceed)){
+              
+              color <- "success"
+              
+            } else {
+              
+              color <- "warning"
+              
+            }
             
-            color <- "warning"
-            
-          }
-          
-          shinyWidgets::actionBttn(
-            inputId = "return_cypro",
-            label = "Return Cypro Object", 
-            color = color, 
-            style = "gradient"
-          )
-          
-        })
-        
-        oe <- shiny::observeEvent(input$return_cypro, {
-          
-          av_list <- shiny::reactiveValuesToList(av_results)
-          
-          cypro_object <- 
-            setProgress(
-              object = av_list$object, 
-              assignVariables = TRUE
+            shinyWidgets::actionBttn(
+              inputId = "return_cypro",
+              label = "Return Cypro Object", 
+              color = color, 
+              style = "gradient"
             )
+            
+          })
           
-          shiny::stopApp(returnValue = cypro_object)
+          oe <- shiny::observeEvent(input$return_cypro, {
+            
+            av_list <- shiny::reactiveValuesToList(av_results)
+            
+            cypro_object <- 
+              setProgress(
+                object = av_list$object, 
+                assignVariables = TRUE
+              )
+            
+            shiny::stopApp(returnValue = cypro_object)
+            
+          })
           
-        })
-        
-      }
+        }
+      )
     )
-  )
-  
-}
-
-
-
-
+    
+  })
 
 
 #' @title Manual option of assigning variables

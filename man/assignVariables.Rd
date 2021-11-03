@@ -2,16 +2,64 @@
 % Please edit documentation in R/assignVariables.R
 \name{assignVariables}
 \alias{assignVariables}
-\title{Step 2: Assign variables}
+\alias{assignVariables,Cypro-method}
+\title{Set up \code{Cypro} object: Step 2}
 \usage{
-assignVariables(object = createEmptyCyproObject())
+assignVariables(object)
+
+\S4method{assignVariables}{Cypro}(object)
 }
 \arguments{
-\item{object}{An object of class \code{Cypro}.}
+\item{object}{Any object for whose class a method has been defined.}
 }
 \value{
 The input object.
 }
 \description{
-something
+Three functions that provide access to interactive applications
+are needed to set up a fully functional \code{Cypro} object.
+
+\enumerate{
+\item \code{designExperiment()}: Reconstructs the experiment design based on which
+input data is expected and read in.
+\item \code{assignVariables()}: Accounts for the different naming conventions of
+different image analysis software from which the input data derive from.
+\item \code{loadData()}: Provides access to the file system. Depending on
+the example used in \code{assignVariables()} folders or files are assigned
+to well plates designed in \code{designExperiment()}. The respective data is
+loaded, checked for validity and processed.
+}
+
+The resulting \code{Cypro} object is ready to use for downstream analysis.
+}
+\details{
+The \code{cypro} framework ensures compatibility with the output
+of virtually every image analysis software like \emph{CellTracker}, \emph{CellProfiler},
+\emph{ImageJ}. The structure of their outputted data files is similar in
+so far as that each row represents a cell and every column (or data variable) represents
+either a quantified cellular feature or meta data such as cell ID, well belonging, condition etc.
+
+The outputted data files differ, however, in their naming conventions. Data
+variables that are used throughout the analysis of high content screening,
+such as \emph{x-} and \emph{y-coordinates}, \emph{cell ID}, \emph{frame number}
+are named differently from image analysis software to image analysis software.
+
+To account for these differing naming conventions cypro \emph{"knows"} certain
+data variables - like those that are exemplarily mentioned and printed in
+italic in the previous paragraph.
+
+In order for \code{cypro} to know which of the data variables of the input data
+are those that are repeatedly used they need to be assigned. The function
+\code{assignVariables()} therefore opens an interactive application in which
+an example input file is loaded.  By assigning variable names of the input
+manually to the variables \code{cypro} knows the user can then declare which of the
+variables \code{cypro} knows are part of the input that will be loaded later on.
+
+See documentation for S4-classes in the @seealso section for a more detailed
+description of how the \code{DataVariable} ecosystem is programmatically
+implemented.
+}
+\seealso{
+\code{DataVariable}, \code{AssignableVariable}, \code{ComputableVariable},
+\code{OptionalVariable}, \code{SummaryVariable}, \code{AnalysisModule}
 }

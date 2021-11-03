@@ -1197,7 +1197,7 @@ read_example_file_shiny <- function(directory){
   
   if(tibble::has_rownames(df)){
     
-    df <- tibble::rownames_to_column(var = "rownames")
+    df <- tibble::rownames_to_column(df, var = "rownames")
     
   }
   

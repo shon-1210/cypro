@@ -85,7 +85,7 @@ module_migration_localisation <-
       x_coords = var_x_coords,
       y_coords = var_y_coords
     ),
-    variables_summarized = list(
+    variables_summary = list(
       total_dist = var_total_dist, 
       mgr_eff = var_mgr_eff
     )

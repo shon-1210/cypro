@@ -434,6 +434,80 @@ setMethod(
 
 # D -----------------------------------------------------------------------
 
+#' @title Obtain loaded file as data.frame
+#' 
+#' @description Extracts the loaded content of slot @@content, 
+#' converts it into a data.frame and adds the missing identification
+#' variables depending on the loading modality. 
+#'
+#' @inherit argument_dummy params
+#'
+#' @return A data.frame.
+#' @export
+#'
+setGeneric(name = "getDataFileDf", def = function(object){
+  
+  standardGeneric(f = "getDataFileDf")
+  
+})
+
+
+#' @rdname getDataFileDf
+#' @export
+setMethod(f = "getDataFileDf", signature = "DataFile", definition = function(object){
+  
+  df <- 
+    purrr::discard(.x = object@content, .p = ~isOfClass(.x, "glue")) %>% 
+    tibble::as_tibble()
+  
+  nr <- base::nrow(df)
+  
+  # extract id info  
+  well_plate_name <- base::rep(object@well_plate, nr)
+  
+  ldm <- object@loading_modality
+  
+  if(ldm == "by_roi"){
+    
+    well <- 
+      extractWellInfo(vec = object@name, cypro_nc = TRUE) %>% 
+      base::rep(nr)
+    
+    roi <- 
+      extractRoiInfo(vec = object@name, cypro_nc = TRUE) %>% 
+      base::rep(nr)
+    
+    id_df <- 
+      tibble::tibble(
+        well_plate_name = well_plate_name, 
+        well = well, 
+        roi = roi
+      )
+    
+  } else if(ldm == "by_well"){
+    
+    well <- 
+      extractWellInfo(vec = object@name, cypro_nc = TRUE) %>% 
+      base::rep(nr)
+    
+    id_df <- 
+      tibble::tibble(
+        well_plate_name = well_plate_name, 
+        well = well
+      )
+    
+  } else if(ldm == "by_well_plate"){
+    
+    id_df <- tibble::tibble(well_plate_name = well_plate_name)
+    
+  }
+  
+  out_df <- base::cbind(id_df, df) 
+  
+  return(out_df)
+  
+})
+
 #' @title Extract the object's default instructions
 #' 
 #' @description Obtain what is currently defined as the default in form of 
@@ -466,6 +540,58 @@ setMethod(f = "getDefaultInstructions", signature = "Cypro", definition = functi
 
 # E -----------------------------------------------------------------------
 
+#' @title Obtain loading error messages
+#' 
+#' @description Extracts the error messages that were thrown
+#' during data loading. 
+#' 
+#' @inherit argument_dummy params
+#' 
+#' @return A list of \code{glue} objects or NULL if no errors were thrown.
+#' 
+#' @export
+#' 
+setGeneric(name = "getErrors", def = function(object, ...){
+  
+  standardGeneric(f = "getErrors")
+  
+})
+
+#' @rdname getErrors
+#' @export
+setMethod(f = "getErrors", signature = "DataFile", definition = function(object){
+  
+  out <- purrr::keep(object@content, .p = ~ isOfClass(x = .x, valid_class = "glue"))
+  
+  if(isOfLength(out, l = 0)){
+    
+    out <- NULL
+    
+  } 
+  
+  return(out)
+  
+})
+
+#' @rdname getErrors
+#' @export
+setMethod(f = "getErrors", signature = "Cypro", definition = function(object, well_plates = NULL){
+  
+  out <- 
+    purrr::map(.x = getWellPlates(object, well_plates = well_plates), .f = ~ purrr::keep(.x = .x@files, .p = containsErrors)) %>% 
+    purrr::map(.x = ., .f = ~ purrr::set_names(x = .x, nm = purrr::map_chr(.x = .x, .f = ~.x@directory))) %>% 
+    purrr::map(.f = ~ purrr::map(.x = .x, .f = ~ getErrors(.x) %>% purrr::discard(.p = base::is.null))) %>% 
+    purrr::keep(.p = ~ base::length(x = .x) >= 1)
+  
+  if(isOfLength(x = out, l = 0)){
+    
+    out <- NULL
+    
+  }
+  
+  return(out)
+  
+})
 
 #' @title Obtain example data.frame
 #' 
@@ -544,6 +670,51 @@ setMethod(f = "getExperimentDesign", signature = "Cypro", definition = function(
 # F -----------------------------------------------------------------------
 
 
+#' @title Obtain frame range
+#' 
+#' @description Extracts a numeric vector from one till the number of 
+#' frames that was denoted during the experiment design steps. 
+#'
+#' @param object 
+#'
+#' @return Numeric vector.
+#' @export
+#'
+setGeneric(name = "getFrames", def = function(object){
+  
+  standardGeneric(f = "getFrames")
+  
+})
+
+#' @rdname getFrames
+#' @export
+setMethod(f = "getFrames", signature = "ExperimentDesign", definition = function(object){
+  
+  object@interval:object@n_frames
+  
+})
+
+#' @rdname getFrames
+#' @export
+setMethod(f = "getFrames", signature = "CyproTimeLapse", definition = function(object){
+  
+  getExperimentDesign(object) %>% 
+    getFrames()
+  
+})
+
+#' @rdname getFrames
+#' @export
+setMethod(f = "getFrames", signature = "CyproTimeLapseMP", definition = function(object){
+  
+  
+  warning("rewrite getFrames.CyproTimeLapseMP()")
+  getExperimentDesign(object) %>% 
+    getFrames()
+  
+})
+
+
 #' @title Extract numeric cell data
 #' 
 #' @description Obtain numeric cell features of screening experiments in 
@@ -569,9 +740,23 @@ setGeneric(name = "getFeatureDf", def = function(object, ...){
 
 #' @rdname getFeatureDf
 #' @export
-setMethod(f = "getFeatureDf", signature = "CdataScreening", definition = function(object, ...){
+setMethod(f = "getFeatureDf", signature = "CdataScreening", definition = function(object, 
+                                                                                  with_cluster = FALSE,
+                                                                                  with_meta = FALSE,
+                                                                                  with_well_plate = FALSE,
+                                                                                  ...){
   
-  return(object@features)
+  df <- 
+    joinWith(
+      object = object, 
+      df = as_cypro_df(object@features), 
+      with_cluster = with_cluster, 
+      with_meta = with_meta, 
+      with_well_plate = with_well_plate, 
+      ...
+    )
+  
+  return(df)
   
 })
 
@@ -581,184 +766,27 @@ setMethod(
   f = "getFeatureDf",
   signature = "CyproScreening", 
   definition = function(object,
-                        drop_na = FALSE,
-                        with_grouping = NULL,
                         with_cluster = NULL,
                         with_meta = NULL,
                         with_well_plate = NULL,
-                        verbose = NULL,
                         ...){
     
-    assign_default(object)
-    
-    if(base::isFALSE(with_grouping)){
-      
-      with_cluster <- FALSE
-      with_meta <- FALSE
-      with_well_plate <- FALSE
-      
-    }
+    cdata <- getCdata(object)
     
     df <- 
-      getCdata(object) %>% 
-      getFeatureDf()
-    
-    # add cluster
-    if(base::isTRUE(with_cluster) | base::isTRUE(with_grouping)){
-      
-      cluster_df <- getClusterDf(object, verbose = FALSE)  
-      
-      df <- dplyr::left_join(x = df, y = cluster_df, by = "cell_id")
-      
-    }
-    
-    # add meta
-    if(base::isTRUE(with_meta) | base::isTRUE(with_grouping)){
-      
-      meta_df <- getMetaDf(object)
-      
-      df <- dplyr::left_join(x = df, y = meta_df, by = "cell_id")
-      
-    }
-    
-    # add well plate info
-    if(base::isTRUE(with_well_plate) | base::isTRUE(with_grouping)){
-      
-      wp_df <- getWellPlateDf(object)
-      
-      df <- dplyr::left_join(x = df, y = wp_df, by = "cell_id")
-      
-    }
-    
-    if(base::isTRUE(drop_na)){
-      
-      df <- tidyr::drop_na(df)
-      
-    }
+      joinWith(
+        object = cdata, 
+        df = as_cypro_df(cdata@features),
+        with_cluster = with_cluster, 
+        with_meta = with_meta, 
+        with_well_plate = with_well_plate, 
+        ...
+      )
     
     return(df)  
     
-  }
-)
+})
 
-#' @rdname getFeatureDf
-#' @export
-setMethod(
-  f = "getFeatureDf", 
-  signature = "CyproTimeLapse", 
-  definition = function(object, 
-                        slot = "stats", 
-                        drop_na = FALSE,
-                        with_grouping = NULL, 
-                        with_cluster = NULL, 
-                        with_meta = NULL, 
-                        with_well_plate = NULL, 
-                        verbose = NULL
-  ){
-    
-    check_object(object)
-    assign_default(object)
-    
-    confuns::is_value(x = slot, mode = "character")
-    
-    confuns::check_one_of(
-      input = slot, 
-      against = c("stats", "tracks")
-    )
-    
-    if(slot == "tracks"){
-      
-      df <- 
-        getTracksDf(
-          object = object, 
-          with_grouping = with_grouping, 
-          with_cluster = with_cluster, 
-          with_meta = with_meta, 
-          with_well_plate = with_well_plate, 
-          verbose = verbose, 
-          drop_na = drop_na
-        )
-      
-    } else if(slott == "stats"){
-      
-      df <- 
-        getStatsDf(
-          object = object, 
-          with_grouping = with_grouping, 
-          with_cluster = with_cluster, 
-          with_meta = with_meta, 
-          with_well_plate = with_well_plate, 
-          verbose = verbose, 
-          drop_na = drop_na
-        )
-      
-    }
-    
-    return(df)
-    
-  }
-)
-
-#' @rdname getFeatureDf
-#' @export
-setMethod(
-  f = "getFeatureDf", 
-  signature = "CyproTimeLapseMP", 
-  definition = function(object, 
-                        slot = "stats", 
-                        drop_na = FALSE,
-                        with_grouping = NULL, 
-                        with_cluster = NULL, 
-                        with_meta = NULL, 
-                        with_well_plate = NULL, 
-                        phase = NULL, 
-                        verbose = NULL
-  ){
-    
-    check_object(object)
-    assign_default(object)
-    
-    confuns::is_value(x = slot, mode = "character")
-    
-    confuns::check_one_of(
-      input = slot, 
-      against = c("stats", "tracks")
-    )
-    
-    if(slot == "tracks"){
-      
-      df <- 
-        getTracksDf(
-          object = object, 
-          with_grouping = with_grouping, 
-          with_cluster = with_cluster, 
-          with_meta = with_meta, 
-          with_well_plate = with_well_plate, 
-          phase = phase,
-          verbose = verbose, 
-          drop_na = drop_na
-        )
-      
-    } else if(slott == "stats"){
-      
-      df <- 
-        getStatsDf(
-          object = object, 
-          with_grouping = with_grouping, 
-          with_cluster = with_cluster, 
-          with_meta = with_meta, 
-          with_well_plate = with_well_plate, 
-          phase = phase, 
-          verbose = verbose, 
-          drop_na = drop_na
-        )
-      
-    }
-    
-    return(df)
-    
-  }
-)
 
 #' @title Extract a feature set  
 #' 
@@ -1203,7 +1231,7 @@ setGeneric(name = "getLayoutDf", def = function(object, ...){
 
 #' @rdname getLayoutDf
 #' @export
-setMethod(f = "getLayoutDf", signature = "WellPlate", function(object, ...){
+setMethod(f = "getLayoutDf", signature = "WellPlate", definition = function(object, ...){
   
   object@layout
   
@@ -1211,7 +1239,7 @@ setMethod(f = "getLayoutDf", signature = "WellPlate", function(object, ...){
 
 #' @rdname getLayoutDf
 #' @export
-setMethod(f = "getLayoutDf", signature = "ExperimentDesign", function(object, well_plate, ...){
+setMethod(f = "getLayoutDf", signature = "ExperimentDesign", definition = function(object, well_plate, ...){
   
   confuns::check_one_of(
     input = well_plate, 
@@ -1219,7 +1247,7 @@ setMethod(f = "getLayoutDf", signature = "ExperimentDesign", function(object, we
   )
   
   layout_df <- 
-    getWellPlate(object, well_plate = well_plate) %>%
+    getWellPlate(object, well_plate = well_plate) %>% 
     getLayoutDf()
   
   return(layout_df)
@@ -1228,33 +1256,195 @@ setMethod(f = "getLayoutDf", signature = "ExperimentDesign", function(object, we
 
 #' @rdname getLayoutDf
 #' @export
-setMethod(f = "getLayoutDf", signature = "Cypro", function(object, well_plate, ...){
+setMethod(f = "getLayoutDf", signature = "Cypro", definition = function(object, well_plate, ...){
   
   confuns::check_one_of(
     input = well_plate, 
     against = getWellPlateNames(object)
   )
   
-  exp_design <- getExperimentDesign(object)
-  
   layout_df <- 
-    getWellPlate(exp_design, well_plate = well_plate) %>% 
-    getLayoutDf()
+    getExperimentDesign(object) %>% 
+    getLayoutDf(well_plate = well_plate)
   
   return(layout_df)
   
   
 })
 
+#' @title Obtain loading status summary
+#' 
+#' @description Extracts a data.frame that summarizes the loading status
+#' of the data by well plate.
+#' 
+#' @inherit argument_dummy params 
+#' 
+#' @return A data.frame. 
+#' 
+#' @export
+
+setGeneric(name = "getLoadingStatusDf", def = function(object, ...){
+  
+  standardGeneric(f = "getLoadingStatusDf")
+  
+})
+
+#' @rdname getLoadingStatusDf
+#' @export
+setMethod(f = "getLoadingStatusDf", signature = "Cypro", definition = function(object, well_plates = NULL){
+  
+  well_plate_list <- getWellPlates(object, well_plates = NULL)
+  
+  out <- list()
+  
+  out$well_plate <- base::names(well_plate_list)
+  
+  out$folder <- getWellPlateDirectories(object, well_plates = well_plates)
+  
+  out$number_of_valid_files <- 
+    purrr::map_int(.x = well_plate_list, .f = ~ base::length(.x@files)) 
+  
+  out$number_of_expected_files <- 
+    purrr::map_int(.x = well_plate_list, .f = nExpectedFiles)
+  
+  out$number_of_ambiguous_files <- 
+    purrr::map_int(.x = well_plate_list, .f = nAmbiguousFiles)
+  
+  df <- 
+    base::as.data.frame(out) %>% 
+    tibble::remove_rownames() %>% 
+    tibble::as_tibble()
+  
+  return(df)
+  
+})
 
 
 
 # M -----------------------------------------------------------------------
 
 
-#' @title Extract cell meta data 
+#' @title Obtain merged data.frame
 #' 
-#' @description Obtain cell meta data in form of a data.frame that contains
+#' @description Merges @@slot content of all objects of class \code{DataFiles}
+#' that contain data and that do not contain errors to a single data.frame. 
+#' 
+#' @inherit argument_dummy params
+#' 
+#' @return A data.frame of class \code{cypro_df}.
+#' 
+#' @export
+
+setGeneric(name = "getMergedDf", def = function(object, verbose = TRUE){
+  
+  standardGeneric(f = "getMergedDf")
+  
+})
+
+#' @rdname getMergedDf
+#' @export
+setMethod(f = "getMergedDf", signature = "Cypro", definition = function(object, verbose = TRUE){
+  
+  well_plate_list <- getWellPlates(object)
+  
+  data_list <- 
+    purrr::map(
+      .x = well_plate_list,
+      .f = ~ purrr::keep(.x = .x@files, .p = ~ containsData(.x) & !containsErrors(.x))
+    ) %>% 
+    purrr::keep(.p = ~ !isOfLength(x = .x, l = 0))
+  
+  well_plates <- base::names(data_list)
+  
+  data_list <- 
+    purrr::flatten(data_list) %>%
+    base::unname() 
+  
+  n_files <- base::length(data_list)
+  
+  if(n_files == 0){
+    
+    stop("No data files found that contain data and do not contain error feedbacks.")
+    
+  } else {
+    
+    confuns::give_feedback(
+      msg = glue::glue("Merging data of {n_files} files."), 
+      verbose = verbose
+    )
+    
+  }
+  
+  if(n_files > 250){
+    
+    pb <- create_progress_bar(total = n_files)
+    
+  } else {
+    
+    pb <- NULL
+    
+  }
+  
+  merged_df <- purrr::map_df(.x = data_list, .f = function(data_file){
+    
+    if(base::isTRUE(verbose) & !base::is.null(pb)){
+      
+      pb$tick()
+      
+    }
+    
+    df <- getDataFileDf(object = data_file)
+    
+    return(df)
+    
+  }) %>% 
+    dplyr::left_join(x = ., y = getWellPlateIndices(object), by = "well_plate_name") %>% 
+    dplyr::mutate(frame_added = FALSE) %>% 
+    dplyr::mutate(
+      cell_id = make_cell_id(
+        cell_id = cell_id, 
+        well_plate_index = well_plate_index, 
+        well = well, 
+        roi = roi
+      ), 
+      well_roi = stringr::str_c(well, roi, sep = "_")
+    ) %>%
+    tibble::as_tibble() 
+  
+  numeric_vars <- getAdditionalVariableNames(object)$numeric
+  
+  if(base::length(numeric_vars) >= 1){
+    
+    merged_df <- 
+      dplyr::mutate(
+        .data = merged_df,
+        dplyr::across(.cols = dplyr::all_of(numeric_vars), .fns = base::as.numeric)
+        )  
+    
+  }
+  
+  grouping_vars <- getAdditionalVariableNames(object)$grouping
+  
+  if(base::length(grouping_vars) >= 1){
+    
+    merged_df <- 
+      dplyr::mutate(
+        .data = merged_df,
+        dplyr::across(.cols = dplyr::all_of(grouping_vars), .fns = base::as.factor)
+        )
+    
+  }
+  
+  merged_df <- as_cypro_df(merged_df)
+  
+  return(merged_df)
+  
+  
+})
+
+#' @title Obtain cell meta data 
+#' 
+#' @description Extracts cell meta data in form of a data.frame that contains
 #' data variables with which cells are grouped. 
 #'
 #' @inherit argument_dummy params

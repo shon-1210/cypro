@@ -2,9 +2,15 @@
 % Please edit documentation in R/n-functions.R
 \name{nFiles}
 \alias{nFiles}
+\alias{nFrames,ExperimentDesign-method}
+\alias{nFrames,Cypro-method}
 \title{Number of files read in}
 \usage{
 nFiles(object)
+
+\S4method{nFrames}{ExperimentDesign}(object)
+
+\S4method{nFrames}{Cypro}(object)
 }
 \arguments{
 \item{object}{Any object for whose class a method has been defined.}

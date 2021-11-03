@@ -411,6 +411,65 @@ keepTrackVariables <- function(object, track_variables, verbose = NULL){
 
 
 
+
+# D -----------------------------------------------------------------------
+
+#' @title Discard data files 
+#' 
+#' @description Discards objects of class \code{DataFile} that were
+#' created for data loading.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return The adjusted input object. 
+#' @export
+#'
+setGeneric(name = "discardDataFiles", def = function(object, ...){
+  
+  standardGeneric(f = "discardDataFiles")
+  
+})
+
+#' @rdname discardDataFiles
+#' @export
+setMethod(f = "discardDataFiles", signature = "WellPlate", definition = function(object){
+  
+  object@files <- list()
+  
+  return(object)
+  
+})
+
+#' @rdname discardDataFiles
+#' @export
+setMethod(f = "discardDataFiles", signature = "ExperimentDesign", definition = function(object){
+  
+  object@well_plates <- 
+    purrr::map(
+      .x = object@well_plates, 
+      .f = ~ discardDataFiles(.x)
+      )
+  
+  return(object)
+  
+})
+
+#' @rdname discardDataFiles
+#' @export
+setMethod(f = "discardDataFiles", signature = "Cypro", definition = function(object){
+  
+  exp_design <- 
+    getExperimentDesign(object) %>% 
+    discardDataFiles()
+  
+  object <- 
+    setExperimentDesign(object, exp_design = exp_design)
+  
+  return(object)
+  
+})
+
+
 # W -----------------------------------------------------------------------
 
 #' @title Discard well plate

@@ -540,6 +540,92 @@ setCondition.layout_df_mp <- function(df, condition, in_shiny = FALSE, verbose =
 }
 
 
+
+# D -----------------------------------------------------------------------
+
+#' @title Set layout data status
+#' 
+#' @description Sets the variable \emph{data_status} of the layout  
+#' data.frame according to the variables \emph{info_status} and 
+#' \emph{file_status}.
+#'
+#' @inherit argument_dummy params
+#' @inherit setWellInfo params return
+#'
+#' @export
+#'
+setDataStatus <- function(df){
+  
+  UseMethod(generic = "setDataStatus", object = df)
+  
+}
+
+#' @rdname setDataStatus
+#' @export
+setDataStatus.layout_df <- function(df){
+  
+  nested_input <- isNested(df)
+  
+  df <- 
+    purrr::map_df(
+      .x = getWells(df), 
+      .f = ~ dplyr::filter(df, well == {{.x}}) %>% set_data_status_hlpr() 
+    )
+  
+  if(nested_input){
+    
+    df <- nestLayoutDf(df)
+    
+  } else {
+    
+    df <- unnestLayoutDf(df)
+    
+  }
+  
+  return(df)
+  
+}
+
+set_data_status_hlpr <- function(df){
+  
+  df <- nestLayoutDf(df)
+  
+  if(df$info_status != "Complete"){
+    
+    df$data_status <- "Dismissed"
+    
+  } else {
+    
+    udf <- unnestLayoutDf(df)
+    
+    if(base::all(udf$file_status == "Missing")){
+      
+      df$data_status <- "Missing"
+      
+    } else if(base::any(udf$file_status == "Ambiguous")){
+      
+      df$data_status <- "Ambiguous"
+      
+    } else if(base::all(udf$file_status == "Complete")){
+      
+      df$data_status <- "Complete"
+      
+    } else {
+      
+      df$data_status <- "Incomplete"
+      
+    }
+    
+    df$data_status <- base::factor(df$data_status, levels = data_status_levels)
+    
+  }
+  
+  return(df)
+  
+}
+
+
+
 # E -----------------------------------------------------------------------
 
 
@@ -570,6 +656,27 @@ setMethod(f = "setExperimentDesign", signature = "Cypro", definition = function(
   return(object)
   
 })
+
+
+# F -----------------------------------------------------------------------
+
+
+setGeneric(name = "setFeatureDf", def = function(object, df){
+  
+  standardGeneric(f = "setFeatureDf")
+  
+})
+
+#' @rdname setFeatureDf
+#' @export
+setMethod(f = "setFeatureDf", signature = "CyproScreening", definition = function(object, df){
+  
+  object@cdata@features <- base::as.data.frame(df)
+  
+  return(object)
+  
+})
+
 
 
 # I -----------------------------------------------------------------------
@@ -800,6 +907,45 @@ setMethod(f = "setLayoutDf", signature = "Cypro", definition = function(object, 
 })
 
 
+#' @title Set loading modality
+#' 
+#' @description Sets the slot @@loading_modality of each well plate based on the content of the input 
+#' example data.frame.
+#' 
+#' @inherit argument_dummy params
+#' 
+#' @return The input object.
+#' 
+setGeneric(name = "setLoadingModality", def = function(object){
+  
+  standardGeneric(f = "setLoadingModality")
+  
+})
+
+#' @rdname setLoadingModality
+#' @export
+setMethod(f = "setLoadingModality", signature = "Cypro", definition = function(object){
+  
+  ldm <- suggestLoadingModality(object)
+  
+  well_plate_list <- getWellPlates(object)
+  
+  for(i in base::seq_along(well_plate_list)){
+    
+    well_plate_list[[i]]@loading_modality <- ldm
+    
+    object <- setWellPlate(object, well_plate_object = well_plate_list[[i]])
+    
+  }
+  
+  return(object)
+  
+})
+
+
+
+
+
 # M -----------------------------------------------------------------------
 
 #' @title Set module activity
@@ -893,7 +1039,7 @@ setMethod(f = "setModuleActivity", signature = "Cypro", definition = function(ob
 #' track of the progress made during the preparation process.
 #'
 #' @inherit setWellInfo params return
-#' @param designExperiment,assignVariables,loadData TRUE or FALSE.
+#' @param designExperiment,assignVariables,loadData,processData TRUE or FALSE.
 #' 
 #'
 #' @return The input object.
@@ -915,6 +1061,7 @@ setMethod(
                         designExperiment = NULL,
                         assignVariables = NULL,
                         loadData = NULL, 
+                        processData = NULL, 
                         verbose = TRUE){
     
     if(base::isTRUE(designExperiment) | base::isFALSE(designExperiment)){
@@ -950,9 +1097,91 @@ setMethod(
       
     }
     
+    if(base::isTRUE(processData) | base::isFALSE(processData)){
+      
+      methods::slot(object@progress, "processData") <- processData
+      
+      confuns::give_feedback(
+        msg = glue::glue("Progress status of function 'processData()' has been set to {processData}."),
+        verbose = verbose
+      )
+      
+    }
+    
     return(object)
     
   })
+
+
+# S -----------------------------------------------------------------------
+
+#' @rdname setTracksDf
+#' @export
+setGeneric(name = "setStatsDf", def = function(object, df){
+  
+  standardGeneric(f = "setStatsDf")
+  
+})
+
+#' @rdname setStatsDf
+#' @export
+setMethod(f = "setStatsDf", signature = "CdataTimeLapse", definition = function(object, df){
+  
+  object@features_stats <- base::as.data.frame(df)
+  
+  return(object)
+  
+})
+
+#' @rdname setStatsDf
+#' @export
+setMethod(f = "setStatsDf", signature = "CyproTimeLapse", definition = function(object, df){
+  
+  object@cdata@features_stats <- base::as.data.frame(df)
+  
+  return(object)
+  
+})
+
+
+# T -----------------------------------------------------------------------
+
+#' @title Set cypro data.frames
+#' 
+#' @description Functions to safely set the data.frames containing 
+#' data about the cells. 
+#'
+#' @inherit argument_dummy params
+#' @param df The data.frame to be set. 
+#'
+#' @return The input object. 
+#' @export
+#'
+setGeneric(name = "setTracksDf", def = function(object, df){
+  
+  standardGeneric(f = "setTracksDf")
+  
+})
+
+#' @rdname setTracksDf
+#' @export
+setMethod(f = "setTracksDf", signature = "CdataTimeLapse", definition = function(object, df){
+  
+  object@features_tracks <- base::as.data.frame(df)
+  
+  return(object)
+  
+})
+
+#' @rdname setTracksDf
+#' @export
+setMethod(f = "setTracksDf", signature = "CyproTimeLapse", definition = function(object, df){
+  
+  object@cdata@features_tracks <- base::as.data.frame(df)
+  
+  return(object)
+  
+})
 
 
 # V -----------------------------------------------------------------------

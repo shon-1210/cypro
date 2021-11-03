@@ -6,7 +6,7 @@
 \alias{getMetaDf,CyproTimeLapseMP-method}
 \alias{getMetaDf,Cdata-method}
 \alias{getMetaDf,CdataTimeLapseMP-method}
-\title{Extract cell meta data}
+\title{Obtain cell meta data}
 \usage{
 getMetaDf(object, ...)
 
@@ -32,7 +32,7 @@ Ignored if the experiment design contains only one phase.}
 A data.frame.
 }
 \description{
-Obtain cell meta data in form of a data.frame that contains
+Extracts cell meta data in form of a data.frame that contains
 data variables with which cells are grouped.
 }
 \seealso{

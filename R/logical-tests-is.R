@@ -1,6 +1,154 @@
 
 
 
+
+
+# c -----------------------------------------------------------------------
+
+#' @rdname is_cypro_df
+#' @export
+is_cluster_df <- function(df, stop_if_false = FALSE){
+  
+  df <- dplyr::select(df, -dplyr::any_of("cell_id"))
+  
+  out <- logical(2)
+  
+  out[1] <- 
+    check_data_frame(
+      df = df, 
+      var.class = purrr::map(df, function(x){return("factor")}) %>%
+        purrr::set_names(nm = base::names(df)), 
+      verbose = stop_if_false
+    )
+  
+  out[2] <- isOfClass(df, valid_class = "cluster_df")
+  
+  if(base::isFALSE(out[2]) && base::isTRUE(stop_if_false)){
+    
+    stop(valid_content_but_inappropriate_class("cluster_df"))
+    
+  }
+  
+  out <- base::all(out)
+  
+  return(out)
+  
+}
+
+
+
+#' @title Test completeness
+#' 
+#' @description Tests if the data.frame has been completed.
+#'
+#' @inherit as_cypro_df params
+#' 
+#' @details Only relevant for \code{cypro_df} data.frames of subclass
+#' \code{stats_df} or \code{tracks_df}.
+#'
+#' @return TRUE or FALSE
+#' 
+#' @seealso \code{completeStatsDf()}, \code{completeTracksDf()}
+#' 
+#' @export
+#'
+
+is_complete <- function(df){
+  
+  UseMethod(generic = "is_complete", object = df)
+  
+}
+
+#' @rdname is_complete
+#' @export
+is_complete.cypro_df <- function(df){
+  
+  out <- base::attr(df, which = "complete")
+  
+  base::isTRUE(out)
+  
+}
+
+
+
+
+#' @title Test known data.frame classes
+#' 
+#' @description Logical tests that check input data.frame for its class
+#' and its content. 
+#' 
+#' @param df A data.frame.
+#' @inherit argument_dummy params
+#' 
+#' @details Tests if the input data.frame is of the respective class by 
+#' checking its attributes. Additionally tests if the content of the data.frame
+#' matches the requirements. If both tests evaluate to TRUE the function 
+#' returns TRUE else it returns FALSE.
+#'
+#' @return TRUE or FALSE
+#' @export
+#'
+is_cypro_df <- function(df, stop_if_false = FALSE){
+  
+  out <- logical(2)
+  
+  out[1] <- 
+    check_data_frame(
+      var.class = var_classes_cypro_df, 
+      verbose = stop_if_false
+    )
+  
+  out[2] <- isOfClass(df, valid_class = "cypro_df")
+  
+  if(base::isFALSE(out[2]) && base::isTRUE(stop_if_false)){
+    
+    stop(valid_content_but_inappropriate_class("cypro_df"))
+    
+  }
+  
+  out <- base::all(out)
+  
+  return(out)
+  
+}
+
+
+
+# w -----------------------------------------------------------------------
+
+#' @rdname is_cypro_df
+#' @export
+is_well_plate_df <- function(df, stop_if_false = FALSE){
+  
+  out <- logical(2)
+  
+  out[1] <- 
+    check_data_frame(
+      df = df, 
+      var.class = vars_well_plate_df, 
+      verbose = stop_if_false
+    )
+  
+  out[2] <- isOfClass(df, valid_class = "well_plate_df")
+  
+  if(base::isFALSE(out[2]) && base::isTRUE(stop_if_false)){
+    
+    stop(valid_content_but_inappropriate_class("well_plate_df"))
+    
+  }
+  
+  out <- base::all(out)
+  
+  return(out)
+  
+}
+
+
+
+
+
+
+
 # A -----------------------------------------------------------------------
 
 #' @title Test module activity 
@@ -61,6 +209,9 @@ setMethod(f = "isActive", signature = "AnalysisModule", definition = function(ob
 
 # C -----------------------------------------------------------------------
 
+#' @rdname is_cypro_df
+#' @export
+isClusterDf <- is_cluster_df
 
 
 #' @title Test example data.frame
@@ -79,10 +230,11 @@ setGeneric(name = "isCompleteExampleDf", def = function(object){
   
 })
 
-
 #' @rdname isCompleteExampleDf
 #' @export
 setMethod(f = "isCompleteExampleDf", signature = "Cypro", function(object){
+  
+  warning("isCompleteExampleDf is used here")
   
   loading_fn <- suggestLoadingFunction(object)
   
@@ -129,6 +281,31 @@ setMethod(f = "isCompleteExampleDf", signature = "Cypro", function(object){
   
 })
 
+
+
+#' @rdname is_complete
+#' @export
+isComplete <- function(df){
+  
+  UseMethod(generic = "isComplete", object = df)
+  
+}
+
+#' @rdname is_complete
+#' @export
+isComplete.cypro_df <- is_complete.cypro_df
+
+
+
+
+#' @rdname is_cypro_df
+#' @export
+isCyproDf <- is_cypro_df
+
+
+# E -----------------------------------------------------------------------
+
+
 # L -----------------------------------------------------------------------
 
 #' @title Test layout data.frame
@@ -155,6 +332,38 @@ isLayoutDf <- function(df){
   return(res)
   
 }
+
+
+
+
+#' @title Test if loaded
+#' 
+#' @description Tests if the data file has been loaded yet.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return TRUE or FALSE
+#' @export
+#'
+setGeneric(name = "isLoaded", def = function(object){
+  
+  standardGeneric(f = "isLoaded")
+  
+})
+
+#' @rdname isLoaded
+#' @export
+setMethod(f = "isLoaded", signature = "DataFile", definition = function(object){
+  
+  content <- object@content
+  
+  res <- !base::identical(x = content, y = list())
+  
+  return(res)
+  
+})
+
+
 
 # M -----------------------------------------------------------------------
 
@@ -272,44 +481,25 @@ isNested <- function(df){
 #' @export
 isNested.layout_df <- function(df){
   
-  res <- c(TRUE, TRUE)
-  
-  res[1] <- "roi_info" %in% base::colnames(df)
-  
-  n_rows <- base::nrow(df)
-  
-  wp_type <- getWellPlateType(df)
-  
-  if(nRois(df) != 1){
-    
-    n_rows_expected <- 
-      dplyr::filter(well_plate_info, type == {{wp_type}}) %>% 
-      dplyr::mutate(nr = (rows * cols)) %>% 
-      dplyr::pull(nr)
-    
-    res[2] <- n_rows == n_rows_expected
-    
-  }
-  
-  if(base::all(res)){
-    
-    out <- TRUE
-    
-  } else if(base::any(res)) {
-    
-    warning("Incosistent 'layout_df'. Check manually.")
-    
-    out <- FALSE
-    
-  } else {
-    
-    out <- FALSE
-    
-  }
+  out <- "roi_info" %in% base::colnames(df)
   
   return(out)
   
 }
+
+
+
+# O -----------------------------------------------------------------------
+
+
+isOfLength <- function(x, l){
+  
+  res <- base::length(x) == l
+  
+  return(res)
+  
+}
+
 
 
 # S -----------------------------------------------------------------------
@@ -454,3 +644,18 @@ setMethod(f = "isUsable", signature = "Cypro", definition = function(object, mod
 
 
 
+
+
+
+
+
+
+
+
+
+
+# W -----------------------------------------------------------------------
+
+#' @rdname is_cypro_df
+#' @export
+isCyproDf <- is_cypro_df

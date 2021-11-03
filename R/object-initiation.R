@@ -32,7 +32,7 @@ initiateEmptyCyproObject <- function(...){
 #' @inherit updated_object return
 #' @export
 #'
-processData <- function(object,
+processDataX <- function(object,
                         summarize_with = c("max", "min", "mean", "median"),
                         verbose = TRUE){
   

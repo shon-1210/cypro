@@ -87,8 +87,8 @@ AnalysisModule <- setClass(Class = "AnalysisModule",
 #' @description Subclass of S4-Class \code{AnalysisModule}. Specific class for modules
 #' that can only be used in time lapse experiments.
 #'
-#' @slot variables_summarized list. Named list of summarizable variables represented by the 
-#' S4-class \code{SummarizableVariable}. Names of list correspond to the respective
+#' @slot variables_summary list. Named list of summary variables represented by the 
+#' S4-class \code{SummaryVariable}. Names of list correspond to the respective
 #' slot @@name_in_cypro. Variable must be ordered according to the order in which they
 #' are supposed to be summarized. E.g. as the migration efficiency (\emph{mgr_eff}) requires
 #' the variable total distance (\emph{total_dist}) the total distance must be listed 
@@ -98,7 +98,7 @@ AnalysisModule <- setClass(Class = "AnalysisModule",
 #'
 AnalysisModuleTimeLapse <- setClass(Class = "AnalysisModuleTimeLapse", 
                                     slots = list(
-                                      variables_summarized = "list"
+                                      variables_summary = "list"
                                     ), 
                                     contains = "AnalysisModule")
 
@@ -174,9 +174,9 @@ CdataScreening <- setClass(Class = "CdataScreening",
 CdataTimeLapse <- setClass(Class = "CdataTimeLapse", 
                            slots = list(
                              cluster = "data.frame", 
+                             meta = "data.frame",
                              features_stats = "data.frame",
-                             features_tracks = "data.frame",
-                             meta = "data.frame"
+                             features_tracks = "data.frame"
                              
                            ),
                            contains = "Cdata")
@@ -245,7 +245,7 @@ CdataTimeLapseMP <- setClass(Class = "CdataTimeLapseMP",
 #' \code{cypro}. The assignment is stored and can be obtained via \code{getVariableAssignment()}.
 #' 
 #' @seealso \code{AssignableVariable}, \code{RequiredVariable}, \code{ComputableVariable},
-#' \code{SummarizableVariable}
+#' \code{SummaryVariable}
 #' 
 #' @export
 #'
@@ -300,7 +300,7 @@ DataVariable <- setClass(Class = "DataVariable",
 #' handled this way. Further (S4-Classes) exist that differentiate between three types of
 #' assignable data variables: \code{RequiredVariable}, \code{OptionalVariable}, \code{ComputableVariable}.
 #'  
-#' @seealso \code{RequiredVariable}, \code{ComputableVariable}, \code{OptionalVariable}, \code{SummarizableVariable} 
+#' @seealso \code{RequiredVariable}, \code{ComputableVariable}, \code{OptionalVariable}, \code{SummaryVariable} 
 #' 
 AssignableVariable <- setClass(Class = "AssignableVariable", 
                                slots = list(
@@ -325,7 +325,7 @@ AssignableVariable <- setClass(Class = "AssignableVariable",
 #' and \emph{y_coords} must be part of the input data as they can not be computed based
 #' on other variables.
 #' 
-#' @seealso \code{AssignableVariable}, \code{ComputableVariable}, \code{SummarizableVariable}
+#' @seealso \code{AssignableVariable}, \code{ComputableVariable}, \code{SummaryVariable}
 #'
 #' @export
 
@@ -348,7 +348,7 @@ RequiredVariable <- setClass(Class = "RequiredVariable",
 #' but do not have to be as there are other options to add this information to the 
 #' \code{Cypro} object. 
 #' 
-#' @seealso \code{AssignableVariable}, \code{RequiredVariable}, \code{SummarizableVariable}, 
+#' @seealso \code{AssignableVariable}, \code{RequiredVariable}, \code{SummaryVariable}, 
 #' \code{loadDataFiles()}, \code{loadData()}. 
 #' 
 OptionalVariable <- setClass(Class = "OptionalVariable", 
@@ -378,7 +378,7 @@ OptionalVariable <- setClass(Class = "OptionalVariable",
 #' this by default. Others do not. As the distance from last point can be computed via
 #' x- and y-coordinates it is a computable variable.
 #' 
-#' @seealso \code{AssignableVariable}, \code{RequiredVariable}, \code{SummarizableVariable}
+#' @seealso \code{AssignableVariable}, \code{RequiredVariable}, \code{SummaryVariable}
 #'
 ComputableVariable <- setClass(Class = "ComputableVariable", 
                                slots = list(
@@ -388,7 +388,7 @@ ComputableVariable <- setClass(Class = "ComputableVariable",
                                contains = c("DataVariable", "AssignableVariable")
                                )
 
-#' @title The SummarizableVariable Class
+#' @title The SummaryVariable Class
 #' 
 #' @description Subclass of \code{DataVariable}. See details for more information.
 #' 
@@ -398,7 +398,7 @@ ComputableVariable <- setClass(Class = "ComputableVariable",
 #' the information of both to compute the variable. The function must only return the 
 #' stat data.frame now containing the additional variable that has just been summarized.
 #' 
-#' @details Summarizable variables represent variables of time lapse experiments that can be 
+#' @details Summary variables represent variables of time lapse experiments that can be 
 #' computed by summarizing other variables.
 #'  
 #' E.g. the total distance a cell has traveled throughout the imaging process is part of the
@@ -409,7 +409,7 @@ ComputableVariable <- setClass(Class = "ComputableVariable",
 #' 
 #' @seealso \code{AssignableVariable}, \code{RequiredVariable}, \code{ComputableVariable}
 #'
-SummarizableVariable <- setClass(Class = "SummarizableVariable", 
+SummaryVariable <- setClass(Class = "SummaryVariable", 
                                  slots = list(
                                    name_in_cypro = "character",
                                    summarize_with = "function"
@@ -488,6 +488,7 @@ ExperimentDesign <- setClass(Class = "ExperimentDesign",
 #' @slot valid logical. TRUE if no variable of slot @@content is a value of class 
 #' \code{glue} - meaning that all @@check_var functions returned a valid variable
 #' and no error/feedback message.
+#' @slot well_plate character. The well plate belonging.
 #'
 #' @export
 #'
@@ -497,10 +498,14 @@ DataFile <- setClass(Class = "DataFile",
                          file_status = "character",
                          directory = "character",
                          loading_modality = "character",
+                         name = "character",
                          transferred = "logical",
-                         valid = "logical"
+                         valid = "logical", 
+                         well_plate = "character"
                        ))
 
+
+# -----
 
 # Progress ----------------------------------------------------------------
 
@@ -513,13 +518,15 @@ DataFile <- setClass(Class = "DataFile",
 #' @slot designExperiment logical. 
 #' @slot assignVariables logical. 
 #' @slot loadData logical. 
+#' @slot processData logical.
 #'
 Progress <- setClass(Class = "Progress", 
                      slots = list(
                        experiment = "character",
                        designExperiment = "logical", 
                        assignVariables = "logical", 
-                       loadData = "logical"
+                       loadData = "logical", 
+                       processData = "logical"
                      ))
 
 
@@ -586,20 +593,20 @@ WellPlate <- setClass(Class = "WellPlate",
 #' in \code{cypro}.
 #' @slot default list. Contains the object specific default input for recurring arguments. Can 
 #' be safely modified via \code{adjustDefaultInstructions()}.
+#' @slot directory character. Directory under which the \code{Cypro}-object is stored by default 
+#' using \code{saveCyproObject()}.
 #' @slot experiment character. The name of the experiment. 
 #' @slot design ExperimentDesign. An S4-object of class \code{ExperimentDesign}.
 #' @slot feature_sets list. Each slot contains a character vector of names of numeric variables forming 
 #' a \emph{feature_set}. Based on these features clustering and dimensional reduction can be 
 #' performed. This allows to store several clustering results based on different features in one and the 
-#' same \code{Cypro}-object.
+#' same \code{Cypro} object.
 #' @slot information list. Miscellaneous information around the object.
 #' @slot modules list. Each slot is again a list representing one of the modules that has been denoted 
 #' during \code{assignVariables()}. In addition to the variable denotation it can contain 
 #' module specific data, computation or analysis results. 
 #' @slot progress Progress. S4-object of class \code{Progress.}
 #' @slot quality_checks list. Contains results of quality check related results such as outlier detection.
-#' @slot storage character. Directory under which the \code{Cypro}-object is stored by default 
-#' using \code{saveCyproObject()}.
 #' @slot subsets list. Contains information of each subsetting process the \code{Cypro}-object
 #' has gone through. See functions prefixed with \code{subsetBy*()}.
 #' @slot version list. Three slots named \emph{patch, minor} and \emph{major} that keep 
@@ -612,6 +619,7 @@ Cypro <- setClass(Class = "Cypro",
                     analysis = "list",
                     commands = "list",
                     compatibility = "list",
+                    directory = "character",
                     default = "list",
                     experiment = "character",
                     experiment_design = "ExperimentDesign",
@@ -621,7 +629,6 @@ Cypro <- setClass(Class = "Cypro",
                     modules = "list",
                     progress = "Progress", 
                     quality_checks = "list",
-                    storage = "character",
                     subsets = "list",
                     version = "list"
                   )

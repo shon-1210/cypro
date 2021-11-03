@@ -3,24 +3,32 @@
 \name{getTracksDf}
 \alias{getTracksDf}
 \alias{getTracksDf,CdataTimeLapse-method}
-\alias{getTracksDf,CdataTimeLapseMP-method}
 \alias{getTracksDf,CyproTimeLapse-method}
 \alias{getTracksDf,CyproTimeLapseMP-method}
 \title{Extract track data.frame}
 \usage{
-getTracksDf(object, ...)
+getTracksDf(
+  object,
+  with_cluster = FALSE,
+  with_meta = FALSE,
+  with_well_plate = FALSE,
+  ...
+)
 
-\S4method{getTracksDf}{CdataTimeLapse}(object, ...)
-
-\S4method{getTracksDf}{CdataTimeLapseMP}(object, phase, ...)
+\S4method{getTracksDf}{CdataTimeLapse}(
+  object,
+  with_cluster = FALSE,
+  with_meta = FALSE,
+  with_well_plate = FALSE,
+  ...
+)
 
 \S4method{getTracksDf}{CyproTimeLapse}(
   object,
-  with_grouping = NULL,
-  with_cluster = NULL,
-  with_meta = NULL,
-  with_well_plate = NULL,
-  verbose = NULL
+  with_cluster = FALSE,
+  with_meta = FALSE,
+  with_well_plate = FALSE,
+  ...
 )
 
 \S4method{getTracksDf}{CyproTimeLapseMP}(
@@ -37,13 +45,6 @@ getTracksDf(object, ...)
 \arguments{
 \item{object}{Any object for whose class a method has been defined.}
 
-\item{phase}{Character or numeric. If character, the ordinal value referring to the phase of interest (e.g. \emph{'first'}, \emph{'second'} etc.).
-referring to the phase of interest or \emph{'all'}. If numeric, the number referring to the phase.
-
-If set to NULL takes the phase denoted as default with \code{adjustDefault()}.
-
-Ignored if the experiment design contains only one phase.}
-
 \item{with_cluster}{Logical. If set to TRUE the discrete variables of the meta data slot are added
 to the output data.frame.}
 
@@ -53,6 +54,13 @@ to the output data.frame.}
 \item{with_well_plate}{Logical values. Denoting
 if the respective grouping information should be joined to the output data.frame
 or not.}
+
+\item{phase}{Character or numeric. If character, the ordinal value referring to the phase of interest (e.g. \emph{'first'}, \emph{'second'} etc.).
+referring to the phase of interest or \emph{'all'}. If numeric, the number referring to the phase.
+
+If set to NULL takes the phase denoted as default with \code{adjustDefault()}.
+
+Ignored if the experiment design contains only one phase.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

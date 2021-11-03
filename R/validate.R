@@ -36,9 +36,15 @@
 #' the output list will contain a slot named after it with a corresponding message.
 #'
 #' @return A list named according to each variable found in the input data.frame provided
-#' with argument \code{df}. If a variable has met all requirements it is stored in the returned list as it was returned
-#' by it's @@check_content-function. If not, the corresponding error message occupies the variables slot in the output 
-#' list.
+#' with argument \code{df}.
+#' 
+#' Slots of the list that are occupied by \code{AssignableVariable}s are named according to their
+#' \code{name_in_cypro}. If a variable has met all requirements it is stored in the returned list
+#' as it was returned by it's @@check_content-function. If not, the corresponding error message
+#' occupies the variables slot in the output list.
+#' 
+#' Slots of the list that are occupied by additional variables are named according to their 
+#' name in the input data.frame.
 #' 
 #' @export
 
@@ -138,7 +144,7 @@ setMethod(
       var <- df[[variable_name]]
       
       res <- 
-        check_and_convert_grouping_var(var = var, ref = variable_name, in_shiny = in_shiny)
+        check_and_convert_grouping_var(var = var, ref = variable_name)
       
       if(base::is.null(res$problem)){
         
@@ -160,7 +166,7 @@ setMethod(
       var <- df[[variable_name]]
       
       res <- 
-        check_and_convert_numeric_var(var = var, ref = variable_name, in_shiny = in_shiny)
+        check_and_convert_numeric_var(var = var, ref = variable_name)
       
       if(base::is.null(res$problem)){
         
@@ -442,12 +448,62 @@ validate_experiment_name <- function(exp_name, stop_if_false = FALSE){
   
 }
 
-
-
 # n -----------------------------------------------------------------------
 
+validate_no_overlap_directories <- function(directories, fdb_if_false = FALSE, fdb_fn = "stop", in_shiny = FALSE){
+  
+  used_directories_count <- 
+    base::table(directories) %>% 
+    base::as.data.frame() 
+  
+  overlapping_names <- 
+    magrittr::set_colnames(used_directories_count, value = c("name", "count")) %>% 
+    dplyr::mutate(name = base::as.character(name)) %>% 
+    dplyr::mutate(name = glue::glue("{name} ({count}x)")) %>% 
+    dplyr::filter(count > 1) %>% 
+    dplyr::pull(name)
+  
+  if(base::length(overlapping_names) >= 1){
+    
+    res <- FALSE
+    
+    if(base::isTRUE(fdb_if_false)){
+      
+      ovlp <- confuns::scollapse(overlapping_names)
 
-validate_no_overlap_additional_vars <- function(grouping_vars, numeric_vars, stop_if_false = TRUE, in_shiny = FALSE){
+      msg <-
+        glue::glue(
+          "Duplicated folder assignment is not allowed. ",
+          "The following {ref} {ref2} several times: ",
+          "'{ovlp}'",
+          ref = confuns::adapt_reference(overlapping_names, "directory", "directories"),
+          ref2 = confuns::adapt_reference(overlapping_names, "exists", "exist")
+        )
+      
+      confuns::give_feedback(
+        msg = msg, 
+        fdb.fn = fdb_fn,
+        with.time = FALSE,
+        in.shiny = in_shiny, 
+        duration = 20
+      )
+      
+    }
+    
+  } else { 
+    
+    res <- TRUE    
+    
+  }
+  
+  return(res)
+  
+}
+
+validate_no_overlap_additional_vars <- function(grouping_vars,
+                                                numeric_vars,
+                                                stop_if_false = TRUE,
+                                                in_shiny = FALSE){
   
   used_names_vec <- c(grouping_vars, numeric_vars)
   

@@ -1,6 +1,41 @@
 
 
 
+# A -----------------------------------------------------------------------
+
+
+#' @title Number of ambiguous file directories
+#' 
+#' @description Returns the number of ambiguous file directories in 
+#' the folder assigned to slot @@directory. 
+#'
+#' @inherit argument_dummy params
+#' 
+#' @details If the number of files in slot @@file of \code{WellPlate} object
+#' is zero the function returns NA.
+#'
+#' @return A numeric value.
+#' @export
+#'
+setGeneric(name = "nAmbiguousFiles", def = function(object){
+  
+  standardGeneric(f = "nAmbiguousFiles")
+  
+})
+
+
+#' @rdname nAmbiguousFiles
+#' @export
+setMethod(f = "nAmbiguousFiles", signature = "WellPlate", definition = function(object){
+  
+  layout_df <- getLayoutDf(object) %>% unnestLayoutDf()
+  
+  out <- base::sum(layout_df$file_status == "Ambiguous")
+  
+  return(out)
+  
+})
+
 # C -----------------------------------------------------------------------
 
 #' @title Number of miscellaneous content
@@ -73,6 +108,54 @@ nConditions <- function(object, phase = NULL){
 
 
 
+# E -----------------------------------------------------------------------
+
+#' @title Number of expected files
+#'
+#' @description Returns the number of files that is expected according to 
+#' the number of regions of interest, the number of wells with a complete information 
+#' status and the loading modality chosen - according to the input example. 
+#'
+#' @inherit argument_dummy params
+#'
+#' @return A numeric value. 
+#' @export
+#'
+setGeneric(name = "nExpectedFiles", def = function(object){
+  
+  standardGeneric(f = "nExpectedFiles")
+  
+})
+
+
+#' @rdname nExpectedFiles
+#' @export
+
+setMethod(f = "nExpectedFiles", signature = "WellPlate", definition = function(object){
+  
+  base::stopifnot(isOfLength(object@loading_modality, l = 1))
+  
+  ldm <- object@loading_modality
+  
+  if(ldm == "by_roi"){
+    
+    n_files <- nRois(object) * nWells(object, info_status = "Complete")
+    
+  } else if(ldm == "by_well"){
+    
+    n_files <- nWells(object, info_status = "Complete")
+    
+  } else {
+    
+    n_files <- 1
+    
+  }
+  
+  return(n_files)
+  
+})
+
+
 
 
 # F -----------------------------------------------------------------------
@@ -104,6 +187,37 @@ nFiles <- function(object){
 }
 
 
+#' @title Number of frames
+#' 
+#' @description Returns the total number of frames as was denoted during \code{designExperiment()}.
+#' 
+#' @inherit argument_dummy params
+#' 
+#' @return A numeric value. 
+#' @export
+
+setGeneric(name = "nFrames", def = function(object){
+  
+  standardGeneric(f = "nFrames")
+  
+})
+
+#' @rdname nFiles
+#' @export
+setMethod(f = "nFrames", signature = "ExperimentDesign", definition = function(object){
+  
+  object@n_frames
+  
+})
+
+#' @rdname nFiles
+#' @export
+setMethod(f = "nFrames", signature = "Cypro", definition = function(object){
+  
+  getExperimentDesign(object) %>% 
+    nFrames()
+  
+})
 
 
 # M -----------------------------------------------------------------------

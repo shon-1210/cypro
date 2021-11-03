@@ -631,6 +631,21 @@ addPamClusterVariables <- function(object,
 
 
 
+# c -----------------------------------------------------------------------
+
+add_classes <- function(x, classes){
+  
+  old_classes <- base::class(x)
+  
+  all_classes <- c(classes, old_classes) %>% base::unique()
+  
+  base::class(x) <- all_classes 
+  
+  return(x)
+  
+}
+
+
 # h -----------------------------------------------------------------------
 
 #' @title Add helping text 
@@ -653,21 +668,51 @@ add_helper <- function(shiny_tag, content, title = "What do I have to do here?",
 
 # r -----------------------------------------------------------------------
 
-add_roi_info_vars <- function(df, vars){
+
+
+
+# A -----------------------------------------------------------------------
+
+
+
+# R -----------------------------------------------------------------------
+
+#' @title Add variabels to layout nesting
+#' 
+#' @description Adds variable names to the attributes with with
+#' \code{nestLayoutDf()} / \code{unnestLayoutDf()} shift between 
+#' the layout data.frame scops. 
+#'
+#' @param df A layout data.frame.
+#' @param vars Character vector. Names of variables. 
+#' 
+#' @details A call to \code{base::unique()} silently prevents 
+#' duplicated values.
+#'
+#' @return Input data.frame with adjusted attributes.
+#' @export
+#'
+addRoiInfoVarNames <- function(df, vars){
+  
+  UseMethod(generic = "addRoiInfoVarNames", object = df)
+  
+}
+
+#' @rdname addRoiInfoVarNames
+#' @export
+
+addRoiInfoVarNames.layout_df <- function(df, vars){
   
   attr <- base::attributes(df)
   
-  attr$roi_info_vars <- c(attr$roi_info_vars, vars)
+  attr$roi_info_vars <- 
+    base::unique(c(attr$roi_info_vars, vars))
   
   base::attributes(df) <- attr
   
   return(df)
   
 }
-
-
-
-# A -----------------------------------------------------------------------
 
 
 # W -----------------------------------------------------------------------

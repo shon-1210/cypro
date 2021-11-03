@@ -5,7 +5,7 @@
 \alias{compute_distances_from_last_point}
 \title{Compute the distances from origin}
 \usage{
-compute_distances_from_origin(x_coords, y_coords, phase = NULL, object)
+compute_distances_from_origin(x_coords, y_coords, object)
 
 compute_distances_from_last_point(x_coords, y_coords)
 }

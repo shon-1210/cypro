@@ -30,5 +30,5 @@ the input data.frame now containing the variable that has just been computed.}
 }}
 
 \seealso{
-\code{AssignableVariable}, \code{RequiredVariable}, \code{SummarizableVariable}
+\code{AssignableVariable}, \code{RequiredVariable}, \code{SummaryVariable}
 }

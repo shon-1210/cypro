@@ -1,6 +1,17 @@
 
 
 
+# c -----------------------------------------------------------------------
+
+make_cell_id <- function(cell_id, well_plate_index, well, roi){
+  
+  stringr::str_c(cell_id,well_plate_index, well, roi, sep = "|")
+  
+}
+
+
+
+# f -----------------------------------------------------------------------
 
 make_frame_vec <- function(n_frames, ref = "Frame"){
   
@@ -11,6 +22,10 @@ make_frame_vec <- function(n_frames, ref = "Frame"){
     stringr::str_c(., "Frame", sep = " ")
   
 }
+
+
+
+# t -----------------------------------------------------------------------
 
 
 make_time_frame_vec <- function(time_vec, frame_vec){

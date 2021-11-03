@@ -4,8 +4,12 @@
 \alias{as_layout_df}
 \alias{as_layout_df_mp}
 \alias{as_layout_df.data.frame}
-\alias{as_layout_df_mp.data.frame}
-\title{Coerce to \code{layout_df} data.frames}
+\alias{as_layout_df_mp.layout_df}
+\alias{asLayoutDf}
+\alias{asLayoutDf.data.frame}
+\alias{asLayoutDfMP}
+\alias{asLayoutDfMP.layout_df}
+\title{Coerce to \code{layout_df} data.frame}
 \usage{
 as_layout_df(df, well_plate_type)
 
@@ -13,7 +17,15 @@ as_layout_df_mp(df, well_plate_type, n_phases)
 
 \method{as_layout_df}{data.frame}(df, well_plate_type)
 
-\method{as_layout_df_mp}{data.frame}(df, well_plate_type = NULL, n_phases)
+\method{as_layout_df_mp}{layout_df}(df, well_plate_type = NULL, n_phases)
+
+asLayoutDf(df, well_plate_type)
+
+\method{asLayoutDf}{data.frame}(df, well_plate_type)
+
+asLayoutDfMP(df, well_plate_type, n_phases)
+
+\method{asLayoutDfMP}{layout_df}(df, well_plate_type = NULL, n_phases)
 }
 \arguments{
 \item{df}{A data.frame.}
@@ -22,5 +34,5 @@ as_layout_df_mp(df, well_plate_type, n_phases)
 The input data.frame with adjusted attributes.
 }
 \description{
-Converts input data.frame to layout data.frames.
+Coerces input data.frame to layout data.frames.
 }

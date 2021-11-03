@@ -400,7 +400,8 @@ moduleAssignVariablesServer <- function(id, object){
             object = shiny::isolate(cypro_object()), 
             df = df, 
             dir = input_file$name
-          )
+          ) %>% 
+          setLoadingModality()
         
         debug_assign(x = df, as = "df")
         
@@ -456,7 +457,7 @@ moduleAssignVariablesServer <- function(id, object){
           )
         )
         
-        utils::head(example_df())
+        example_df()
         
       }, options = list(scrollX = TRUE))
       

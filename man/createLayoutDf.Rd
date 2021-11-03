@@ -24,7 +24,7 @@ from phase to phase.}
 }
 \value{
 A data.frame of class \code{layout_df} or \code{layout_df_mp} if
-\code{phase} is numeric.
+\code{n_phases} is > 1.
 }
 \description{
 Creates a data.frame of class \code{layout_df} or \code{layout_df_mp}

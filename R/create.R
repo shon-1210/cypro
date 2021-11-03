@@ -119,11 +119,7 @@ createLayoutDf <- function(well_plate_name = "wp",
     
   })
   
-  # set primary attributes
   layout_df <- as_layout_df(df = layout_df, well_plate_type = well_plate_type)
-  
-  base::attr(x = layout_df, which = "roi_info_vars") <- c("well_roi") 
-  
   
   if(n_phases != 0){
     

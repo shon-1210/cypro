@@ -16,9 +16,15 @@ validateInputDf(object, df, ...)
 }
 \value{
 A list named according to each variable found in the input data.frame provided
-with argument \code{df}. If a variable has met all requirements it is stored in the returned list as it was returned
-by it's @check_content-function. If not, the corresponding error message occupies the variables slot in the output
-list.
+with argument \code{df}.
+
+Slots of the list that are occupied by \code{AssignableVariable}s are named according to their
+\code{name_in_cypro}. If a variable has met all requirements it is stored in the returned list
+as it was returned by it's @check_content-function. If not, the corresponding error message
+occupies the variables slot in the output list.
+
+Slots of the list that are occupied by additional variables are named according to their
+name in the input data.frame.
 }
 \description{
 Validates that the validity of an input data.frame. See details
