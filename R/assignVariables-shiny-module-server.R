@@ -127,8 +127,6 @@ moduleAssignVariablesServer <- function(id, object){
         
         ns <- session$ns
         
-        debug_assign(shiny::reactiveValuesToList(input), as = "input_list")
-        
         object <- 
           setVariableAssignmentShiny(
             object = cypro_object(), 
@@ -392,7 +390,7 @@ moduleAssignVariablesServer <- function(id, object){
         
         directory <- input_file$datapath
         
-        df <- read_example_file_shiny(directory = directory)
+        df <- load_data_file(directory = directory)
         
         # store input example immediately in object
         object <- 

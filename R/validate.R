@@ -3,10 +3,9 @@
 
 
 
-# exported ----------------------------------------------------------------
-
 
 # I -----------------------------------------------------------------------
+
 #' @title Validate input data.frame content
 #' 
 #' @description Validates that the validity of an input data.frame. See details 

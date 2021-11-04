@@ -41,7 +41,7 @@ loaded, checked for validity and processed.
 The resulting \code{Cypro} object is ready to use for downstream analysis.
 }
 \details{
-Apart from the naming convention they follow output files from different
+Apart from the naming convention they follow, output files from different
 image analysis software vary in their number. There are four ways how
 the input data that is supposed to be loaded can exist:
 
@@ -53,7 +53,7 @@ that has been quantified this includes identifier variables that correspond to t
 \emph{Region of interest (roi)} that in combination with the \emph{cell ID (cell_id)} identify
 a cell uniquely throughout the whole data set.
 \item A file per well plate:
-Every file contains the optional identifier variables \emph{well} and \emph{roi}.
+Every file contains the optional identifier variables \emph{Well (well)} and \emph{Region of interest (roi)}.
 Information regarding the well plate belonging is added by assigning a single file
 directory to every well plate the experiment design contains.
 \item A file per well:

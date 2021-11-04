@@ -1291,7 +1291,7 @@ setGeneric(name = "getLoadingStatusDf", def = function(object, ...){
 
 #' @rdname getLoadingStatusDf
 #' @export
-setMethod(f = "getLoadingStatusDf", signature = "Cypro", definition = function(object, well_plates = NULL){
+setMethod(f = "getLoadingStatusDf", signature = "Cypro", definition = function(object, well_plates = NULL, with_transferred = TRUE){
   
   well_plate_list <- getWellPlates(object, well_plates = NULL)
   
@@ -1301,14 +1301,30 @@ setMethod(f = "getLoadingStatusDf", signature = "Cypro", definition = function(o
   
   out$folder <- getWellPlateDirectories(object, well_plates = well_plates)
   
-  out$number_of_valid_files <- 
+  out$valid_files <- 
     purrr::map_int(.x = well_plate_list, .f = ~ base::length(.x@files)) 
   
-  out$number_of_expected_files <- 
+  out$expected_files <- 
     purrr::map_int(.x = well_plate_list, .f = nExpectedFiles)
   
-  out$number_of_ambiguous_files <- 
+  out$ambiguous_files <- 
     purrr::map_int(.x = well_plate_list, .f = nAmbiguousFiles)
+  
+  out$loaded_files <- 
+    purrr::map_int(
+      .x = well_plate_list,
+      .f = ~ purrr::keep(.x = .x@files, .p = ~ containsData(.x)) %>% base::length()
+      )
+  
+  if(base::isTRUE(with_transferred)){
+    
+    out$transferred_files <- 
+      purrr::map_int(
+        .x = well_plate_list, 
+        .f = ~ purrr::keep(.x = .x@files, .p = ~ base::isTRUE(.x@transferred)) %>% base::length()
+      )
+    
+  }
   
   df <- 
     base::as.data.frame(out) %>% 

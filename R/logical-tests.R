@@ -1,5 +1,3 @@
-#' @include cypro-modules.R
-NULL
 
 #' @title Logical Tests
 #' 

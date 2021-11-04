@@ -192,7 +192,6 @@ moduleLoadDataServer <- function(id, object){
         
         shiny::req(well_plates_with_errors())
         
-        
         choices <- 
           purrr::set_names(
             x = files_with_errors(), 
@@ -242,15 +241,12 @@ moduleLoadDataServer <- function(id, object){
         
         ns <- session$ns
         
-        if(base::is.list(read_in_data()) & base::length(read_in_data()) != 0){
-          
-          status <- "success"
-          
-        } else {
-          
-          status <- "warning"
-          
-        }
+        status <- 
+          base::ifelse(
+            test = containsData(cypro_object()),
+            yes = "success",
+            no = "warning"
+            )
         
         shinydashboard::box(
           shiny::helpText("Check for errors during the loading process.") %>%
@@ -479,7 +475,7 @@ moduleLoadDataServer <- function(id, object){
       # loading status
       loading_status <- shiny::reactive({
 
-        getLoadingStatusDf(object = cypro_object()) %>% 
+        getLoadingStatusDf(object = cypro_object(), with_transferred = FALSE) %>% 
           make_pretty_df()
         
       })
@@ -598,6 +594,13 @@ moduleLoadDataServer <- function(id, object){
           shiny::need(
             expr = containsData(cypro_object()), 
             message = "No data has been loaded yet."
+          )
+        )
+        
+        shiny::validate(
+          shiny::need(
+            expr = shiny::isTruthy(file_error_message()), 
+            message = "No errors occured."
           )
         )
         

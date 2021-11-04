@@ -432,18 +432,19 @@ setGeneric(name = "nWells", def = function(object, info_status = info_status_lev
 #' @export
 setMethod(f = "nWells", signature = "layout_df", definition = function(object, info_status = info_status_levels){
   
-  nestLayoutDf(object) %>% 
-    dplyr::filter(info_status %in% {{info_status}}) %>% 
-    base::nrow()
+  df <- nestLayoutDf(object)
+    
+  base::nrow(df[df$info_status %in% info_status, ])
   
 })
 
 #' @rdname nWells
 #' @export
-setMethod(f = "nWells", signature = "WellPlate", function(object, info_status = info_status_levels){
+setMethod(f = "nWells", signature = "WellPlate", definition = function(object, info_status = info_status_levels){
   
-  getLayoutDf(object, info_status = info_status) %>% 
-    nWells()
+  df <- getLayoutDf(object)
+  
+  nWells(object = df, info_status = info_status)
   
 })
 
@@ -459,8 +460,8 @@ setGeneric(name = "nWellRois", def = function(object, info_status = info_status_
 #' @export
 setMethod(f = "nWellRois", signature = "layout_df", definition = function(object, info_status = info_status_levels){
   
-  unnestLayoutDf(object) %>% 
-    dplyr::filter(info_status %in% {{info_status}}) %>% 
-    base::nrow()
+  df <- unnestLayoutDf(object)
+  
+  base::nrow(df[df$info_status %in% info_status, ])
   
 })

@@ -7,7 +7,7 @@
 \usage{
 getLoadingStatusDf(object, ...)
 
-\S4method{getLoadingStatusDf}{Cypro}(object, well_plates = NULL)
+\S4method{getLoadingStatusDf}{Cypro}(object, well_plates = NULL, with_transferred = TRUE)
 }
 \arguments{
 \item{object}{Any object for whose class a method has been defined.}

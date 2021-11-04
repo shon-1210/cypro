@@ -114,6 +114,69 @@ is_cypro_df <- function(df, stop_if_false = FALSE){
 
 
 
+# g -----------------------------------------------------------------------
+
+is_grouping_candidate <- function(var){
+  
+  var <- var[!base::is.na(var)]
+  
+  if(base::is.character(var) | base::is.factor(var)){
+    
+    res <- TRUE
+    
+    # if not character of factor -> numeric
+  } else if(!base::any(stringr::str_detect(var, pattern = "\\."))){ # . in var -> double
+    
+    res <- TRUE
+    
+  } else {
+    
+    res <- FALSE
+    
+  }
+  
+  return(res)
+  
+}
+
+
+# n -----------------------------------------------------------------------
+
+is_numeric_candidate <- function(var){
+  
+  if(base::is.numeric(var)){
+    
+    res <- TRUE
+    
+  } else if(base::is.character(var)){
+    
+    n_na <- base::is.na(var) %>% base::sum()
+    
+    var_numeric <- base::suppressWarnings({ base::as.numeric(var) })
+    
+    n_na_new <- base::is.na(var_numeric) %>% base::sum()
+    
+    if(n_na_new > n_na){
+      
+      res <- FALSE
+      
+    } else {
+      
+      res <- TRUE
+      
+    }
+    
+  } else {
+    
+    res <- FALSE
+    
+  }
+  
+  return(res)
+  
+}
+
+
 # w -----------------------------------------------------------------------
 
 #' @rdname is_cypro_df
