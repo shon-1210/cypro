@@ -6,7 +6,7 @@
 \alias{DataFile}
 \title{The DataFile Class}
 \description{
-S4-object that contains the information about every file loaded.
+S4-class that contains the information about every file loaded.
 }
 \section{Slots}{
 

@@ -3,11 +3,14 @@
 \name{summarizeDataByCell}
 \alias{summarizeDataByCell}
 \alias{summarizeDataByCell,CyproTimeLapse-method}
-\title{Summarize time lapse data}
+\alias{summarizeDataByCell,CyproTimeLapseMP-method}
+\title{Summarize time lapse data by cell id}
 \usage{
 summarizeDataByCell(object, verbose = TRUE)
 
 \S4method{summarizeDataByCell}{CyproTimeLapse}(object, verbose = TRUE)
+
+\S4method{summarizeDataByCell}{CyproTimeLapseMP}(object, verbose = TRUE)
 }
 \arguments{
 \item{object}{Any object for whose class a method has been defined.}

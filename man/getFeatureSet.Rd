@@ -5,7 +5,7 @@
 \alias{getFeatureSet,Cypro-method}
 \alias{getFeatureSets,Cypro-method}
 \alias{getFeatureSetNames,Cypro-method}
-\title{Extract a feature set}
+\title{Obtain a feature set}
 \usage{
 getFeatureSet(object, feature_set)
 
@@ -24,7 +24,6 @@ getFeatureSet(object, feature_set)
 A character vector.
 }
 \description{
-Obtain defined sets of numeric data variables in form of vectors.
-Useful to conveniently obtain vectors for recurring arguments like
-\code{variables}.
+Extracts the names of features that were pooled
+under the name of the feature set.
 }

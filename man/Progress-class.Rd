@@ -6,7 +6,7 @@
 \alias{Progress}
 \title{The Progress Class}
 \description{
-S4-object that keeps track of the necessary function
+S4-class that keeps track of the necessary function
 calls that have to be made in order to use a \code{Cypro}-object.
 }
 \section{Slots}{

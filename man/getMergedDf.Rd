@@ -24,3 +24,8 @@ A data.frame of class \code{cypro_df}.
 Merges @slot content of all objects of class \code{DataFiles}
 that contain data and that do not contain errors to a single data.frame.
 }
+\details{
+The returned data.frame contains the complete data set including
+id-, numeric-, -meta, -well plate and cluster variables. It is then split
+into the slots of \code{Cdata} object via \code{setCdataContent()}.
+}

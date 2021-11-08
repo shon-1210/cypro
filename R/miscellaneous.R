@@ -87,57 +87,6 @@ adjust_well_roi_vec <- function(well_roi_vec){
 
 # c -----------------------------------------------------------------------
 
-#' @title Complete tracks data.frame
-#' 
-#' @description Completes the track data.frame by adding missing \emph{cell_id} +
-#' \emph{frame} observations.
-#'
-#' @inherit argument_dummy params
-#'
-#' @return The input object. 
-#' @export
-setGeneric(name = "completeTracksDf", def = function(object, verbose = TRUE){
-  
-  standardGeneric(f = "completeTracksDf")
-  
-})
-
-#' @rdname completeTracksDf
-#' @export
-setMethod(
-  f = "completeTracksDf",
-  signature = "CyproTimeLapse",
-  definition = function(object, verbose = TRUE){
-    
-    df <- getTracksDf(object, with_well_plate = TRUE)
-    
-    give_feedback(msg = "Completing tracks data.frame by observation.", verbose = verbose)
-    
-    all_cell_ids <- base::unique(df$cell_id)
-    
-    all_frames <- getFrames(object) 
-    
-    id_df <- 
-      dplyr::select(df, cell_id, well_plate_name, well_plate_index, well, roi) %>% 
-      dplyr::distinct()
-    
-    incomplet_df <- dplyr::select(df, -well_plate_name, -well_plate_index, -well, -roi)
-    
-    tracks_df <- 
-      tidyr::expand_grid(cell_id = {{all_cell_ids}}, frame_num = {{all_frames}}) %>% 
-      dplyr::left_join(x = ., y = incomplet_df, by = c("cell_id", "frame_num")) %>% 
-      dplyr::left_join(x = id_df, y = ., by = "cell_id") %>% 
-      dplyr::mutate(frame_added = tidyr::replace_na(frame_added, replace = TRUE)) %>% 
-      dplyr::select(-dplyr::any_of(var_names_dfs$well_plate)) %>% 
-      dplyr::select(cell_id, dplyr::all_of(var_names_dfs$tracks), dplyr::everything())
-    
-    object <- setTracksDf(object, df = tracks_df)
-    
-    return(object)
-    
-  })
-
-
 count_valid_dirs <- function(vec){
   
   not_na <- !base::is.na(vec)
@@ -185,6 +134,50 @@ data_status_by_well <- function(vec){
   
   
 }
+
+#' @rdname selectWells
+#' @export
+
+deselectWells <- function(df, wells = NULL){
+  
+  UseMethod(generic = "deselectWells", object = df)
+  
+}
+
+#' @rdname selectWells
+#' @export
+
+deselectWells.layout_df <- function(df, wells = NULL){
+  
+  if(base::is.null(wells)){
+    
+    wells <- base::unique(df$well)
+    
+  }
+  
+  check_one_of(
+    input = wells, 
+    against = base::unique(df$well), 
+    fdb.fn = "warning", 
+    with.time = FALSE
+  )
+  
+  out <- 
+    dplyr::mutate(
+      .data = df, 
+      selected = dplyr::if_else(
+        condition = well %in% {{wells}},
+        true = FALSE,
+        false = selected
+        )
+    )
+  
+  return(out)
+  
+
+  
+}
+
 
 # e -----------------------------------------------------------------------
 
@@ -263,6 +256,9 @@ setMethod(f = "emptyDataFiles", signature = "Cypro", definition = function(objec
 })
 
 
+
+
+
 # f -----------------------------------------------------------------------
 
 fdb_empty_slot <- function(eval, ref, stop_if_empty = FALSE){
@@ -305,6 +301,24 @@ file_dir_validity <- function(dir){
   
 }
 
+flatten_file_paths <- function(input_dir){
+  
+  root <-
+    stringr::str_remove(input_dir$root, pattern = "\\(") %>% 
+    stringr::str_remove(pattern = "\\)")
+  
+  paths <-
+    purrr::map(.x = input_dir$files, .f = ~ .x) %>% 
+    purrr::map(.f = ~ purrr::discard(.x = .x, .p = ~ .x == "")) %>% 
+    purrr::map(.f = ~ purrr::flatten_chr(.x)) %>% 
+    purrr::map(.f = ~ stringr::str_c(.x, collapse = "/") %>% stringr::str_c(root, ., sep = "/")) %>% 
+    purrr::flatten_chr()
+  
+  
+  return(paths)
+  
+}
+
 flatten_folder_path <- function(input_dir){
   
   root <-
@@ -316,8 +330,25 @@ flatten_folder_path <- function(input_dir){
     purrr::discard(.p = ~ .x == "") %>% 
     stringr::str_c(collapse = "/") %>% 
     stringr::str_c(root, ., sep = "/")
+    
   
   return(path)
+  
+}
+
+flatten_input_dir <- function(input_dir, by_folder){
+  
+  if(base::isTRUE(by_folder)){
+    
+    out <- flatten_folder_path(input_dir = input_dir)
+    
+  } else {
+    
+    out <- flatten_file_paths(input_dir = input_dir)
+    
+  }
+  
+  return(out)
   
 }
 
@@ -377,8 +408,6 @@ setMethod(f = "joinWith", signature = "Cdata", definition = function(object,
                                                                      with_meta = FALSE, 
                                                                      with_well_plate = FALSE){
   
-  base::stopifnot(isOfClass(df, "cypro_df"))
-  
   if(base::isTRUE(with_cluster)){
     
     df <- dplyr::left_join(x = df, y = object@cluster, by = "cell_id")
@@ -402,6 +431,137 @@ setMethod(f = "joinWith", signature = "Cdata", definition = function(object,
   return(df)
   
 })
+
+#' @rdname joinWith
+#' @export
+setMethod(
+  f = "joinWith",
+  signature = "CdataTimeLapseMP",
+  definition = function(object,
+                        df,
+                        with_cluster = FALSE, 
+                        with_meta = FALSE, 
+                        with_well_plate = FALSE){
+  
+  phase <- get_phase(df)
+    
+  if(base::isTRUE(with_cluster)){
+    
+    df <- dplyr::left_join(x = df, y = object@cluster[[phase]], by = "cell_id")
+    
+  }
+  
+  if(base::isTRUE(with_meta)){
+    
+    df <- dplyr::left_join(x = df, y = object@meta[[phase]], by = "cell_id")
+    
+  }
+  
+  if(base::isTRUE(with_well_plate)){
+    
+    df <- dplyr::left_join(x = df, y = object@well_plate, by = "cell_id")
+    
+  }
+  
+  df <- tibble::as_tibble(df)
+  
+  return(df)
+  
+})
+
+# m -----------------------------------------------------------------------
+
+
+#' @title Merge multiple phase conditions
+#' 
+#' @description Merges the list variable \emph{condition}
+#' of multiple phase layout data.frames to a character variable.
+#'
+#' @param df A layout data.frame of class \code{layout_df_mp}.
+#'
+#' @return The input data.frame.
+#' @export
+#'
+merge_condition <- function(df, ...){
+  
+  UseMethod(generic = "merge_condition", object = df)
+  
+}
+
+#' @rdname merge_condition
+#' @export
+merge_condition.layout_df_mp <- function(df, collapse_with = " -> ", phases = NULL){
+  
+  is_vec(phases, mode = "numeric", skip.allow = TRUE, skip.val = NULL)
+  
+  if(base::is.numeric(phases)){
+    
+    base::stopifnot(base::max(phases) <= nPhases(df))
+    
+  } else {
+    
+    phases <- 1:nPhases(df)
+    
+  }
+  
+  df$condition <- 
+    purrr::map_chr(
+      .x = df$condition, 
+      .f = function(conds){
+        
+        conds <- base::as.character(conds[1,phases])
+        
+        conds[conds == "NA"] <- NA_character_
+        
+        if(base::all(base::is.na(conds))){
+          
+          out <- NA_character_
+          
+        } else if(dplyr::n_distinct(conds) == 1 & base::length(phases) > 1){
+          
+          out <- 
+            base::as.character(conds) %>% 
+            base::unique() %>% 
+            stringr::str_c("All: ", ., sep = "")
+          
+        } else {
+          
+          conds <- base::as.character(conds)
+          
+          if(base::length(conds) == 1){
+            
+            out <- conds
+            
+          } else {
+            
+            out <- 
+              stringr::str_c(phases, ". ", conds, sep = "") %>% 
+              stringr::str_c(collapse = collapse_with)
+            
+          }
+          
+        }
+        
+        return(out)
+        
+      }
+    ) 
+  
+  return(df)
+  
+}
+
+#' @rdname mergeCondition
+#' @export
+mergeCondition <- function(df, ...){
+  
+  UseMethod(generic = "mergeCondition", object = df)
+  
+}
+
+#' @rdname merge_condition
+#' @export
+mergeCondition.layout_df_mp <- merge_condition.layout_df_mp
 
 
 # n -----------------------------------------------------------------------
@@ -468,7 +628,7 @@ nestLayoutDf.layout_df <- function(df){
 #' 
 #' Loading modality \emph{by_roi} or \emph{by_well}:
 #' 
-#' Sets \code{directory} in the slot @@directory of well plate 
+#' Sets \code{dir_input} in the slot @@directory of well plate 
 #' denoted in \code{well_plate}. Screens the folder (and subfolders if \code{recursive} = TRUE)
 #' for files that end with the valid file endings denoted in \code{valid_filetypes}. 
 #' Then it uses regular expressions to assign the remaining files to the wells / well rois. 
@@ -483,7 +643,7 @@ nestLayoutDf.layout_df <- function(df){
 
 setGeneric(name = "prepareDataLoading", def = function(object,
                                                        well_plate,
-                                                       directory,
+                                                       dir_input,
                                                        valid_filetypes,
                                                        recursive = FALSE,
                                                        in_shiny = FALSE){
@@ -499,7 +659,7 @@ setMethod(
   signature = "Cypro",
   definition = function(object,
                         well_plate,
-                        directory,
+                        dir_input,
                         valid_filetypes,
                         recursive = FALSE,
                         in_shiny = FALSE){
@@ -512,7 +672,7 @@ setMethod(
         prepare_data_loading_by_roi(
           object = object, 
           well_plate = well_plate,
-          directory = directory, 
+          directory = dir_input, 
           recursive = recursive,
           valid_filetypes = valid_filetypes, 
           in_shiny = in_shiny
@@ -524,7 +684,7 @@ setMethod(
         prepare_data_loading_by_well(
           object = object, 
           well_plate = well_plate, 
-          directory = directory,
+          directory = dir_input,
           recursive = recursive,
           valid_filetypes = valid_filetypes, 
           in_shiny = in_shiny
@@ -536,7 +696,8 @@ setMethod(
         prepare_data_loading_by_well_plate(
           object = object, 
           well_plate = well_plate, 
-          directory = directory, 
+          directories = dir_input, 
+          valid_filetypes = valid_filetypes,
           in_shiny = in_shiny
         )
       
@@ -642,7 +803,11 @@ prepare_data_loading_by_roi <- function(object,
   well_plate_obj@directory <- directory
   well_plate_obj@files <- file_list
   well_plate_obj@filetypes <- valid_filetypes
-  well_plate_obj@layout <- setDataStatus(layout_df) %>% nestLayoutDf()
+  
+  layout_df <- setDataStatus(layout_df) %>% nestLayoutDf()
+  
+  well_plate_obj <- setLayoutDf(object = well_plate_obj, layout_df = layout_df)
+  
   well_plate_obj@loading_modality <- "by_roi"
   well_plate_obj@recursive <- recursive
   
@@ -736,9 +901,9 @@ prepare_data_loading_by_well <- function(object,
     file_list[[well]] <- 
       methods::new(
         Class = "DataFile", 
-        directory = purrr::flatten_chr(well_roi_df$file_dir),
-        file_status = base::as.character(well_roi_df$file_status),
-        loading_modality = "by_roi",
+        directory = purrr::flatten_chr(well_df$file_dir),
+        file_status = base::as.character(well_df$file_status),
+        loading_modality = "by_well",
         name = well,
         transferred = FALSE, 
         valid = NA,
@@ -750,7 +915,11 @@ prepare_data_loading_by_well <- function(object,
   well_plate_obj@directory <- directory
   well_plate_obj@files <- file_list
   well_plate_obj@filetypes <- valid_filetypes
-  well_plate_obj@layout <- setDataStatus(layout_df) %>% nestLayoutDf()
+  
+  layout_df <- setDataStatus(layout_df) %>% nestLayoutDf()
+  
+  well_plate_obj <- setLayoutDf(object = well_plate_obj, layout_df = layout_df)
+  
   well_plate_obj@loading_modality <- "by_well"
   well_plate_obj@recursive <- recursive
   
@@ -771,18 +940,35 @@ prepare_data_loading_by_well <- function(object,
 
 prepare_data_loading_by_well_plate <- function(object, 
                                                well_plate, 
-                                               directory, 
+                                               directories, 
+                                               valid_filetypes,
                                                in_shiny = FALSE){
   
-  if(!stringr::str_detect(directory, pattern = filetypes)){
+  
+  directories <- base::unique(directories)
+  
+  n_dirs <- base::length(directories)
+  
+  valid_filetypes_pattern <- 
+    stringr::str_c(valid_filetypes, collapse = "|") %>% 
+    stringr::str_c("(", ., ")", sep = "")
+  
+  valid_dirs <- stringr::str_detect(directories, pattern = valid_filetypes_pattern)
+  
+  if(!base::all(valid_dirs)){
     
     msg <- 
       glue::glue(
         "Invalid directory assignment for well plate '{well_plate}'. ", 
-        "Assigned directory must lead to a filetype .csv, .txt, .xls or .xlsx."
+        "All assigned directories must lead to a filetype .csv, .txt, .xls or .xlsx."
       )
     
-    give_feedback(msg = msg, fdb.fn = "stop", msg = msg, with.time = FALSE, in.shiny = in_shiny)
+    give_feedback(
+      msg = msg,
+      fdb.fn = "stop",
+      with.time = FALSE,
+      in.shiny = in_shiny
+      )
     
   }
   
@@ -790,24 +976,51 @@ prepare_data_loading_by_well_plate <- function(object,
   
   layout_df <- getLayoutDf(well_plate_obj)
   
-  layout_df$file_dir <- directory
-  layout_df$file_status <- "Valid"
+  if(n_dirs > 1){
+    
+    layout_df$file_dir <- "Multiple"
+    layout_df$file_status <- "Valid"
+    
+  } else {
+    
+    layout_df$file_dir <- directories
+    layout_df$file_status <- "Valid"
+    
+  }
   
-  well_plate_obj@directory <- directory
+  well_plate_obj@directory <- directories
   
-  well_plate_obj@files <- 
-    methods::new(
-      Class = "DataFile", 
-      directory = directory, 
-      loading_modality = "by_well_plate"
-    )
+  for(d in base::seq_along(directories)){
+    
+    dir <- directories[d]
+    
+    fname <- stringr::str_c("file", d, sep = "")
+    
+    well_plate_obj@files[[fname]] <- 
+      methods::new(
+        Class = "DataFile", 
+        directory = dir, 
+        loading_modality = "by_well_plate", 
+        transferred = FALSE,
+        valid = NA,
+        well_plate = well_plate
+      )
+    
+  }
   
-  well_plate_obj@layout <- layout_df
+  well_plate_obj <- 
+    setLayoutDf(
+      object = well_plate_obj,
+      layout_df = ayout_df
+      )
   
   object <- setWellPlate(object, well_plate_object = well_plate_obj)
   
+  ref <- adapt_reference(directories, sg = "directory", pl = "directories")
+  dir_ref <- scollapse(directories)
+  
   give_feedback(
-    msg = glue::glue("File directory '{directory}' set for well plate '{well_plate}'."), 
+    msg = glue::glue("File {ref} '{dir_ref}' set for well plate '{well_plate}'."), 
     fdb.fn = "message", 
     in.shiny = in_shiny, 
     with.time = FALSE
@@ -868,9 +1081,9 @@ setGeneric(name = "processData", def = function(object, verbose = TRUE){
 #' @export
 setMethod(f = "processData", signature = "CyproScreening", definition = function(object, verbose = TRUE){
   
-  object <- 
-    transferData(object, verbose = verbose) %>% 
-    computeModuleVariables(verbose = verbose)
+  object <- transferData(object, verbose = verbose)
+  
+  object <- computeModuleVariables(object, verbose = verbose)
   
   object <- setProgress(object, processData = TRUE)
   
@@ -884,16 +1097,39 @@ setMethod(f = "processData", signature = "CyproScreening", definition = function
 #' @export
 setMethod(f = "processData", signature = "CyproTimeLapse", definition = function(object, verbose = TRUE){
   
-  object <- 
-    transferData(object, verbose = verbose) %>% 
-    completeTracksDf(verbose = verbose) %>% 
-    computeModuleVariables(verbose = verbose) %>% 
-    summarizeDataByCell(verbose = verbose) %>% 
-    summarizeModuleVariables(verbose = verbose)
+  object <- transferData(object, verbose = verbose)
+  
+  object <- completeTracksDf(object, verbose = verbose)
+    
+  object <- computeModuleVariables(object, verbose = verbose)
+  
+  object <- summarizeDataByCell(object, verbose = verbose) 
+    
+  object <- summarizeModuleVariables(object, verbose = verbose)
   
   object <- setProgress(object, processData = TRUE)
   
-  give_feedback(msg = cypro_object_ready, verbose = verbose)
+  cypro_object_ready(object = object, verbose = verbose)
+  
+  return(object)
+  
+})
+
+#' @rdname processData
+#' @export
+setMethod(f = "processData", signature = "CyproTimeLapseMP", definition = function(object, verbose = TRUE){
+  
+  object <- transferData(object, verbose = verbose) 
+  
+  object <- completeTracksDf(object, verbose = verbose) 
+  
+  object <- computeModuleVariables(object, verbose = verbose) 
+  
+  object <- summarizeDataByCell(object, verbose = verbose) 
+  
+  object <- summarizeModuleVariables(object, verbose = verbose)
+  
+  object <- setProgress(object, processData = TRUE)
   
   cypro_object_ready(object = object, verbose = verbose)
   
@@ -904,19 +1140,32 @@ setMethod(f = "processData", signature = "CyproTimeLapse", definition = function
 
 # s -----------------------------------------------------------------------
 
-#' @title Save cypro object
+#' @title Save \code{Cypro} object
 #'
-#' @inherit check_object params
+#' @description Savesa the object under its storage directory. 
+#'
+#' @inherit argument_dummy params
+#' 
+#' @return An invisible TRUE if saving occured without any error.
 #'
 #' @export
 
-saveCyproObject <- function(object, verbose = TRUE){
+setGeneric(name = "saveCyproObject", def = function(object, ...){
+  
+  standardGeneric(f = "saveCyproObject")
+  
+})
+
+#' @rdname saveCyproObject
+#' @export
+
+setMethod(f = "saveCyproObject", signature = "Cypro", function(object, verbose = TRUE){
   
   dir <- object@information$storage_directory
   
   if(!base::is.character(dir)){
     
-    base::stop("No storage directory set. Use `setStorageDirectory()` first.")
+    stop("No storage directory set. Use `setStorageDirectory()` first.")
     
   }
   
@@ -929,7 +1178,71 @@ saveCyproObject <- function(object, verbose = TRUE){
   
   confuns::give_feedback(msg = "Done.", verbose = verbose)
   
+  base::invisible(TRUE)
+  
+})
+
+#' @title Select and deselect wells 
+#' 
+#' @description 
+#' 
+#' \itemize{
+#'  \item{\code{selectWells()}}{ Selects wells by changing the value 
+#'  of variable \emph{selected} of all wells found in input for argument 
+#'  \code{wells} to TRUE.}
+#'  \item{\code{deselectWells()}}{ De selects wells by changing the value 
+#'  of variable \emph{selected} of all wells found in input for argument 
+#'  \code{wells} to FALSE.}
+#'  }
+#'  
+#'  The selection status of wells that are not denoted in the input for argument \code{wells} stays
+#'  as is.
+#' 
+#' @param df Data.frame of class \code{layout_df}.
+#' @param wells Character vector or NULL. If character, denotes wells which 
+#' are supposed to be (de-)selected. If NULL, all wells are considered. 
+#' 
+#' @return A layout data.frame of the same class as the input.
+#' 
+#' @export
+
+selectWells <- function(df, wells = NULL){
+  
+  UseMethod(generic = "selectWells", object = df)
+  
 }
+
+#' @rdname selectWells
+#' @export
+selectWells.layout_df <- function(df, wells = NULL){
+  
+  if(base::is.null(wells)){
+    
+    wells <- base::unique(df$well)
+    
+  }
+  
+  check_one_of(
+    input = wells, 
+    against = base::unique(df$well), 
+    fdb.fn = "warning", 
+    with.time = FALSE
+  )
+  
+  out <- 
+    dplyr::mutate(
+      .data = df, 
+      selected = dplyr::if_else(
+        condition = well %in% {{wells}},
+        true = TRUE,
+        false = selected
+        )
+    )
+  
+  return(out)
+  
+}
+
 
 #' @title Suggest the proper loading function
 #' 
@@ -948,24 +1261,19 @@ setGeneric(name = "suggestLoadingModality", def = function(object){
   
 })
 
-
 #' @rdname suggestLoadingModality
 #' @export
 setMethod(f = "suggestLoadingModality", signature = "Cypro", definition = function(object){
   
   id_assignment <- getVariableAssignmentID(object, drop_na = F)
   
-  optional_vars <- id_assignment[c("well_plate", "well", "roi")]
+  optional_vars <- id_assignment[c("well_plate", "well", "roi", "well_roi")]
   
-  if(base::all(base::is.na(optional_vars))){
+  if(base::all(base::is.na(optional_vars[c("roi", "well_roi")]))) { # no roi information
     
     res <- "by_roi"
     
-  } else if(base::is.na(optional_vars["roi"])) {
-    
-    res <- "by_roi"
-    
-  } else if(base::is.na(optional_vars["well"])){
+  } else if(base::all(base::is.na(optional_vars[c("well", "well_roi")]))){ # no well information
     
     res <- "by_well"
     
@@ -1021,49 +1329,11 @@ setMethod(
   signature = "CyproScreening",
   definition = function(object, verbose = TRUE){
   
-  df <- 
-    getMergedDf(object, verbose = verbose) %>% 
-    as_cypro_df()
+  df <- getMergedDf(object, verbose = verbose) 
   
   object <- emptyDataFiles(object)
   
-  cluster_df <- 
-    dplyr::select(df, cell_id) %>% 
-    dplyr::distinct() 
-  
-  feature_df <- 
-    dplyr::select(df, cell_id, where(base::is.numeric))
-  
-  well_plate_df <-
-    dplyr::select(df, cell_id, dplyr::all_of(var_names_dfs$well_plate)) %>% 
-    dplyr::distinct()
-  
-  layouts_df <- 
-    getWellPlates(object) %>% 
-    purrr::map_df(.f = ~ .x@layout) %>% 
-    dplyr::select(well_plate_name, well, cell_line, condition)
-  
-  grouping_vars <- getAdditionalVariableNames(object)$grouping
-  
-  meta_df <- 
-    dplyr::select(df, cell_id, dplyr::any_of(x = grouping_vars), well_plate_name, well) %>% 
-    dplyr::distinct() %>% 
-    dplyr::left_join(x = ., y = layouts_df, by = c("well_plate_name", "well")) %>% 
-    dplyr::select(-well_plate_name, -well) %>% 
-    dplyr::mutate(cell_line = base::as.factor(cell_line), condition = base::as.factor(condition))
-  
-  give_feedback(msg = "Setting cell data.", verbose = verbose)
-  
-  cdata_object <- 
-    methods::new(
-      Class = "CdataScreening", 
-      cluster = base::as.data.frame(cluster_df),
-      features = base::as.data.frame(feature_df),
-      meta = base::as.data.frame(meta_df),
-      well_plate = base::as.data.frame(well_plate_df)
-    )
-  
-  object@cdata <- cdata_object
+  object <- setCdata(object = object, df = df, verbose = verbose)
   
   return(object)
   
@@ -1072,61 +1342,27 @@ setMethod(
 
 #' @rdname transferData
 #' @export
-setMethod(f = "transferData", signature = "CyproTimeLapse", definition = function(object){
+setMethod(f = "transferData", signature = "CyproTimeLapse", definition = function(object, verbose = TRUE){
   
-  n_frames <- nFrames(object)
-  
-  df <- 
-    getMergedDf(object) %>% 
-    dplyr::filter(frame_num <= n_frames) %>% 
-    as_cypro_df()
+  df <- getMergedDf(object, verbose = verbose) 
   
   object <- emptyDataFiles(object)
   
-  cluster_df <- 
-    dplyr::select(df, cell_id) %>% 
-    dplyr::distinct() 
+  object <- setCdata(object = object, df = df, verbose = verbose)
   
-  stats_df <- 
-    dplyr::select(df, cell_id) %>% 
-    dplyr::distinct() %>% 
-    as_stats_df()
+  return(object)
   
-  tracks_df <- 
-    dplyr::select(df, -dplyr::all_of(var_names_dfs$well_plate)) %>% 
-    as_tracks_df()
+})
+
+#' @rdname transferData
+#' @export
+setMethod(f = "transferData", signature = "CyproTimeLapseMP", definition = function(object, verbose = TRUE){
   
-  well_plate_df <-
-    dplyr::select(df, cell_id, dplyr::all_of(var_names_dfs$well_plate)) %>% 
-    dplyr::distinct() 
+  df <- getMergedDf(object, verbose = verbose)
   
-  layouts_df <- 
-    getWellPlates(object) %>% 
-    purrr::map_df(.f = ~ .x@layout) %>% 
-    dplyr::select(well_plate_name, well, cell_line, condition)
+  object <- emptyDataFiles(object)
   
-  grouping_vars <- getAdditionalVariableNames(object)$grouping
-  
-  meta_df <- 
-    dplyr::select(df, cell_id, dplyr::any_of(x = grouping_vars), well_plate_name, well) %>% 
-    dplyr::distinct() %>% 
-    dplyr::left_join(x = ., y = layouts_df, by = c("well_plate_name", "well")) %>% 
-    dplyr::select(-well_plate_name, -well) %>% 
-    dplyr::mutate(cell_line = base::as.factor(cell_line), condition = base::as.factor(condition))
-  
-  give_feedback(msg = "Setting cell data.", verbose = verbose)
-  
-  cdata_object <- 
-    methods::new(
-      Class = "CdataTimeLapse", 
-      cluster = base::as.data.frame(cluster_df),
-      features_stats = base::as.data.frame(stats_df),
-      features_tracks = base::as.data.frame(tracks_df),
-      meta = base::as.data.frame(meta_df),
-      well_plate = base::as.data.frame(well_plate_df)
-    )
-  
-  object@cdata <- cdata_object
+  object <- setCdata(object = object, df = df, verbose = verbose)
   
   return(object)
   

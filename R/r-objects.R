@@ -393,10 +393,17 @@ loading_modalities <- list("by_roi", "by_well", "by_well_plate", "by_file")
 
 meta_variables <- c("cell_id", "well_plate_name", "well_plate_index", "well", "well_roi")
 
-new_slots <- c("analysis", "compatibility", "default", "information", "name", "well_plates", "version")
-
 numeric_stat_vars <- c("total_dist", "max_dist_fo", "avg_dist_fo", "max_dist_flp",
                        "avg_dist_flp", "max_speed", "avg_speed", "mgr_eff")
+
+
+# n -----------------------------------------------------------------------
+
+new_slots <- c("analysis", "compatibility", "default", "information", "name", "well_plates", "version")
+
+non_data_variables <- 
+  c("frame_added", "frame_itvl", "frame_num", "frame_time",
+    "x_coords", "y_coords")
 
 not_splitted <- c("No treatment", "From beginning")
 
@@ -511,7 +518,8 @@ vars_cypro_df <-
 vars_tracks_df <- 
   list(
     frame_added = "logical", 
-    frame_num = "integer"
+    frame_num = "integer", 
+    frame_time = "integer"
   )
 
 vars_well_plate_df <- 

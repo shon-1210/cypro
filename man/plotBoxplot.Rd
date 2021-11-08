@@ -2,16 +2,16 @@
 % Please edit documentation in R/plot-statistics.R
 \name{plotBoxplot}
 \alias{plotBoxplot}
-\alias{plotDensityplot}
-\alias{plotHistogram}
-\alias{plotRidgeplot}
-\alias{plotViolinplot}
+\alias{plotBoxplot,CyproScreening-method}
+\alias{plotBoxplot,CyproTimeLapse-method}
+\alias{plotBoxplot,CyproTimeLapseMP-method}
 \title{Plot numeric distribution and statistical tests}
 \usage{
-plotBoxplot(
+plotBoxplot(object, ...)
+
+\S4method{plotBoxplot}{CyproScreening}(
   object,
-  variables,
-  phase = NULL,
+  features,
   across = NULL,
   across_subset = NULL,
   relevel = TRUE,
@@ -36,60 +36,9 @@ plotBoxplot(
   ...
 )
 
-plotDensityplot(
+\S4method{plotBoxplot}{CyproTimeLapse}(
   object,
-  variables,
-  phase = NULL,
-  across = NULL,
-  across_subset = NULL,
-  relevel = NULL,
-  clrp = "milo",
-  clrp_adjust = NULL,
-  display_facets = TRUE,
-  scales = "free",
-  nrow = NULL,
-  ncol = NULL,
-  verbose = TRUE,
-  ...
-)
-
-plotHistogram(
-  object,
-  variables,
-  phase = NULL,
-  across = NULL,
-  across_subset = NULL,
-  relevel = TRUE,
-  clrp = "milo",
-  clrp_adjust = NULL,
-  scales = "free",
-  nrow = NULL,
-  ncol = NULL,
-  verbose = TRUE,
-  ...
-)
-
-plotRidgeplot(
-  object,
-  variables,
-  phase = NULL,
-  across = NULL,
-  across_subset = NULL,
-  relevel = TRUE,
-  alpha = 0.8,
-  clrp = "milo",
-  clrp_adjust = NULL,
-  scales = "free",
-  nrow = NULL,
-  ncol = NULL,
-  verbose = TRUE,
-  ...
-)
-
-plotViolinplot(
-  object,
-  variables,
-  phase = NULL,
+  features,
   across = NULL,
   across_subset = NULL,
   relevel = TRUE,
@@ -99,8 +48,8 @@ plotViolinplot(
   test_pairwise = NULL,
   ref_group = NULL,
   step_increase = 0.01,
-  display_facets = TRUE,
   vjust = 0,
+  display_facets = TRUE,
   scales = "free",
   nrow = NULL,
   ncol = NULL,
@@ -110,6 +59,34 @@ plotViolinplot(
   pt_num = 100,
   pt_size = 1.25,
   pt_shape = 21,
+  verbose = TRUE,
+  ...
+)
+
+\S4method{plotBoxplot}{CyproTimeLapseMP}(
+  object,
+  features,
+  across = NULL,
+  across_subset = NULL,
+  relevel = TRUE,
+  clrp = "milo",
+  clrp_adjust = NULL,
+  test_groupwise = NULL,
+  test_pairwise = NULL,
+  ref_group = NULL,
+  step_increase = 0.01,
+  vjust = 0,
+  display_facets = TRUE,
+  scales = "free",
+  nrow = NULL,
+  ncol = NULL,
+  display_points = FALSE,
+  pt_alpha = 0.8,
+  pt_clr = "black",
+  pt_num = 100,
+  pt_size = 1.25,
+  pt_shape = 21,
+  phase = NULL,
   verbose = TRUE,
   ...
 )
@@ -117,12 +94,8 @@ plotViolinplot(
 \arguments{
 \item{object}{Any object for whose class a method has been defined.}
 
-\item{phase}{Character or numeric. If character, the ordinal value referring to the phase of interest (e.g. \emph{'first'}, \emph{'second'} etc.).
-referring to the phase of interest or \emph{'all'}. If numeric, the number referring to the phase.
-
-If set to NULL takes the phase denoted as default with \code{adjustDefault()}.
-
-Ignored if the experiment design contains only one phase.}
+\item{...}{Additional arguments given to the respective \code{ggplot2::geom_<plot_type>()}
+function. E.g. \code{plotViolinplot()} relies on \code{ggplot2::geom_violin()}.}
 
 \item{across}{Character value, character vector or NULL (see details for more).
 Specifies the grouping variable of interest.
@@ -198,8 +171,12 @@ the computational progress will be printed.
 
 (Warning messages will always be printed.)}
 
-\item{...}{Additional arguments given to the respective \code{ggplot2::geom_<plot_type>()}
-function. E.g. \code{plotViolinplot()} relies on \code{ggplot2::geom_violin()}.}
+\item{phase}{Character or numeric. If character, the ordinal value referring to the phase of interest (e.g. \emph{'first'}, \emph{'second'} etc.).
+referring to the phase of interest or \emph{'all'}. If numeric, the number referring to the phase.
+
+If set to NULL takes the phase denoted as default with \code{adjustDefault()}.
+
+Ignored if the experiment design contains only one phase.}
 }
 \value{
 

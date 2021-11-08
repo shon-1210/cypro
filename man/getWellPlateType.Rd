@@ -4,6 +4,7 @@
 \alias{getWellPlateType}
 \alias{getWellPlateType,WellPlate-method}
 \alias{getWellPlateType,layout_df-method}
+\alias{getWellPlateType,layout_df_mp-method}
 \title{Obtain well plate type}
 \usage{
 getWellPlateType(object, ...)
@@ -11,6 +12,8 @@ getWellPlateType(object, ...)
 \S4method{getWellPlateType}{WellPlate}(object, ...)
 
 \S4method{getWellPlateType}{layout_df}(object, ...)
+
+\S4method{getWellPlateType}{layout_df_mp}(object, ...)
 }
 \arguments{
 \item{object}{Any object for whose class a method has been defined.}

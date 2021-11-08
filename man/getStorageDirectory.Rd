@@ -3,7 +3,7 @@
 \name{getStorageDirectory}
 \alias{getStorageDirectory}
 \alias{getStorageDirectory,Cypro-method}
-\title{Extract storage directory}
+\title{Obtain storage directory}
 \usage{
 getStorageDirectory(object)
 
@@ -16,6 +16,6 @@ getStorageDirectory(object)
 Character value.
 }
 \description{
-Obtain the directory under which the \code{Cypro} object
+Extract the directory under which the \code{Cypro} object
 is currently stored by default using \code{saveCyproObject()}.
 }

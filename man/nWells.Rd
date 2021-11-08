@@ -3,20 +3,26 @@
 \name{nWells}
 \alias{nWells}
 \alias{nWells,layout_df-method}
+\alias{nWells,layout_df_mp-method}
 \alias{nWells,WellPlate-method}
 \alias{nWellRois}
 \alias{nWellRois,layout_df-method}
+\alias{nWellRois,layout_df_mp-method}
 \title{Number of wells and well rois}
 \usage{
 nWells(object, info_status = info_status_levels)
 
 \S4method{nWells}{layout_df}(object, info_status = info_status_levels)
 
+\S4method{nWells}{layout_df_mp}(object, info_status = info_status_levels)
+
 \S4method{nWells}{WellPlate}(object, info_status = info_status_levels)
 
 nWellRois(object, info_status = info_status_levels)
 
 \S4method{nWellRois}{layout_df}(object, info_status = info_status_levels)
+
+\S4method{nWellRois}{layout_df_mp}(object, info_status = info_status_levels)
 }
 \arguments{
 \item{object}{Any object for whose class a method has been defined.}

@@ -39,6 +39,8 @@ summarize_module_variables_hlpr <- function(object, tracks_df, stats_df, verbose
     
   }
   
+  return(stats_df)
+  
 }
 
 
@@ -86,7 +88,7 @@ summarize_var_total_dist <- function(tracks_df, stats_df, object, ...){
 
 # D -----------------------------------------------------------------------
 
-#' @title Summarize time lapse data
+#' @title Summarize time lapse data by cell id
 #' 
 #' @description Summarizes time lapse data (the \code{tracks_df}) by cell id and sets up 
 #' the \code{stats_df} - the cellular statistics data.frame.
@@ -129,6 +131,161 @@ setMethod(f = "summarizeDataByCell", signature = "CyproTimeLapse", definition = 
   return(object)
   
 })
+
+#' @rdname summarizeDataByCell
+#' @export
+setMethod(f = "summarizeDataByCell", signature = "CyproTimeLapseMP", definition = function(object, verbose = TRUE){
+  
+  give_feedback(
+    msg = "Summarizing time lapse data by cell id.", 
+    verbose = verbose
+  )
+  
+  phases <- getPhases(object)
+  
+  for(p in phases){
+    
+    give_feedback(
+      msg = glue::glue("Working on phase {p}."), 
+      verbose = verbose
+    )
+    
+    tracks_df <- getTracksDf(object, phase = p)
+    
+    smrd_df <- 
+      dplyr::group_by(tracks_df, cell_id) %>%
+      dplyr::select(-dplyr::all_of(var_names_dfs$tracks), -dplyr::any_of(var_names_non_features)) %>% 
+      dplyr::summarize(
+        dplyr::across(
+          .cols = where(base::is.numeric), 
+          .fns = stat_funs, 
+          na.rm = TRUE
+        )
+      ) %>% 
+      magrittr::set_attr(which = "phase", value = p)
+    
+    object <- setStatsDf(object, df = smrd_df, phase = p)
+    
+  }
+  
+  return(object)
+  
+})
+
+
+#' @title Summarize data by well
+#' 
+#' @description Summarizes cell based data by well for every well plate and 
+#' adds the summarized variables to the layout data.frame of every well plate. 
+#'
+#' @inherit argument_dummy params
+#' @param features Character or NULL. If character, selects the numeric 
+#' variables that are summarized. If NULL, all are summarized.
+#' 
+#' @details Summarized data variables that already exist under the same name in the 
+#' layout data.frames are overwritten without asking. 
+#'
+#' @return The input object.
+#' 
+#' @seealso \code{getLayoutVariableNames()}
+#' 
+#' @export
+#'
+setGeneric(name = "summarizeDataByWell", def = function(object, ...){
+  
+  standardGeneric(f = "summarizeDataByWell")
+  
+})
+
+#' @rdname summarizeDataByWell
+#' @export
+setMethod(
+  f = "summarizeDataByWell",
+  signature = "CyproScreening",
+  definition = function(object, summarize_with = "mean", features = NULL, verbose = TRUE){
+    
+    give_feedback(
+      msg = "Summarizing data by well.", 
+      verbose = verbose
+    )
+    
+    check_summarize_with(summarize_with = summarize_with)
+    
+    df <- 
+      getFeatureDf(object, with_well_plate = TRUE) %>% 
+      dplyr::select(-dplyr::any_of(c("well_plat_index"))) %>% 
+      dplyr::select(-dplyr::any_of(non_data_variables))
+    
+    if(base::is.character(features)){
+      
+      df <- 
+        dplyr::select(
+          .data = df,
+          dplyr::all_of(var_names_dfs$well_plate), 
+          dplyr::all_of(features)
+        )
+      
+    }
+    
+    smrd_df <- 
+      dplyr::group_by(df, well_plate_name, well) %>% 
+      dplyr::select_if(.predicate = base::is.numeric) %>% 
+      dplyr::summarise(
+        dplyr::across(
+          .fns = stat_funs[summarize_with], 
+          na.rm = TRUE
+        ), 
+        .groups = "drop"
+      )
+    
+    well_plates <- getWellPlates(object)
+    
+    smrd_features <- 
+      dplyr::select_if(smrd_df, .predicate = base::is.numeric) %>% 
+      base::colnames()
+    
+    for(wp in well_plates){
+      
+      wp_name <- wp@name
+      
+      wp_df <- dplyr::filter(smrd_df, well_plate_name == {{wp_name}})
+      
+      layout_df <- 
+        getLayoutDf(wp) %>% 
+        nestLayoutDf() %>% 
+        dplyr::select(-dplyr::any_of(smrd_features))
+      
+      new_layout_df <- 
+        dplyr::left_join(
+          x = layout_df,
+          y = smrd_df, 
+          by = c("well_plate_name", "well")
+        )
+      
+      wp <- setLayoutDf(object = wp, layout_df = new_layout_df)
+      
+      object <- setWellPlate(object, well_plate_object = wp)
+      
+    }
+    
+    return(object)
+    
+  })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -182,6 +339,43 @@ setMethod(
   
 })
 
+#' @rdname summarizeModuleVariables
+#' @export
+setMethod(
+  f = "summarizeModuleVariables",
+  signature = "CyproTimeLapseMP",
+  definition = function(object, verbose = TRUE){
+    
+    give_feedback(
+      msg = "Checking for analysis module related variables that need to be summarized.",
+      verbose = verbose
+    )
+    
+    phases <- getPhases(object)
+    
+    for(p in phases){
+      
+      tracks_df <- 
+        getTracksDf(object, phase = p) %>% 
+        dplyr::group_by(cell_id)
+      
+      stats_df <- getStatsDf(object, phase = p)
+      
+      stats_df <-
+        summarize_module_variables_hlpr(
+          object = object,
+          stats_df = stats_df,
+          tracks_df = tracks_df, 
+          verbose = verbose
+        )
+      
+      object <- setStatsDf(object, df = stats_df, phase = p)
+      
+    }
+    
+    return(object)
+    
+  })
 
 
 

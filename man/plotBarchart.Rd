@@ -2,12 +2,15 @@
 % Please edit documentation in R/plot-statistics.R
 \name{plotBarchart}
 \alias{plotBarchart}
-\title{Plot distribution of discrete variables}
+\alias{plotBarchart,Cypro-method}
+\alias{plotBarchart,CyproTimeLapseMP-method}
+\title{Plot distribution of grouping variables}
 \usage{
-plotBarchart(
+plotBarchart(object, ...)
+
+\S4method{plotBarchart}{Cypro}(
   object,
-  variables,
-  phase = NULL,
+  grouping_variables,
   across = NULL,
   across_subset = NULL,
   relevel = TRUE,
@@ -19,20 +22,29 @@ plotBarchart(
   nrow = NULL,
   ...
 )
+
+\S4method{plotBarchart}{CyproTimeLapseMP}(
+  object,
+  grouping_variables,
+  across = NULL,
+  across_subset = NULL,
+  relevel = TRUE,
+  clrp = "milo",
+  clrp_adjust = NULL,
+  position = "stack",
+  display_facets = TRUE,
+  ncol = NULL,
+  nrow = NULL,
+  phase = NULL,
+  verbose = TRUE,
+  ...
+)
 }
 \arguments{
 \item{object}{Any object for whose class a method has been defined.}
 
-\item{variables}{Character vector. The grouping variables whose group count or
-proportion you want to display. Must not contain the feature specified in
-\code{across} - if \code{across} is not set to NULL.}
-
-\item{phase}{Character or numeric. If character, the ordinal value referring to the phase of interest (e.g. \emph{'first'}, \emph{'second'} etc.).
-referring to the phase of interest or \emph{'all'}. If numeric, the number referring to the phase.
-
-If set to NULL takes the phase denoted as default with \code{adjustDefault()}.
-
-Ignored if the experiment design contains only one phase.}
+\item{...}{Additional arguments given to the respective \code{ggplot2::geom_<plot_type>()}
+function. E.g. \code{plotViolinplot()} relies on \code{ggplot2::geom_violin()}.}
 
 \item{across}{Character value, character vector or NULL (see details for more).
 Specifies the grouping variable of interest.
@@ -72,8 +84,21 @@ are displayed.}
 \item{nrow}{Given to \code{ggplot2::facet_wrap()}. Affects the way the subplots
 are displayed.}
 
-\item{...}{Additional arguments given to the respective \code{ggplot2::geom_<plot_type>()}
-function. E.g. \code{plotViolinplot()} relies on \code{ggplot2::geom_violin()}.}
+\item{phase}{Character or numeric. If character, the ordinal value referring to the phase of interest (e.g. \emph{'first'}, \emph{'second'} etc.).
+referring to the phase of interest or \emph{'all'}. If numeric, the number referring to the phase.
+
+If set to NULL takes the phase denoted as default with \code{adjustDefault()}.
+
+Ignored if the experiment design contains only one phase.}
+
+\item{verbose}{Logical. If set to TRUE informative messages regarding
+the computational progress will be printed.
+
+(Warning messages will always be printed.)}
+
+\item{variables}{Character vector. The grouping variables whose group count or
+proportion you want to display. Must not contain the feature specified in
+\code{across} - if \code{across} is not set to NULL.}
 }
 \value{
 

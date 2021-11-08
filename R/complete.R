@@ -164,8 +164,124 @@ complete_stats <- function(track_df, phase, object, summarize_with, verbose){
 
 
 
+#' @title Complete tracks data.frame
+#' 
+#' @description Completes the track data.frame by adding missing \emph{cell_id} +
+#' \emph{frame} observations.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return The input object. 
+#' @export
+setGeneric(name = "completeTracksDf", def = function(object, verbose = TRUE){
+  
+  standardGeneric(f = "completeTracksDf")
+  
+})
+
+#' @rdname completeTracksDf
+#' @export
+setMethod(
+  f = "completeTracksDf",
+  signature = "CyproTimeLapse",
+  definition = function(object, verbose = TRUE){
+    
+    give_feedback(msg = "Completing tracks data.frame by observation.", verbose = verbose)
+    
+    itvl <- getInterval(object)
+    
+    df <- getTracksDf(object, with_well_plate = TRUE)
+    
+    tracks_df <- 
+      complete_tracks_hlpr(
+        object = object,
+        tracks_df = tracks_df, 
+        all_frames = getFrames(object)
+        )
+    
+    object <- setTracksDf(object, df = tracks_df)
+    
+    return(object)
+    
+  })
 
 
+#' @rdname completeTracks
+#' @export
+setMethod(
+  f = "completeTracksDf",
+  signature = "CyproTimeLapseMP",
+  definition = function(object, verbose = TRUE){
+    
+    give_feedback(
+      msg = glue::glue("Completing tracks data.frames of {nPhases(object)} phases by observation."),
+      verbose = verbose
+      )
+    
+    phases <- getPhases(object)
+    
+    for(p in phases){
+      
+      give_feedback(
+        msg = glue::glue("Working on phase {p}."), 
+        verbose = verbose
+      )
+      
+      tracks_df <- 
+        getTracksDf(object, phase = p, with_well_plate = TRUE)
+      
+      all_frames <- getFrames(object, by_phase = TRUE)[[p]]
+      
+      if(p != 1){
+        
+        all_frames <- c(base::min(all_frames)-1, all_frames)
+        
+      }
+      
+      tracks_df_complete <- 
+        complete_tracks_hlpr(
+          object = object,
+          tracks_df = tracks_df,
+          all_frames = all_frames
+          )
+      
+      object <- 
+        setTracksDf(object, df = tracks_df_complete, phase = p)
+      
+    }
+    
+    return(object)
+    
+  })
+
+complete_tracks_hlpr <- function(object, tracks_df, all_frames){ # tracks_df must contain well plate vars
+  
+  itvl <- getInterval(object)
+  
+  df <- dplyr::mutate(tracks_df, frame_added = FALSE)
+  
+  all_cell_ids <- base::unique(df$cell_id)
+  
+  id_df <- 
+    dplyr::select(df, cell_id, well_plate_name, well_plate_index, well, roi) %>% 
+    dplyr::distinct()
+  
+  incomplete_df <- dplyr::select(df, -well_plate_name, -well_plate_index, -well, -roi)
+  
+  complete_tracks_df <- 
+    tidyr::expand_grid(cell_id = {{all_cell_ids}}, frame_num = {{all_frames}}) %>% 
+    dplyr::left_join(x = ., y = incomplete_df, by = c("cell_id", "frame_num")) %>% 
+    dplyr::left_join(x = id_df, y = ., by = "cell_id") %>% 
+    dplyr::mutate(
+      frame_added = tidyr::replace_na(frame_added, replace = TRUE), 
+      frame_time = frame_num * itvl
+    ) %>% 
+    dplyr::select(-dplyr::any_of(var_names_dfs$well_plate)) %>% 
+    dplyr::select(cell_id, dplyr::all_of(var_names_dfs$tracks), dplyr::everything())
+  
+  return(complete_tracks_df)
+  
+}
 
 
 

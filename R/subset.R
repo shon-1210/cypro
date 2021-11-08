@@ -704,7 +704,7 @@ subsetByFilter <- function(object, new_name, ..., phase = NULL, verbose = NULL){
 #' @inherit subsetByGroup params details
 #' @param across Character vector. The grouping variables across which to reduce the cell number. This ensures that 
 #' the randomly selected cells are equally distributed across certain groups. Defaults to \emph{'cell_line'} and \emph{'condition'}.
-#' @param n_by_group Numeric value or NA If numeric, denotes the number of cells that is randomly selected from 
+#' @param n_by_group Numeric value or NA If numeric, denotes the number of cells that are randomly selected from 
 #' every group. 
 #' @param n_total Numeric value or NA If numeric, denotes the final number of cells that the subsetted object is supposed 
 #' to contain. The number of cells that is randomly selected by group is calculated accordingly. 

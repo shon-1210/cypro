@@ -74,7 +74,7 @@ setGeneric(name = "loadData", def = function(object, ...){
 #' @rdname loadData
 #' @export
 
-setMethod(f = "loadData", signature = "Cypro", definition = function(object, process_object = TRUE, verbose = TRUE){
+setMethod(f = "loadData", signature = "Cypro", definition = function(object, process_data = TRUE, verbose = TRUE){
   
   object <- 
     shiny::runApp(
@@ -168,7 +168,7 @@ setMethod(f = "loadData", signature = "Cypro", definition = function(object, pro
   
   object <- setProgress(object, loadData = TRUE, verbose = verbose)
   
-  if(base::isTRUE(process_object)){
+  if(base::isTRUE(process_data)){
     
     object <- processData(object, verbose = verbose)
     

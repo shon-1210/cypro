@@ -8,7 +8,7 @@
 prepareDataLoading(
   object,
   well_plate,
-  directory,
+  dir_input,
   valid_filetypes,
   recursive = FALSE,
   in_shiny = FALSE
@@ -17,7 +17,7 @@ prepareDataLoading(
 \S4method{prepareDataLoading}{Cypro}(
   object,
   well_plate,
-  directory,
+  dir_input,
   valid_filetypes,
   recursive = FALSE,
   in_shiny = FALSE
@@ -38,7 +38,7 @@ Has to be called iteratively for every well plate.
 
 Loading modality \emph{by_roi} or \emph{by_well}:
 
-Sets \code{directory} in the slot @directory of well plate
+Sets \code{dir_input} in the slot @directory of well plate
 denoted in \code{well_plate}. Screens the folder (and subfolders if \code{recursive} = TRUE)
 for files that end with the valid file endings denoted in \code{valid_filetypes}.
 Then it uses regular expressions to assign the remaining files to the wells / well rois.

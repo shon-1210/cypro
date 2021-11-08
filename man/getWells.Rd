@@ -3,9 +3,11 @@
 \name{getWells}
 \alias{getWells}
 \alias{getWells,layout_df-method}
+\alias{getWells,layout_df_mp-method}
 \alias{getWells,WellPlate-method}
 \alias{getWellRois}
 \alias{getWellRois,layout_df-method}
+\alias{getWellRois,layout_df_mp-method}
 \alias{getWellRois,WellPlate-method}
 \title{Obtain wells and well rois}
 \usage{
@@ -13,11 +15,15 @@ getWells(object, info_status = info_status_levels)
 
 \S4method{getWells}{layout_df}(object, info_status = info_status_levels)
 
+\S4method{getWells}{layout_df_mp}(object, info_status = info_status_levels)
+
 \S4method{getWells}{WellPlate}(object, info_status = info_status_level)
 
 getWellRois(object, info_status = info_status_levels)
 
 \S4method{getWellRois}{layout_df}(object, info_status = info_status_levels)
+
+\S4method{getWellRois}{layout_df_mp}(object, info_status = info_status_levels)
 
 \S4method{getWellRois}{WellPlate}(object, info_status = info_status_level)
 }

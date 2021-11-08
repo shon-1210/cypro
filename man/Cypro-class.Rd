@@ -34,7 +34,7 @@ using \code{saveCyproObject()}.}
 
 \item{\code{experiment}}{character. The name of the experiment.}
 
-\item{\code{design}}{ExperimentDesign. An S4-object of class \code{ExperimentDesign}.}
+\item{\code{experiment_design}}{ExperimentDesign. An S4-class of class \code{ExperimentDesign}.}
 
 \item{\code{feature_sets}}{list. Each slot contains a character vector of names of numeric variables forming
 a \emph{feature_set}. Based on these features clustering and dimensional reduction can be
@@ -47,7 +47,7 @@ same \code{Cypro} object.}
 during \code{assignVariables()}. In addition to the variable denotation it can contain
 module specific data, computation or analysis results.}
 
-\item{\code{progress}}{Progress. S4-object of class \code{Progress.}}
+\item{\code{progress}}{Progress. S4-class of class \code{Progress.}}
 
 \item{\code{quality_checks}}{list. Contains results of quality check related results such as outlier detection.}
 

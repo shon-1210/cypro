@@ -1,14 +1,281 @@
 
+# e -----------------------------------------------------------------------
+
+validate_experiment_name <- function(exp_name, stop_if_false = FALSE){
+  
+  validate_simple_string(
+    string = exp_name, 
+    ref_invalid = "experiment name", 
+    stop_if_false = stop_if_false
+  )
+  
+}
+
+# n -----------------------------------------------------------------------
+
+validate_no_overlap_directories <- function(directories, fdb_if_false = FALSE, fdb_fn = "stop", in_shiny = FALSE){
+  
+  used_directories_count <- 
+    base::table(directories) %>% 
+    base::as.data.frame() 
+  
+  overlapping_names <- 
+    magrittr::set_colnames(used_directories_count, value = c("name", "count")) %>% 
+    dplyr::mutate(name = base::as.character(name)) %>% 
+    dplyr::mutate(name = glue::glue("{name} ({count}x)")) %>% 
+    dplyr::filter(count > 1) %>% 
+    dplyr::pull(name)
+  
+  if(base::length(overlapping_names) >= 1){
+    
+    res <- FALSE
+    
+    if(base::isTRUE(fdb_if_false)){
+      
+      ovlp <- confuns::scollapse(overlapping_names)
+      
+      msg <-
+        glue::glue(
+          "Duplicated folder assignment is not allowed. ",
+          "The following {ref} {ref2} several times: ",
+          "'{ovlp}'",
+          ref = confuns::adapt_reference(overlapping_names, "directory", "directories"),
+          ref2 = confuns::adapt_reference(overlapping_names, "exists", "exist")
+        )
+      
+      confuns::give_feedback(
+        msg = msg, 
+        fdb.fn = fdb_fn,
+        with.time = FALSE,
+        in.shiny = in_shiny, 
+        duration = 20
+      )
+      
+    }
+    
+  } else { 
+    
+    res <- TRUE    
+    
+  }
+  
+  return(res)
+  
+}
+
+validate_no_overlap_additional_vars <- function(grouping_vars,
+                                                numeric_vars,
+                                                stop_if_false = TRUE,
+                                                in_shiny = FALSE){
+  
+  used_names_vec <- c(grouping_vars, numeric_vars)
+  
+  used_names_count <- 
+    base::table(used_names_vec) %>% 
+    base::as.data.frame() 
+  
+  overlapping_names <- 
+    magrittr::set_colnames(used_names_count, value = c("name", "count")) %>% 
+    dplyr::mutate(name = base::as.character(name)) %>% 
+    dplyr::mutate(name = glue::glue("{name} ({count}x)")) %>% 
+    dplyr::filter(count > 1) %>% 
+    dplyr::pull(name)
+  
+  if(base::length(overlapping_names) >= 1){
+    
+    res <- FALSE
+    
+    if(base::isTRUE(stop_if_false)){
+      
+      ovlp <- confuns::scollapse(overlapping_names)
+      msg <-
+        glue::glue(
+          "Duplicated variable assignment is not allowed. ",
+          "The following {ref} {ref2} several times: ",
+          "'{ovlp}'",
+          ref = confuns::adapt_reference(overlapping_names, "variable", "variables"),
+          ref2 = confuns::adapt_reference(overlapping_names, "exists", "exist")
+        )
+      
+      confuns::give_feedback(
+        msg = msg, 
+        fdb.fn = "stop",
+        with.time = FALSE,
+        in.shiny = in_shiny, 
+        duration = 20
+      )
+      
+    }
+    
+  } else { 
+    
+    res <- TRUE    
+    
+  }
+  
+  invisible(res)
+  
+}
 
 
 
+# o -----------------------------------------------------------------------
+
+validate_only_one_arg_specified <- function(input){
+  
+  arg_names <- base:::names(input)
+  
+  arg_spec <- purrr::discard(.x = input, .p = base::is.null)
+  
+  if(base::length(arg_spec) > 1){
+    
+    spec_names <- base::names(arg_spec)
+    
+    spec_ref <- scollapse(spec_names)
+    
+    msg <- glue::glue("Only one of arguments '{spec_ref}' must be specified.")
+    
+    give_feedback(
+      msg = msg, 
+      with.time = FALSE, 
+      fdb.fn = "stop"
+    )
+    
+  } else if(base::length(arg_spec) == 0) {
+    
+    arg_ref <- scollapse(arg_names, last = "' or '")
+    
+    msg <- glue::glue("You must specify one of the arguments '{arg_ref}'.")
+    
+    give_feedback(
+      msg = msg,
+      with.time = FALSE, 
+      fdb.fn = "stop"
+    )
+    
+  }
+  
+  return(TRUE)
+  
+}
+
+# s -----------------------------------------------------------------------
+
+validate_simple_string <- function(string, ref_invalid, stop_if_false = FALSE){
+  
+  res <- base::vector(length = 4)
+  
+  res[1] <- base::length(string) >= 1
+  
+  res[2] <- stringr::str_detect(string = string, pattern = "^[a-zA-Z]")
+  
+  string <- stringr::str_remove_all(string = string, pattern = "^ *")
+  string <- stringr::str_remove_all(string = string, pattern = " *$")
+  
+  res[3] <- !stringr::str_detect(string = string, pattern = " ")
+  
+  res[4] <- !stringr::str_detect(string = string, pattern = "-")
+  
+  valid <- base::all(res)
+  
+  if(base::isFALSE(valid)){
+    
+    stop_validation_function(
+      stop_if_false = stop_if_false, 
+      ref_invalid = ref_invalid, 
+      feedback_slot = "invalid_simple_string"
+    )
+    
+  }
+  
+  return(valid)
+  
+}
+
+
+
+# w -----------------------------------------------------------------------
+
+validate_well_plate_name <- function(wp_name, stop_if_false = FALSE){
+  
+  validate_simple_string(
+    string = wp_name, 
+    ref_invalid = "well plate name", 
+    stop_if_false = stop_if_false
+  )
+  
+}
+
+
+
+
+
+
+
+remove_empty_space <- function(string){
+  
+  if(base::is.character(string)){
+    
+    string <- 
+      stringr::str_remove_all(string = string, pattern = "^ *") %>% 
+      stringr::str_remove_all(pattern = " *$")
+  }
+  
+  return(string)
+  
+}
+
+
+
+
+#?
+stop_validation_function <- function(stop_if_false,
+                                     ref_invalid,
+                                     feedback,
+                                     feedback_add = "",
+                                     feedback_slot = NULL){
+  
+  if(base::isTRUE(stop_if_false)){
+    
+    if(base::is.character(feedback_slot)){
+      
+      feedback <- feedback_list[[feedback_slot]]
+      
+    } else {
+      
+      feedback <- ""
+      
+    }
+    
+    msg <- glue::glue("Invalid {ref_invalid}. {feedback} {feedback_add}")
+    
+    confuns::give_feedback(
+      msg = msg, 
+      with.time = FALSE,
+      fdb.fn = "stop", 
+      in_shiny = in_shiny
+    )
+    
+  }
+  
+  
+}
+
+
+
+
+
+
+
+
+# A -----------------------------------------------------------------------
 
 
 # I -----------------------------------------------------------------------
 
 #' @title Validate input data.frame content
 #' 
-#' @description Validates that the validity of an input data.frame. See details 
+#' @description Validates the content of an input data.frame. See details 
 #' for more. 
 #'
 #' @inherit argument_dummy params 
@@ -431,239 +698,6 @@ setMethod(
 
 
 
-# not exported ------------------------------------------------------------
 
 
-
-# e -----------------------------------------------------------------------
-
-validate_experiment_name <- function(exp_name, stop_if_false = FALSE){
-  
-  validate_simple_string(
-    string = exp_name, 
-    ref_invalid = "experiment name", 
-    stop_if_false = stop_if_false
-  )
-  
-}
-
-# n -----------------------------------------------------------------------
-
-validate_no_overlap_directories <- function(directories, fdb_if_false = FALSE, fdb_fn = "stop", in_shiny = FALSE){
-  
-  used_directories_count <- 
-    base::table(directories) %>% 
-    base::as.data.frame() 
-  
-  overlapping_names <- 
-    magrittr::set_colnames(used_directories_count, value = c("name", "count")) %>% 
-    dplyr::mutate(name = base::as.character(name)) %>% 
-    dplyr::mutate(name = glue::glue("{name} ({count}x)")) %>% 
-    dplyr::filter(count > 1) %>% 
-    dplyr::pull(name)
-  
-  if(base::length(overlapping_names) >= 1){
-    
-    res <- FALSE
-    
-    if(base::isTRUE(fdb_if_false)){
-      
-      ovlp <- confuns::scollapse(overlapping_names)
-
-      msg <-
-        glue::glue(
-          "Duplicated folder assignment is not allowed. ",
-          "The following {ref} {ref2} several times: ",
-          "'{ovlp}'",
-          ref = confuns::adapt_reference(overlapping_names, "directory", "directories"),
-          ref2 = confuns::adapt_reference(overlapping_names, "exists", "exist")
-        )
-      
-      confuns::give_feedback(
-        msg = msg, 
-        fdb.fn = fdb_fn,
-        with.time = FALSE,
-        in.shiny = in_shiny, 
-        duration = 20
-      )
-      
-    }
-    
-  } else { 
-    
-    res <- TRUE    
-    
-  }
-  
-  return(res)
-  
-}
-
-validate_no_overlap_additional_vars <- function(grouping_vars,
-                                                numeric_vars,
-                                                stop_if_false = TRUE,
-                                                in_shiny = FALSE){
-  
-  used_names_vec <- c(grouping_vars, numeric_vars)
-  
-  used_names_count <- 
-    base::table(used_names_vec) %>% 
-    base::as.data.frame() 
-  
-  overlapping_names <- 
-    magrittr::set_colnames(used_names_count, value = c("name", "count")) %>% 
-    dplyr::mutate(name = base::as.character(name)) %>% 
-    dplyr::mutate(name = glue::glue("{name} ({count}x)")) %>% 
-    dplyr::filter(count > 1) %>% 
-    dplyr::pull(name)
-  
-  if(base::length(overlapping_names) >= 1){
-    
-    res <- FALSE
-    
-    if(base::isTRUE(stop_if_false)){
-      
-      ovlp <- confuns::scollapse(overlapping_names)
-      
-      if(base::is.character(modules)){
-        
-        modules <- object@modules[modules] 
-        
-      } else {
-        
-        modules <- object@modules
-        
-      } 
-      
-      msg <-
-        glue::glue(
-          "Duplicated variable assignment is not allowed. ",
-          "The following {ref} {ref2} several times: ",
-          "'{ovlp}'",
-          ref = confuns::adapt_reference(overlapping_names, "variable", "variables"),
-          ref2 = confuns::adapt_reference(overlapping_names, "exists", "exist")
-        )
-      
-      confuns::give_feedback(
-        msg = msg, 
-        fdb.fn = "stop",
-        with.time = FALSE,
-        in.shiny = in_shiny, 
-        duration = 20
-      )
-      
-    }
-    
-  } else { 
-    
-    res <- TRUE    
-    
-  }
-  
-  invisible(res)
-  
-}
-
-
-# s -----------------------------------------------------------------------
-
-validate_simple_string <- function(string, ref_invalid, stop_if_false = FALSE){
-  
-  res <- base::vector(length = 4)
-  
-  res[1] <- base::length(string) >= 1
-  
-  res[2] <- stringr::str_detect(string = string, pattern = "^[a-zA-Z]")
-  
-  string <- stringr::str_remove_all(string = string, pattern = "^ *")
-  string <- stringr::str_remove_all(string = string, pattern = " *$")
-  
-  res[3] <- !stringr::str_detect(string = string, pattern = " ")
-  
-  res[4] <- !stringr::str_detect(string = string, pattern = "-")
-  
-  valid <- base::all(res)
-  
-  if(base::isFALSE(valid)){
-    
-    stop_validation_function(
-      stop_if_false = stop_if_false, 
-      ref_invalid = ref_invalid, 
-      feedback_slot = "invalid_simple_string"
-    )
-    
-  }
-  
-  return(valid)
-  
-}
-
-
-
-# w -----------------------------------------------------------------------
-
-validate_well_plate_name <- function(wp_name, stop_if_false = FALSE){
-  
-  validate_simple_string(
-    string = wp_name, 
-    ref_invalid = "well plate name", 
-    stop_if_false = stop_if_false
-  )
-  
-}
-
-
-
-
-
-
-
-remove_empty_space <- function(string){
-  
-  if(base::is.character(string)){
-    
-    string <- 
-      stringr::str_remove_all(string = string, pattern = "^ *") %>% 
-      stringr::str_remove_all(pattern = " *$")
-  }
-
-  return(string)
-  
-}
-
-
-
-
-#?
-stop_validation_function <- function(stop_if_false,
-                                     ref_invalid,
-                                     feedback,
-                                     feedback_add = "",
-                                     feedback_slot = NULL){
-  
-  if(base::isTRUE(stop_if_false)){
-    
-    if(base::is.character(feedback_slot)){
-      
-      feedback <- feedback_list[[feedback_slot]]
-      
-    } else {
-      
-      feedback <- ""
-      
-    }
-    
-    msg <- glue::glue("Invalid {ref_invalid}. {feedback} {feedback_add}")
-      
-    confuns::give_feedback(
-      msg = msg, 
-      with.time = FALSE,
-      fdb.fn = "stop", 
-      in_shiny = in_shiny
-    )
-    
-  }
-  
-  
-}
 

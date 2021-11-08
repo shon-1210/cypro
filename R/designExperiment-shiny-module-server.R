@@ -450,7 +450,7 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
             }
           )
         
-        base::return(output_list[2:n_frames])
+        return(output_list[2:n_frames])
         
       })
       
@@ -532,7 +532,7 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
           
         }
         
-        base::return(output_list)
+        return(output_list)
         
       })
       
@@ -558,12 +558,13 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
             Class = "Progress", 
             designExperiment = FALSE, 
             assignVariables = FALSE, 
-            loadData = FALSE
+            loadData = FALSE, 
+            processData = FALSE
           )
         
         # set up new cypro object
         cypro_object <- 
-          createEmptyCyproObject(
+          createCyproObject(
             class = input$exp_type, 
             exp_name = exp_name, 
             progress = progress
@@ -572,10 +573,15 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
         new_cypro_object(cypro_object)
         
         # set up new experiment design
+        
+        exp_design_class <- 
+          cypro_object@experiment_design %>% 
+          base::class() %>% 
+          base::as.character()
+        
         exp_design <- 
           methods::new(
-            Class = "ExperimentDesign",
-            type = input$exp_type, 
+            Class = exp_design_class,
             experiment = exp_name
           )
         
@@ -675,7 +681,7 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
               
             }
             
-            base::return(res)
+            return(res)
             
             
           }) %>% 
@@ -683,7 +689,6 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
         
         # reset well plate data
         current_layout_df(data.frame())
-        well_plate_list(list())
         
         exp_design <- new_exp_design()
         
@@ -854,12 +859,13 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
         layout_df <- 
           setWellInfo(
             df = current_layout_df(),
-            selected_wells = selected_wells(), 
+            wells = selected_wells(), 
             cell_line = new_cell_line, 
             condition = new_condition, 
             verbose = FALSE, 
             in_shiny = TRUE
-          )
+          ) %>% 
+          deselectWells()
         
         # update layout_df()
         current_layout_df(layout_df)
@@ -884,12 +890,13 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
         layout_df <- 
           setWellInfo(
             df = current_layout_df(), 
-            selected_wells = selected_wells(), 
+            wells = selected_wells(), 
             cell_line = NA, 
             condition = NA, 
             verbose = FALSE, 
             in_shiny = TRUE
-          )
+          ) %>% 
+          deselectWells()
         
         # update layout_df()
         current_layout_df(layout_df)
@@ -1134,7 +1141,7 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
         methods::is(new_cypro_object(), "CyproTimeLapseMP")
         
       })
-      
+
       ###--- imaging set up 
       time_vec <- shiny::reactive({
         
@@ -1167,13 +1174,21 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
         
         shiny::req(new_exp_design())
         
-        new_exp_design()@phases
+        if(isOfClass(new_exp_design(), "ExperimentDesignTimeLapseMP")){
+        
+          out <- new_exp_design()@phases
+          
+        } else {
+          
+          out <- NULL
+          
+        }
+        
+        return(out)
         
       })
       
       n_phases <- shiny::reactive({
-        
-        shiny::req(all_phases())
         
         base::length(all_phases())
         
@@ -1204,7 +1219,7 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
         
       })
       
-      selected_wells_layout_df <- shiny::reactive({
+      selected_wells <- shiny::reactive({
         
         xmin <- input$well_plate_brush$xmin
         xmax <- input$well_plate_brush$xmax
@@ -1222,21 +1237,21 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
         
         if(base::isTRUE(is_selected)){
           
-          selected_wells_layout_df <- 
-            dplyr::filter(current_layout_df(),
-                          dplyr::between(col_num, xmin, xmax),
-                          dplyr::between(row_num, ymin, ymax)
-            )
+          selected_wells <- 
+            dplyr::filter(
+              .data = current_layout_df(),
+              dplyr::between(col_num, xmin, xmax),
+              dplyr::between(row_num, ymin, ymax)
+            ) %>% 
+            dplyr::pull(well)
           
-        } 
+        } else {
+          
+          selected_wells <- character(0)
+          
+        }
         
-        base::return(selected_wells_layout_df)
-        
-      })
-      
-      selected_wells <- shiny::reactive({
-        
-        selected_wells_layout_df()$well
+        return(selected_wells)
         
       })
       
@@ -1283,7 +1298,7 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
           
         }
         
-        base::return(df_res)
+        return(df_res)
         
       })
       
@@ -1309,15 +1324,13 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
             message = "No well plate chosen.")
         )
         
-        plot_well_plate_shiny(
-          wp_df = current_layout_df(),
-          selected_wells_df = selected_wells_layout_df(),
-          aes_fill = "condition",
-          aes_color = "info_status",
-          color_values = status_colors
-        ) +
+        plotWellPlate(
+          object = current_layout_df(),
+          fill_by = "condition",
+          color_by = "info_status", 
+          selected_wells = selected_wells()
+          ) + 
           ggplot2::labs(
-            color = "Info Status",
             subtitle = stringr::str_c("Name:", current_well_plate_name(), sep = " ")
           ) 
         
@@ -1328,13 +1341,10 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
         shiny::req(well_plate_names())
         shiny::req(input$well_plate_select %in% well_plate_names())
         
-        
-        plot_well_plate_shiny(
-          wp_df = layout_df2(),
-          selected_wells_df = NULL,
-          aes_fill = input$well_plate_plot2_color, 
-          aes_color = "info_status",
-          color_values = status_colors
+        plotWellPlate(
+          object = layout_df2(),
+          fill_by = input$well_plate_plot2_color, 
+          color_by = "info_status"
         ) +
           ggplot2::labs(
             color = "Info Status",
@@ -1370,7 +1380,6 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
       })
       
       output$well_plate_folders <- DT::renderDataTable({
-        
         
         df <- 
           data.frame(

@@ -2,12 +2,21 @@
 % Please edit documentation in R/logical-tests-is.R
 \name{isMultiplePhase}
 \alias{isMultiplePhase}
+\alias{isMultiplePhase,data.frame-method}
+\alias{isMultiplePhase,layout_df-method}
+\alias{isMultiplePhase,layout_df_mp-method}
 \alias{isMultiplePhase,WellPlate-method}
 \alias{isMultiplePhase,ExperimentDesign-method}
 \alias{isMultiplePhase,Cypro-method}
 \title{Test multiple phases}
 \usage{
 isMultiplePhase(object, stop_if_false = FALSE)
+
+\S4method{isMultiplePhase}{data.frame}(object, stop_if_false = FALSE)
+
+\S4method{isMultiplePhase}{layout_df}(object, stop_if_false = FALSE)
+
+\S4method{isMultiplePhase}{layout_df_mp}(object, stop_if_false = FALSE)
 
 \S4method{isMultiplePhase}{WellPlate}(object, stop_if_false = FALSE)
 

@@ -6,11 +6,11 @@
 \alias{getWellPlate,Cypro-method}
 \title{Extract well plate}
 \usage{
-getWellPlate(object, well_plate)
+getWellPlate(object, well_plate = NULL)
 
-\S4method{getWellPlate}{ExperimentDesign}(object, well_plate)
+\S4method{getWellPlate}{ExperimentDesign}(object, well_plate = NULL)
 
-\S4method{getWellPlate}{Cypro}(object, well_plate)
+\S4method{getWellPlate}{Cypro}(object, well_plate = NULL)
 }
 \arguments{
 \item{object}{Any object for whose class a method has been defined.}

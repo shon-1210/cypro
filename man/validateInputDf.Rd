@@ -27,7 +27,7 @@ Slots of the list that are occupied by additional variables are named according 
 name in the input data.frame.
 }
 \description{
-Validates that the validity of an input data.frame. See details
+Validates the content of an input data.frame. See details
 for more.
 }
 \details{

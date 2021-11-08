@@ -10,17 +10,10 @@ getFrameTimeSeq(object, ...)
 
 \S4method{getFrameTimeSeq}{CyproTimeLapse}(object)
 
-\S4method{getFrameTimeSeq}{CyproTimeLapseMP}(object, phase = "all", ...)
+\S4method{getFrameTimeSeq}{CyproTimeLapseMP}(object, by_phase = FALSE, ...)
 }
 \arguments{
 \item{object}{Any object for whose class a method has been defined.}
-
-\item{phase}{Character or numeric. If character, the ordinal value referring to the phase of interest (e.g. \emph{'first'}, \emph{'second'} etc.).
-referring to the phase of interest or \emph{'all'}. If numeric, the number referring to the phase.
-
-If set to NULL takes the phase denoted as default with \code{adjustDefault()}.
-
-Ignored if the experiment design contains only one phase.}
 }
 \value{
 A numeric vector.

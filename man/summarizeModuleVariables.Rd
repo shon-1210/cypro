@@ -3,11 +3,14 @@
 \name{summarizeModuleVariables}
 \alias{summarizeModuleVariables}
 \alias{summarizeModuleVariables,CyproTimeLapse-method}
+\alias{summarizeModuleVariables,CyproTimeLapseMP-method}
 \title{Summarize module variables}
 \usage{
 summarizeModuleVariables(object, ...)
 
 \S4method{summarizeModuleVariables}{CyproTimeLapse}(object, verbose = TRUE)
+
+\S4method{summarizeModuleVariables}{CyproTimeLapseMP}(object, verbose = TRUE)
 }
 \arguments{
 \item{object}{Any object for whose class a method has been defined.}

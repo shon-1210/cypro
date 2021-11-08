@@ -3,46 +3,136 @@
 
 
 
+# w -----------------------------------------------------------------------
+
+#' @title Create well ggplot layer
+create_well_add_on <- function(df = NULL, 
+                               plot_type,
+                               alpha, 
+                               fill_by, 
+                               fill, 
+                               size, 
+                               stroke,
+                               color_by,
+                               color,
+                               display_border,
+                               border_color, 
+                               border_size){
+  
+  if(plot_type == "well"){
+    
+    params <- 
+      adjust_ggplot_params(
+        params = list(
+          alpha = alpha,
+          color = color,
+          fill = fill, 
+          stroke = stroke, 
+          size = size, 
+          shape = 21
+        )
+      )
+    
+    well_add_on <- 
+      ggplot2::layer(
+        data = df, geom = "point", stat = "identity", position = "identity", 
+        mapping = ggplot2::aes_string(color = color_by, fill = fill_by), 
+        params = params
+      )
+    
+  } else if(plot_type == "tile"){
+    
+    color_by <- NULL
+    
+    if(base::isTRUE(display_border)){
+      
+      params <- 
+        adjust_ggplot_params(
+          params = list(
+            alpha = alpha,
+            color = border_color,
+            fill = fill, 
+            size = border_size 
+          )
+        )
+      
+      well_add_on <- 
+        ggplot2::layer(
+          data = df, geom = "tile", stat = "identity", position = "identity", 
+          mapping = ggplot2::aes_string(fill = fill_by), 
+          params = params
+        )
+      
+    } else {
+      
+      params <- 
+        adjust_ggplot_params(
+          params = list(
+            alpha = alpha,
+            color = border_color,
+            fill = fill, 
+            size = border_size 
+          )
+        )
+      
+      well_add_on <- 
+        ggplot2::layer(
+          data = df, geom = "tile", stat = "identity", position = "identity", 
+          mapping = ggplot2::aes_string(fill = fill_by), 
+          params = params
+        )
+      
+    }
+    
+  }
+  
+  return(well_add_on)
+  
+}
+
+
 # E -----------------------------------------------------------------------
 
 
-#' @title Create empty Cypro object
+#' @title Create \code{Cypro} object
 #' 
 #' @description Wrapper for manual construction of the \code{Cypro} object. 
 #'
 #' @param class Character value. The Cypro class of the object. 
 #' @param exp_name Character value. The name of the experiment.
-#' @param ... Additional arguments given to the constructor function \code{methods::new()}.
+#' @param ... Additional arguments given to the constructor function
+#'  \code{methods::new(Class = \code{class})}.
 #'
 #' @return An object of the denoted class. 
 #' @export
 #'
-createEmptyCyproObject <- function(class = "CyproTimeLapse", exp_name = "test", ...){
+createCyproObject <- function(class = "CyproTimeLapse", exp_name = "test", ...){
   
-  confuns::check_one_of(
+  check_one_of(
     input = class, 
     against = cypro_classes
   )
   
-  confuns::is_value(x = exp_name, mode = "character")
+  is_value(x = exp_name, mode = "character")
   
-  object <- methods::new(Class = class)
+  object <- 
+    methods::new(
+      Class = class, 
+      experiment = exp_name, 
+      ...
+      )
   
-  object@experiment <- exp_name
-  
-  object@progress <- methods::new(Class = "Progress")
-  
-  if(stringr::str_detect(class, pattern = "TimeLapse")){
+  if(class == "CyproTimeLapseMP"){
+    
+    object@modules <- cypro_modules$time_lapse
+    
+  } else if(class == "CyproTimeLapse"){
     
     object@modules <- cypro_modules$time_lapse
     
   } else if(class == "CyproScreening") {
     
     object@modules <- cypro_modules$screening
-    
-  } else {
-    
-    warning("Can not set module without information about the experiment design.")
     
   }
   

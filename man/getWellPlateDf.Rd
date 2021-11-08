@@ -2,18 +2,18 @@
 % Please edit documentation in R/getN-getZ.R
 \name{getWellPlateDf}
 \alias{getWellPlateDf}
+\alias{getWellPlateDf,Cdata-method}
 \alias{getWellPlateDf,Cypro-method}
 \title{Extract cell well plate data (by cell id)}
 \usage{
 getWellPlateDf(object, ...)
 
-\S4method{getWellPlateDf}{Cypro}(object, well_plate)
+\S4method{getWellPlateDf}{Cdata}(object)
+
+\S4method{getWellPlateDf}{Cypro}(object)
 }
 \arguments{
 \item{object}{Any object for whose class a method has been defined.}
-
-\item{well_plate}{Character value. The name of the well plate of interest. Valid inputs can be obtained
-via \code{getWellPlateNames()}.}
 }
 \value{
 A data.frame.

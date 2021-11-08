@@ -2,13 +2,24 @@
 % Please edit documentation in R/miscellaneous.R
 \name{saveCyproObject}
 \alias{saveCyproObject}
-\title{Save cypro object}
+\alias{saveCyproObject,Cypro-method}
+\title{Save \code{Cypro} object}
 \usage{
-saveCyproObject(object, verbose = TRUE)
+saveCyproObject(object, ...)
+
+\S4method{saveCyproObject}{Cypro}(object, verbose = TRUE)
 }
 \arguments{
-\item{object}{A valid cypro object.}
+\item{object}{Any object for whose class a method has been defined.}
+
+\item{verbose}{Logical. If set to TRUE informative messages regarding
+the computational progress will be printed.
+
+(Warning messages will always be printed.)}
+}
+\value{
+An invisible TRUE if saving occured without any error.
 }
 \description{
-Save cypro object
+Savesa the object under its storage directory.
 }

@@ -13,9 +13,11 @@ getPhases(object)
 \item{object}{Any object for whose class a method has been defined.}
 }
 \value{
-Character vector.
+Numeric vector.
 }
 \description{
-Obtain the names of all phases the experiment design
-contains in form of a vector.
+Obtain a numeric vector of valid phases.
+}
+\seealso{
+\code{getPhaseNames()}
 }

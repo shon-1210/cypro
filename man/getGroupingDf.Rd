@@ -4,7 +4,7 @@
 \alias{getGroupingDf}
 \alias{getGroupingDf,Cypro-method}
 \alias{getGroupingDf,CyproTimeLapseMP-method}
-\title{Extract cell grouping data}
+\title{Obtain cell grouping data}
 \usage{
 getGroupingDf(object, ...)
 
@@ -31,6 +31,6 @@ Ignored if the experiment design contains only one phase.}
 A data.frame.
 }
 \description{
-Obtain a data.frame that contains variables that group
+Extract a data.frame that contains variables that group
 cells.
 }

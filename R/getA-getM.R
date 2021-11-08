@@ -86,80 +86,40 @@ setMethod(
 # C -----------------------------------------------------------------------
 
 
-#' @title Extract cell IDs
+#' @title Obtain cell IDs
 #' 
-#' @description Obtain cell IDs in form of a character vector. 
-#' Using the ... options the data can be subsetted in the style of \code{dplyr::filter()}. 
+#' @description Extracts cell IDs in form of a character vector. 
 #'
 #' @inherit argument_dummy params 
 #' @inherit dplyr::filter params
 #'
-#' @return Character vector of cell ids.
-#' 
-#' @details Cell IDs are extracted from the feature data.frame in case 
-#' of \code{CyproScreening} objects and from the stats data.frame in 
-#' case of \code{CyproTimeLapse(MP)} objects.
+#' @return A character vector.
 #' 
 #' @export
 #'
 
-setGeneric(name = "getCellIds", def = function(object, ...){
+setGeneric(name = "getCellIDs", def = function(object){
   
-  standardGeneric(f = "getCellIds")
-  
-})
-
-#' @rdname getCellIds
-#' @export
-setMethod(f = "getCellIds", signature = "CyproScreening", definition = function(object, ...){
-  
-  filtering <- rlang::enquos(...)
-  
-  cell_ids <- 
-    getFeatureDf(object = object, with_grouping = TRUE) %>% 
-    dplyr::filter(!!!filtering) %>% 
-    dplyr::pull(cell_id) %>% 
-    base::unique()
-  
-  return(cell_ids)
+  standardGeneric(f = "getCellIDs")
   
 })
 
 #' @rdname getCellIds
 #' @export
-setMethod(f = "getCellIds", signature = "CyproTimeLapse", definition = function(object, ...){
+setMethod(f = "getCellIDs", signature = "CyproScreening", definition = function(object){
   
-  filtering <- rlang::enquos(...)
+  cell_ids <- object@information$cell_ids
   
-  cell_ids <- 
-    getStatsDf(object = object, with_grouping = TRUE) %>% 
-    dplyr::filter(!!!filtering) %>% 
-    dplyr::pull(cell_id) %>% 
-    base::unique()
+  if(base::is.null(cell_ids)){
+    
+    stop("No cell IDs set.")
+    
+  }
   
   return(cell_ids)
   
 })
 
-#' @rdname getCellIds
-#' @export
-setMethod(f = "getCellIds", signature = "CyproTimeLapseMP", definition = function(object, phase = NULL, ...){
-  
-  assign_default(object)
-  
-  phase <- check_phase(object, phase = phase, max_phases = 1)
-  
-  filtering <- rlang::enquos(...)
-  
-  cell_ids <- 
-    getStatsDf(object = object, phase = phase, with_grouping = TRUE) %>% 
-    dplyr::filter(!!!filtering) %>% 
-    dplyr::pull(cell_id) %>% 
-    base::unique()
-  
-  return(cell_ids)
-  
-})
 
 
 #' @title Extract cell line and condition names 
@@ -187,7 +147,7 @@ setMethod(f = "getCellLines", signature = "Cypro", function(object){
   
   cell_lines <- 
     getMetaDf(object) %>% 
-    pull(cell_line) %>% 
+    dplyr::pull(cell_line) %>% 
     base::levels()
   
   return(cell_lines)
@@ -500,9 +460,17 @@ setMethod(f = "getDataFileDf", signature = "DataFile", definition = function(obj
     
     id_df <- tibble::tibble(well_plate_name = well_plate_name)
     
-  }
+  } 
   
-  out_df <- base::cbind(id_df, df) 
+  if(ldm == "by_file"){
+    
+    out_df <- df
+    
+  } else {
+    
+    out_df <- base::cbind(id_df, df) 
+    
+  }
   
   return(out_df)
   
@@ -670,51 +638,6 @@ setMethod(f = "getExperimentDesign", signature = "Cypro", definition = function(
 # F -----------------------------------------------------------------------
 
 
-#' @title Obtain frame range
-#' 
-#' @description Extracts a numeric vector from one till the number of 
-#' frames that was denoted during the experiment design steps. 
-#'
-#' @param object 
-#'
-#' @return Numeric vector.
-#' @export
-#'
-setGeneric(name = "getFrames", def = function(object){
-  
-  standardGeneric(f = "getFrames")
-  
-})
-
-#' @rdname getFrames
-#' @export
-setMethod(f = "getFrames", signature = "ExperimentDesign", definition = function(object){
-  
-  object@interval:object@n_frames
-  
-})
-
-#' @rdname getFrames
-#' @export
-setMethod(f = "getFrames", signature = "CyproTimeLapse", definition = function(object){
-  
-  getExperimentDesign(object) %>% 
-    getFrames()
-  
-})
-
-#' @rdname getFrames
-#' @export
-setMethod(f = "getFrames", signature = "CyproTimeLapseMP", definition = function(object){
-  
-  
-  warning("rewrite getFrames.CyproTimeLapseMP()")
-  getExperimentDesign(object) %>% 
-    getFrames()
-  
-})
-
-
 #' @title Extract numeric cell data
 #' 
 #' @description Obtain numeric cell features of screening experiments in 
@@ -740,16 +663,19 @@ setGeneric(name = "getFeatureDf", def = function(object, ...){
 
 #' @rdname getFeatureDf
 #' @export
-setMethod(f = "getFeatureDf", signature = "CdataScreening", definition = function(object, 
-                                                                                  with_cluster = FALSE,
-                                                                                  with_meta = FALSE,
-                                                                                  with_well_plate = FALSE,
-                                                                                  ...){
+setMethod(
+  f = "getFeatureDf",
+  signature = "CdataScreening",
+  definition = function(object, 
+                        with_cluster = FALSE,
+                        with_meta = FALSE,
+                        with_well_plate = FALSE,
+                        ...){
   
   df <- 
     joinWith(
       object = object, 
-      df = as_cypro_df(object@features), 
+      df = object@features, 
       with_cluster = with_cluster, 
       with_meta = with_meta, 
       with_well_plate = with_well_plate, 
@@ -776,7 +702,7 @@ setMethod(
     df <- 
       joinWith(
         object = cdata, 
-        df = as_cypro_df(cdata@features),
+        df = cdata@features,
         with_cluster = with_cluster, 
         with_meta = with_meta, 
         with_well_plate = with_well_plate, 
@@ -788,11 +714,39 @@ setMethod(
 })
 
 
-#' @title Extract a feature set  
+#' @title Obtain names of numeric features
 #' 
-#' @description Obtain defined sets of numeric data variables in form of vectors. 
-#' Useful to conveniently obtain vectors for recurring arguments like 
-#' \code{variables}.
+#' @description Extracts the names of variables stored in 
+#' slot @@features of the \code{Cypro} objects cell data. 
+#' 
+#' @inherit argument_dummy params
+#' 
+#' @return A character vector.
+#' 
+#' @export
+
+setGeneric(name = "getFeatureNames", def = function(object, ...){
+  
+  standardGeneric(f = "getFeatureNames")
+  
+})
+
+#' @rdname getFeatureNames
+#' @export
+setMethod(f = "getFeatureNames", signature = "CyproScreening", definition = function(object, ...){
+
+  getFeatureDf(object) %>% 
+    dplyr::select(-cell_id) %>% 
+    base::colnames() %>% 
+    vselect(...)
+  
+})
+
+
+#' @title Obtain a feature set  
+#' 
+#' @description Extracts the names of features that were pooled 
+#' under the name of the feature set. 
 #'
 #' @inherit argument_dummy params
 #'
@@ -921,6 +875,83 @@ setMethod(f = "getFileDirectories", signature = "WellPlate", function(object){
   
 })
 
+#' @title Obtain frame range
+#' 
+#' @description Extracts a numeric vector from one till the number of 
+#' frames that was denoted during the experiment design steps. 
+#'
+#' @param object 
+#'
+#' @return Numeric vector.
+#' @export
+#'
+setGeneric(name = "getFrames", def = function(object, ...){
+  
+  standardGeneric(f = "getFrames")
+  
+})
+
+#' @rdname getFrames
+#' @export
+setMethod(f = "getFrames", signature = "ExperimentDesign", definition = function(object){
+  
+  1:object@n_frames
+  
+})
+
+#' @rdname getFrames
+#' @export
+setMethod(f = "getFrames", signature = "CyproTimeLapse", definition = function(object){
+  
+  getExperimentDesign(object) %>% 
+    getFrames()
+  
+})
+
+#' @rdname getFrames
+#' @export
+setMethod(f = "getFrames", signature = "CyproTimeLapseMP", definition = function(object, by_phase = FALSE){
+  
+  if(base::isTRUE(by_phase)){
+    
+    phase_starts <- getPhaseStarts(object)
+    phase_names <- base::names(phase_starts)
+    
+    n_frames <- nFrames(object)
+    
+    n_phases <- nPhases(object)
+    
+    out <- list()
+    
+    for(p in 1:n_phases){
+      
+      start <- phase_starts[p]
+      
+      if(p != n_phases){
+        
+        out[[phase_names[p]]] <- start:(phase_starts[p+1]-1)
+        
+      } else {
+        
+        out[[phase_names[p]]] <- start:n_frames
+        
+      }
+      
+    }
+    
+  } else {
+    
+    out <- 
+      getExperimentDesign(object) %>% 
+      getFrames()
+    
+  }
+  
+  return(out)
+  
+})
+
+
 
 #' @title Extract frame time sequence
 #' 
@@ -940,19 +971,35 @@ setGeneric(name = "getFrameTimeSeq", def = function(object, ...){
 
 #' @rdname getFrameTimeSeq
 #' @export
-setMethod(f = "getFrameTimeSeq", signature = "CyproTimeLapse", definition = get_frame_time_seq)
+setMethod(f = "getFrameTimeSeq", signature = "CyproTimeLapse", definition = function(object){
+  
+  getFrames(object) * getInterval(object)
+  
+})
 
 #' @rdname getFrameTimeSeq
 #' @export
-setMethod(f = "getFrameTimeSeq", signature = "CyproTimeLapseMP", definition = get_frame_time_seq_mp)
+setMethod(f = "getFrameTimeSeq", signature = "CyproTimeLapseMP", definition = function(object, by_phase = FALSE, ...){
+  
+  if(base::isTRUE(by_phase)){
+    
+    warning("write that")
+    
+  } else{
+    
+    getFrames(object) * getInterval(object)
+    
+  }
+  
+})
 
 
 
 # G -----------------------------------------------------------------------
 
-#' @title Extract cell grouping data 
+#' @title Obtain cell grouping data 
 #' 
-#' @description Obtain a data.frame that contains variables that group 
+#' @description Extract a data.frame that contains variables that group 
 #' cells.
 #'
 #' @inherit argument_dummy params
@@ -986,7 +1033,9 @@ setMethod(
         x = ., 
         y = getClusterDf(object, verbose = verbose), 
         by = "cell_id"
-      )
+      ) %>% 
+      dplyr::select(cell_id) %>% 
+      purrr::discard(.p = base::is.numeric)
     
     return(group_df)
     
@@ -1016,16 +1065,17 @@ setMethod(
       dplyr::left_join(
         x = ., 
         y = getClusterDf(object, phase = phase, verbose = verbose)
-      )
+      ) %>% 
+      purrr::discard(.p = base::is.numeric)
     
     return(df)
     
   }
 )
 
-#' @title Extract group names a grouping variable contains
+#' @title Obtain group names a grouping variable contains
 #' 
-#' @description Obtain the names of the groups in which a specific grouping
+#' @description Extracts the names of the groups in which a specific grouping
 #' variable groups the cells. Useful to obtain input options for arguments like \code{across_subset}. 
 #'
 #' @inherit argument_dummy params
@@ -1042,16 +1092,77 @@ setGeneric(name = "getGroupNames", def = function(object, ...){
 
 #' @rdname getGroupNames
 #' @export
-setMethod(f = "getGroupNames", signature = "Cypro", definition = get_group_names)
+setMethod(f = "getGroupNames", signature = "Cypro", definition = function(object, grouping_variable, ...){
+  
+  is_value(grouping_variable, mode = "character")
+  
+  group_vec <- 
+    getGroupingDf(object = object, verbose = FALSE) %>% 
+    dplyr::select(-cell_id) %>% 
+    dplyr::pull(var = {{grouping_variable}}) 
+  
+  if(base::is.factor(group_vec)){
+    
+    group_vec <- base::levels(x = group_vec)
+    
+  } else if(base::is.character(group_vec)){
+    
+    group_vec <- base::unique(group_vec)
+    
+  } else {
+    
+    msg <- glue::glue("The result of grouping variable '{grouping_variable}' must be a character vector or a factor.")
+    
+    give_feedback(msg = msg, fdb.fn = "stop")
+    
+  }
+  
+  res <- vselect(input = group_vec, ...)
+  
+  return(res)
+  
+})
 
 #' @rdname getGroupNames
 #' @export
-setMethod(f = "getGroupNames", signature = "CyproTimeLapseMP", definition = get_group_names_mp)
+setMethod(
+  f = "getGroupNames",
+  signature = "CyproTimeLapseMP",
+  definition = function(object, grouping_variable, ...){
+    
+    is_value(grouping_variable, "character")
+    
+    group_vec <- 
+      getGroupingDf(object = object, phase = phase, verbose = FALSE) %>% 
+      dplyr::select(-cell_id) %>% 
+      dplyr::pull(var = {{grouping_variable}}) 
+    
+    if(base::is.factor(group_vec)){
+      
+      group_vec <- base::levels(x = group_vec)
+      
+    } else if(base::is.character(group_vec)){
+      
+      group_vec <- base::unique(group_vec)
+      
+    } else {
+      
+      msg <- glue::glue("The result of grouping variable '{grouping_variable}' must be a character vector or a factor.")
+      
+      give_feedback(msg = msg, fdb.fn = "stop")
+      
+    }
+    
+    res <- vselect(input = group_vec, ...)
+    
+    return(res)
+    
+  })
 
 
-#' @title Extract grouping variable names of cell data
+#' @title Obtain grouping variable names of cell data
 #' 
-#' @description Obtain the names of variables that group cells. Useful to obtain 
+#' @description Extracts the names of variables that group cells. Useful to obtain 
 #' valid input options for recurring arguments like \code{across} or \code{grouping_variable}.
 #' 
 #' @inherit getClusterVariableNames description params
@@ -1075,21 +1186,17 @@ setMethod(
   signature = "Cypro",
   definition = function(object, ..., named = FALSE, verbose = NULL){
     
-    check_object(object)
-    
-    assign_default(object)
-    
     group_df <- 
       getGroupingDf(object, verbose = verbose) %>% 
       dplyr::select(-cell_id)
     
     res <- 
-      get_grouping_variable_names(
+      get_grouping_variable_names_hlpr(
         group_df = group_df, 
         named = named, 
         verbose = verbose, 
       ) %>% 
-      confuns::vselect(input = ., ...)
+      vselect(input = ., ...)
     
     return(res)
     
@@ -1104,10 +1211,6 @@ setMethod(
   signature = "CyproTimeLapseMP", 
   definition = function(object, ..., named = FALSE, phase = NULL, verbose = NULL){
     
-    check_object(object)
-    
-    assign_default(object)
-    
     phase <- check_phase(object, phase = phase, max_phases = 1)
     
     group_df <- 
@@ -1115,19 +1218,62 @@ setMethod(
       dplyr::select(-cell_id)
     
     res <- 
-      get_grouping_variable_names(
+      get_grouping_variable_names_hllpr(
         group_df = group_df, 
         named = named, 
         verbose = verbose, 
         ...
       ) %>% 
-      confuns::vselect(input = ., ...)
+      vselect(input = ., ...)
     
     return(res)
     
   }
 )
 
+get_grouping_variable_names_hlp <- function(group_df, ..., named = FALSE, verbose = TRUE){
+  
+  all_var_names <- 
+    base::colnames(group_df)
+  
+  if(base::isTRUE(named)){
+    
+    sources <- base::vector("character", base::length(all_var_names))
+    
+    cluster_names <-
+      getClusterVariableNames(object, phase = phase, verbose = verbose)
+    
+    meta_names <- getMetaVariableNames(object, phase = phase)
+    
+    wp_names <- getWellPlateVariableNames(object)
+    
+    for(i in base::seq_along(all_var_names)){
+      
+      var <- all_var_names[i]
+      
+      if(var %in% cluster_names){
+        
+        sources[i] <- "cluster"
+        
+      } else if(var %in% meta_names){
+        
+        sources[i] <- "meta"
+        
+      } else if(var %in% wp_names){
+        
+        sources[i] <- "well_plate"
+        
+      }
+      
+    }
+    
+    base::names(all_var_names) <- sources
+    
+  }
+  
+  return(all_var_names)
+  
+}
 
 
 
@@ -1135,61 +1281,116 @@ setMethod(
 
 
 
-#' @title Obtain variable assignment 
+#' @title Obtain frame interval
 #' 
-#' @inherit getVariableAssignment params description
-#' 
-#' @return A character vector. 
-#' 
+#' @description Extracts the interval between the frames as the numeric 
+#' value.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return A numeric value. 
 #' @export
-setGeneric(name = "getVariableAssignmentID", def = function(object, drop_na = FALSE){
+#'
+setGeneric(name = "getInterval", def = function(object){
   
-  standardGeneric(f = "getVariableAssignmentID")
+  standardGeneric(f = "getInterval")
+  
+})
+
+#' @rdname getInterval
+#' @export
+setMethod(f = "getInterval", signature = "ExperimentDesignTimeLapse", definition = function(object){
+  
+  object@interval
+  
+})
+
+#' @rdname getInterval
+#' @export
+setMethod(f = "getInterval", signature = "CyproTimeLapse", definition = function(object){
+  
+  exp_design <- getExperimentDesign(object)
+  
+  out <- getInterval(exp_design)
+  
+  return(out)
   
 })
 
 
-#' @rdname getVariableAssignmentID
+#' @rdname getInterval
 #' @export
-setMethod(
-  f = "getVariableAssignmentID", 
-  signature = "CyproScreening", 
-  definition = function(object, drop_na = FALSE){
-    
-    res <- 
-      getVariableAssignment(
-        object = object,
-        modules = "identification",
-        flatten = TRUE,
-        drop_na = drop_na
-        )
-    
-    return(res)
-    
-  }
-)
+setMethod(f = "getInterval", signature = "CyproTimeLapseMP", definition = function(object){
+  
+  exp_design <- getExperimentDesign(object)
+  
+  out <- getInterval(exp_design)
+  
+  return(out)
+  
+})
 
-
-#' @rdname getVariableAssignmentID
+#' @title Obtain frame interval unit
+#' 
+#' @description Extracts the unit of the interval between the frames as
+#' a character value.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return A character value. 
 #' @export
-setMethod(
-  f = "getVariableAssignmentID", 
-  signature = "CyproTimeLapse", 
-  definition = function(object, drop_na = FALSE){
-    
-    res <- 
-      getVariableAssignment(
-        object = object,
-        modules = "identification_timelapse",
-        flatten = TRUE,
-        drop_na = drop_na
-        )
-    
-    return(res)
-    
-  }
-)
+#'
+setGeneric(name = "getIntervalUnit", def = function(object){
+  
+  standardGeneric(f = "getIntervalUnit")
+  
+})
 
+#' @rdname getIntervalUnit
+#' @export
+setMethod(f = "getIntervalUnit", signature = "ExperimentDesignTimeLapse", definition = function(object){
+  
+  object@interval_unit
+  
+})
+
+#' @rdname getIntervalUnit
+#' @export
+setMethod(f = "getIntervalUnit", signature = "CyproTimeLapse", definition = function(object){
+  
+  ed <- getExperimentDesign(object)
+  
+  out <- getIntervalUnit(ed)
+  
+  return(out)
+  
+})
+
+#' @title Obtain image directories
+#' 
+#' @description Extracts a data.frame in which the added directories
+#' to the original images are set by well-roi. 
+#'
+#' @inherit argument_dummy params
+#'
+#' @return A data.frame.
+#' @export
+#'
+setGeneric(name = "getImageDirDf", def = function(object){
+  
+  standardGeneric(f = "getImageDirDf")
+  
+})
+
+#' @rdname getImageDirDf
+#' @export
+
+setMethod(f = "getImageDirDf", signature = "Cypro", definition = function(object){
+  
+  object@image_directories %>% 
+    tibble::as_tibble()
+  
+})
 
 # L -----------------------------------------------------------------------
 
@@ -1213,16 +1414,15 @@ getLayoutAttributes<- function(df){
 }
 
 
-#' @title Extract well plate layout data.frame
+#' @title Obtain well plate layout data.frame
 #' 
-#' @description Obtain the well plate layout in form of a data.frame.
+#' @description Extracts the well plate layout in form of a data.frame.
 #' 
 #' @inherit argument_dummy params
 #'
 #' @return A \code{layout_df} - data.frame.
 #' @export
 #'
-
 setGeneric(name = "getLayoutDf", def = function(object, ...){
   
   standardGeneric(f = "getLayoutDf")
@@ -1233,18 +1433,25 @@ setGeneric(name = "getLayoutDf", def = function(object, ...){
 #' @export
 setMethod(f = "getLayoutDf", signature = "WellPlate", definition = function(object, ...){
   
-  object@layout
+  df <- 
+    tibble::as_tibble(object@layout) %>% 
+    as_layout_df(well_plate_type = object@type)
+  
+  n_phases <- base::attr(df, which = "n_phases")
+  
+  if(base::is.numeric(n_phases)){
+    
+    df <- as_layout_df_mp(df = df, well_plate_type = object@type, n_phase = n_phases)
+    
+  }
+  
+  return(df)
   
 })
 
 #' @rdname getLayoutDf
 #' @export
-setMethod(f = "getLayoutDf", signature = "ExperimentDesign", definition = function(object, well_plate, ...){
-  
-  confuns::check_one_of(
-    input = well_plate, 
-    against = base::names(object@well_plates)
-  )
+setMethod(f = "getLayoutDf", signature = "ExperimentDesign", definition = function(object, well_plate = NULL, ...){
   
   layout_df <- 
     getWellPlate(object, well_plate = well_plate) %>% 
@@ -1256,12 +1463,9 @@ setMethod(f = "getLayoutDf", signature = "ExperimentDesign", definition = functi
 
 #' @rdname getLayoutDf
 #' @export
-setMethod(f = "getLayoutDf", signature = "Cypro", definition = function(object, well_plate, ...){
+setMethod(f = "getLayoutDf", signature = "Cypro", definition = function(object, well_plate = NULL, ...){
   
-  confuns::check_one_of(
-    input = well_plate, 
-    against = getWellPlateNames(object)
-  )
+  well_plate <- check_wp_name(object, well_plate)
   
   layout_df <- 
     getExperimentDesign(object) %>% 
@@ -1269,8 +1473,59 @@ setMethod(f = "getLayoutDf", signature = "Cypro", definition = function(object, 
   
   return(layout_df)
   
+})
+
+
+#' @title Obtain layout variable names
+#' 
+#' @description Extracts the variable names of the layout data.frame
+#' as a character vector.
+#' 
+#' @inherit argument_dummy params
+#' @param named Logical. If TRUE, the returned vector of names is named by 
+#' the class of the variable.
+#' 
+#' @return Character vector.
+#' 
+#'  @export 
+#' 
+setGeneric(name = "getLayoutVariableNames", def = function(object, named = TRUE, ...){
+  
+  standardGeneric(f = "getLayoutVariableNames")
   
 })
+
+#' @rdname getLayoutVariableNames
+#' @export
+setMethod(f = "getLayoutVariableNames", signature = "layout_df", definition = function(object, named = TRUE){
+  
+  layout_df <- object
+  
+  vnames <- base::names(layout_df)
+  
+  if(base::isTRUE(named)){
+    
+    base::names(vnames) <- 
+      purrr::map_chr(.x = layout_df, .f = base::class)
+    
+  }
+  
+  return(vnames)
+  
+}) 
+
+#' @rdname getLayoutVariableNames
+#' @export
+setMethod(f = "getLayoutVariableNames", signature = "Cypro", definition = function(object, named = TRUE, well_plate = NULL, ...){
+  
+  layout_df <- getLayoutDf(object, well_plate = well_plate)
+  
+  out <- getLayoutVariableNames(layout_df, named = named)
+  
+  return(out)
+  
+})
+
 
 #' @title Obtain loading status summary
 #' 
@@ -1291,45 +1546,93 @@ setGeneric(name = "getLoadingStatusDf", def = function(object, ...){
 
 #' @rdname getLoadingStatusDf
 #' @export
-setMethod(f = "getLoadingStatusDf", signature = "Cypro", definition = function(object, well_plates = NULL, with_transferred = TRUE){
+setMethod(
+  f = "getLoadingStatusDf",
+  signature = "Cypro",
+  definition = function(object,
+                        well_plates = NULL,
+                        with_transferred = TRUE,
+                        n_letters = 40){
   
   well_plate_list <- getWellPlates(object, well_plates = NULL)
   
   out <- list()
   
-  out$well_plate <- base::names(well_plate_list)
-  
-  out$folder <- getWellPlateDirectories(object, well_plates = well_plates)
-  
-  out$valid_files <- 
-    purrr::map_int(.x = well_plate_list, .f = ~ base::length(.x@files)) 
-  
-  out$expected_files <- 
-    purrr::map_int(.x = well_plate_list, .f = nExpectedFiles)
-  
-  out$ambiguous_files <- 
-    purrr::map_int(.x = well_plate_list, .f = nAmbiguousFiles)
-  
-  out$loaded_files <- 
-    purrr::map_int(
-      .x = well_plate_list,
-      .f = ~ purrr::keep(.x = .x@files, .p = ~ containsData(.x)) %>% base::length()
-      )
-  
-  if(base::isTRUE(with_transferred)){
+  if(byFolder(object)){
     
-    out$transferred_files <- 
+    out$well_plate <- base::names(well_plate_list)
+    
+    out$folder <- getWellPlateDirectories(object, well_plates = well_plates)
+    
+    out$valid_files <- 
+      purrr::map_int(.x = well_plate_list, .f = ~ base::length(.x@files)) 
+    
+    out$expected_files <- 
+      purrr::map_int(.x = well_plate_list, .f = nExpectedFiles)
+    
+    out$ambiguous_files <- 
+      purrr::map_int(.x = well_plate_list, .f = nAmbiguousFiles)
+    
+    out$loaded_files <- 
       purrr::map_int(
-        .x = well_plate_list, 
-        .f = ~ purrr::keep(.x = .x@files, .p = ~ base::isTRUE(.x@transferred)) %>% base::length()
+        .x = well_plate_list,
+        .f = ~ purrr::keep(.x = .x@files, .p = ~ containsData(.x)) %>% base::length()
       )
+    
+    if(base::isTRUE(with_transferred)){
+      
+      out$transferred_files <- 
+        purrr::map_int(
+          .x = well_plate_list, 
+          .f = ~ purrr::keep(.x = .x@files, .p = ~ base::isTRUE(.x@transferred)) %>% base::length()
+        )
+      
+    }
+    
+    df <- 
+      base::as.data.frame(out) %>% 
+      tibble::remove_rownames() %>% 
+      tibble::as_tibble()
+    
+  } else if(byWellPlate(object)){
+    
+    df <- 
+      purrr::map(.x = well_plate_list, .f = ~ .x@files) %>% 
+      purrr::flatten() %>% 
+      purrr::map_df(.f = function(data_file){
+      
+        pattern <- stringr::str_c(".{1,", n_letters, "}$", sep = "")
+        
+        dir <- 
+          purrr::map_chr(
+            .x = data_file@directory,
+            .f = ~ stringr::str_extract(.x, pattern = pattern)
+            ) %>% 
+          stringr::str_c("...~", .)
+        
+        df <- 
+          tibble::tibble(
+            well_plate = data_file@well_plate, 
+            directory = dir,
+            loaded = containsData(data_file)
+            )
+        
+        if(base::isTRUE(with_transferred)){
+          
+          df$transferred = data_file@transferred
+          
+        }
+        
+        return(df)
+      
+    }) %>% 
+      tibble::as_tibble()
+    
+  } else {
+      
+    df <- data.frame()
     
   }
-  
-  df <- 
-    base::as.data.frame(out) %>% 
-    tibble::remove_rownames() %>% 
-    tibble::as_tibble()
   
   return(df)
   
@@ -1346,6 +1649,10 @@ setMethod(f = "getLoadingStatusDf", signature = "Cypro", definition = function(o
 #' that contain data and that do not contain errors to a single data.frame. 
 #' 
 #' @inherit argument_dummy params
+#' 
+#' @details The returned data.frame contains the complete data set including 
+#' id-, numeric-, -meta, -well plate and cluster variables. It is then split 
+#' into the slots of \code{Cdata} object via \code{setCdataContent()}.
 #' 
 #' @return A data.frame of class \code{cypro_df}.
 #' 
@@ -1415,7 +1722,6 @@ setMethod(f = "getMergedDf", signature = "Cypro", definition = function(object, 
     
   }) %>% 
     dplyr::left_join(x = ., y = getWellPlateIndices(object), by = "well_plate_name") %>% 
-    dplyr::mutate(frame_added = FALSE) %>% 
     dplyr::mutate(
       cell_id = make_cell_id(
         cell_id = cell_id, 
@@ -1451,7 +1757,7 @@ setMethod(f = "getMergedDf", signature = "Cypro", definition = function(object, 
     
   }
   
-  merged_df <- as_cypro_df(merged_df)
+  merged_df <- merged_df
   
   return(merged_df)
   
@@ -1561,17 +1867,13 @@ setGeneric(name = "getMetaVariableNames", def = function(object, ...){
 setMethod(
   f = "getMetaVariableNames",
   signature = "Cypro",
-  definition = function(object, ..., named = FALSE, verbose = NULL){
-    
-    check_object(object)
-    
-    assign_default(object)
+  definition = function(object, ..., verbose = NULL){
     
     res <- 
       getMetaDf(object) %>% 
       dplyr::select(-cell_id) %>% 
-      base::colnames() %>% 
-      confuns::vselect(input = ., ...)
+      dplyr::select(...) %>% 
+      base::colnames() 
     
     return(res)
     
@@ -1586,17 +1888,13 @@ setMethod(
   signature = "CyproTimeLapseMP", 
   definition = function(object, ..., named = FALSE, phase = NULL, verbose = NULL){
     
-    check_object(object)
-    
-    assign_default(object)
-    
     phase <- check_phase(object, phase = phase, max_phases = 1)
     
     res <- 
       getMetaDf(object, verbose = TRUE, phase = phase) %>% 
       dplyr::select(-cell_id) %>% 
-      base::colnames() %>% 
-      confuns::vselect(input = ., ...)
+      dplyr::select(...) %>% 
+      base::colnames() 
     
     return(res)
     

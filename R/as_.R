@@ -111,7 +111,7 @@ as_cypro_df.data.frame <- function(df){
 #' @export
 #'
 
-as_layout_df <- function(df, well_plate_type){
+as_layout_df <- function(df, well_plate_type = NULL){
   
   UseMethod(generic = "as_layout_df", object = df)
   
@@ -119,7 +119,7 @@ as_layout_df <- function(df, well_plate_type){
 
 #' @rdname as_layout_df
 #' @export
-as_layout_df_mp <- function(df, well_plate_type, n_phases){
+as_layout_df_mp <- function(df, well_plate_type = NULL, n_phases = NULL){
   
   UseMethod(generic = "as_layout_df_mp")
   
@@ -127,9 +127,21 @@ as_layout_df_mp <- function(df, well_plate_type, n_phases){
 
 #' @rdname as_layout_df
 #' @export
-as_layout_df.data.frame <- function(df, well_plate_type){
+as_layout_df.data.frame <- function(df, well_plate_type = NULL){
   
   is_value(well_plate_type, mode = "character")
+  
+  if(base::is.null(well_plate_type)){
+    
+    well_plate_type <- base::attr(df, which = "well_plate_type")
+    
+    if(base::is.null(well_plate_type)){
+      
+      stop("Please specify argument 'well_plate_type'.")
+      
+    }
+    
+  }
   
   check_one_of(
     input = well_plate_type, 
@@ -152,7 +164,7 @@ as_layout_df.data.frame <- function(df, well_plate_type){
 
 #' @rdname as_layout_df
 #' @export
-as_layout_df_mp.layout_df <- function(df, well_plate_type = NULL, n_phases){
+as_layout_df_mp.layout_df <- function(df, well_plate_type = NULL, n_phases = NULL){
   
   is_value(well_plate_type, mode = "character", skip.allow = TRUE, skip.val = NULL)
   is_value(n_phases, mode = "numeric")
@@ -165,7 +177,7 @@ as_layout_df_mp.layout_df <- function(df, well_plate_type = NULL, n_phases){
   
   if(!base::is.character(well_plate_type)){
     
-    wpt_set <- base::attr(x = layout_df, which = "well_plate_type")
+    wpt_set <- base::attr(x = df, which = "well_plate_type")
     
     if(!base::is.character(wpt_set)){
       
@@ -180,11 +192,29 @@ as_layout_df_mp.layout_df <- function(df, well_plate_type = NULL, n_phases){
       against = well_plate_info$type
     )
     
-    base::attr(x = layout_df, which = "well_plate_type") <- well_plate_type
+    base::attr(x = df, which = "well_plate_type") <- well_plate_type
     
   }
   
-  base::attr(df, which = "n_phases") <- n_phases
+  if(!base::is.numeric(n_phases)){
+    
+    n_phases <- base::attr(x = df, which = "n_phases")
+    
+    if(base::is.null(n_phases)){
+      
+      stop("Please specify argument 'n_phases'.")
+      
+    } else {
+      
+      # already set 
+      
+    }
+    
+  } else {
+    
+    base::attr(df, which = "n_phases") <- n_phases
+    
+  }
   
   return(df)
   

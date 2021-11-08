@@ -38,6 +38,35 @@ setMethod(f = "nAmbiguousFiles", signature = "WellPlate", definition = function(
 
 # C -----------------------------------------------------------------------
 
+
+#' @title Number of cells
+#' 
+#' @description Returns the number of cells the \code{Cypro} object
+#' contains data about. 
+#' 
+#' @inherit argument_dummy params
+#' 
+#' @return Numeric value.
+#' 
+#' @export
+setGeneric(name = "nCells", def = function(object){
+  
+  standardGeneric(f = "nCells")
+  
+})
+
+#' @rdname nCells
+#' @export
+setMethod(f = "nCells", signature = "Cypro", definition = function(object){
+  
+  ids <- getCellIDs(object)
+  
+  out <- base::length(ids)
+  
+  return(out)
+  
+})
+
 #' @title Number of miscellaneous content
 #' 
 #' @description These functions return a numeric value describing the number
@@ -50,39 +79,6 @@ setMethod(f = "nAmbiguousFiles", signature = "WellPlate", definition = function(
 #' @return A numeric value. If \code{across} is specified a data.frame.
 #' @export
 #'
-
-nCells <- function(object, across = NULL, drop_na = FALSE, phase = NULL, ...){
-  
-  check_object(object)
-  
-  assign_default(object)
-  
-  confuns::is_value(x = across, mode = "character", skip.all = TRUE, skip.val = NULL)
-  
-  phase <- check_phase(object, phase = phase, max_phase = 1)
-  
-  stat_df <- getStatsDf(object, drop_na = drop_na, phase = phase, ...)
-  
-  if(base::is.null(across)){
-    
-    res <- base::nrow(stat_df)
-    
-  } else if(base::is.character(across)){
- 
-    confuns::check_one_of(
-      input = across, 
-      against = getGroupingVariableNames(object, phase = phase)
-    )
-    
-    res <- 
-      dplyr::group_by(stat_df, dplyr::across(.cols = dplyr::all_of(across))) %>% 
-      dplyr::tally()
-    
-  }
-  
-  return(res)
-  
-}
 
 #' @rdname nCells
 #' @export
@@ -326,6 +322,41 @@ nMissingValuesStats <- function(object, phase = NULL){
 }
 
 
+#' @title Number of phases
+#' 
+#' @description Returns the number of phases the experiment
+#' design determines as a numeric value. 
+#'
+#' @inherit argument_dummy params
+#'
+#' @return A numeric value
+#' @export
+#'
+
+setGeneric(name = "nPhases", def = function(object){
+  
+  standardGeneric(f = "nPhases")
+  
+})
+
+#' @rdname nPhases
+#' @export
+setMethod(f = "nPhases", signature = "layout_df_mp", definition = function(object){
+  
+  base::attr(x = object, which = "n_phases")
+  
+})
+#' @rdname nPhases
+#' @export
+setMethod(f = "nPhases", signature = "CyproTimeLapseMP", definition = function(object){
+  
+  getPhaseStarts(object) %>% 
+    base::length()
+  
+})
+
+
+
 # R -----------------------------------------------------------------------
 
 #' @title Number of regions of interest
@@ -365,6 +396,29 @@ setMethod(f = "nRois", signature = "layout_df", function(object){
   
 })
 
+
+#' @title Number of subsets
+#' 
+#' @description Returns the number of times the \code{Cypro}
+#' object has undergone subsetting.
+#' 
+#' @inherit argument_dummy params
+#' 
+#' @return Numeric value.
+#' 
+setGeneric(name = "nSubsets", def = function(object){
+  
+  standardGeneric(f = "nSubsets")
+  
+}) 
+
+#' @rdname nSubsets
+#' @export
+setMethod(f = "nSubsets", signature = "Cypro", definition = function(object){
+  
+  base::length(object@subsets)
+  
+})
 
 
 # W -----------------------------------------------------------------------
@@ -440,6 +494,16 @@ setMethod(f = "nWells", signature = "layout_df", definition = function(object, i
 
 #' @rdname nWells
 #' @export
+setMethod(f = "nWells", signature = "layout_df_mp", definition = function(object, info_status = info_status_levels){
+  
+  df <- nestLayoutDf(object)
+  
+  base::nrow(df[df$info_status %in% info_status, ])
+  
+})
+
+#' @rdname nWells
+#' @export
 setMethod(f = "nWells", signature = "WellPlate", definition = function(object, info_status = info_status_levels){
   
   df <- getLayoutDf(object)
@@ -459,6 +523,16 @@ setGeneric(name = "nWellRois", def = function(object, info_status = info_status_
 #' @rdname nWells
 #' @export
 setMethod(f = "nWellRois", signature = "layout_df", definition = function(object, info_status = info_status_levels){
+  
+  df <- unnestLayoutDf(object)
+  
+  base::nrow(df[df$info_status %in% info_status, ])
+  
+})
+
+#' @rdname nWells
+#' @export
+setMethod(f = "nWellRois", signature = "layout_df_mp", definition = function(object, info_status = info_status_levels){
   
   df <- unnestLayoutDf(object)
   

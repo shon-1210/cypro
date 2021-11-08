@@ -7,18 +7,18 @@
 \usage{
 loadData(object, ...)
 
-\S4method{loadData}{Cypro}(object, process_object = TRUE, verbose = TRUE)
+\S4method{loadData}{Cypro}(object, process_data = TRUE, verbose = TRUE)
 }
 \arguments{
 \item{object}{Any object for whose class a method has been defined.}
-
-\item{process_object}{Logical. If TRUE (the default), the function \code{processData()}
-is immediately called. If FALSE it has to be called manually.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
+
+\item{process_object}{Logical. If TRUE (the default), the function \code{processData()}
+is immediately called. If FALSE it has to be called manually.}
 }
 \value{
 The input object.

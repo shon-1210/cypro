@@ -4,7 +4,7 @@
 \alias{getGroupingVariableNames}
 \alias{getGroupingVariableNames,Cypro-method}
 \alias{getGroupingVariableNames,CyproTimeLapseMP-method}
-\title{Extract grouping variable names of cell data}
+\title{Obtain grouping variable names of cell data}
 \usage{
 getGroupingVariableNames(object, ...)
 
@@ -43,7 +43,7 @@ Ignored if the experiment design contains only one phase.}
 A character vector.
 }
 \description{
-Obtain the names of variables that group cells. Useful to obtain
+Extracts the names of variables that group cells. Useful to obtain
 valid input options for recurring arguments like \code{across} or \code{grouping_variable}.
 }
 \seealso{

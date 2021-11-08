@@ -1,3 +1,8 @@
+
+
+
+# boxplot -----------------------------------------------------------------
+
 #' @title Plot numeric distribution and statistical tests
 #'
 #' @description These functions display the distribution of numeric
@@ -30,9 +35,20 @@
 #'
 #' @export
 
-plotBoxplot <- function(object,
-                        variables,
-                        phase = NULL,
+setGeneric(name = "plotBoxplot", def = function(object, ...){
+  
+  standardGeneric(f = "plotBoxplot")
+  
+})
+
+
+#' @rdname plotBoxplot
+#' @export
+setMethod(
+  f = "plotBoxplot",
+  signature = "CyproScreening",
+  definition = function(object, 
+                        features,
                         across = NULL,
                         across_subset = NULL,
                         relevel = TRUE,
@@ -55,197 +71,862 @@ plotBoxplot <- function(object,
                         pt_shape = 21,
                         verbose = TRUE,
                         ...){
-  
-  stat_df <- getStatsDf(object = object, phase = phase, verbose = FALSE)
-  
-  confuns::plot_boxplot(df = stat_df,
-                        variables = variables, 
-                        across = across,
-                        across.subset = across_subset,
-                        relevel = relevel,
-                        test.pairwise = test_pairwise,
-                        test.groupwise = test_groupwise,
-                        ref.group = ref_group,
-                        step.increase = step_increase,
-                        vjust = vjust,
-                        scales = scales,
-                        nrow = nrow,
-                        ncol = ncol,
-                        display.facets = display_facets,
-                        display.points = display_points,
-                        pt.alpha = pt_alpha,
-                        pt.color = pt_clr,
-                        pt.num = pt_num,
-                        pt.shape = pt_shape,
-                        pt.size = pt_size,
-                        clrp = clrp,
-                        clrp.adjust = clrp_adjust,
-                        verbose = verbose,
-                        ...)
-  
-}
+    
+    df <- 
+      getFeatureDf(
+        object = object,
+        with_well_plate = TRUE,
+        with_meta = TRUE,
+        with_cluster = TRUE
+      )
+    
+    plot_boxplot(
+      df = df, 
+      variables = features, 
+      across = across,
+      across.subset = across_subset,
+      relevel = relevel,
+      test.pairwise = test_pairwise,
+      test.groupwise = test_groupwise,
+      ref.group = ref_group,
+      step.increase = step_increase,
+      vjust = vjust,
+      scales = scales,
+      nrow = nrow,
+      ncol = ncol,
+      display.facets = display_facets,
+      display.points = display_points,
+      pt.alpha = pt_alpha,
+      pt.color = pt_clr,
+      pt.num = pt_num,
+      pt.shape = pt_shape,
+      pt.size = pt_size,
+      clrp = clrp,
+      clrp.adjust = clrp_adjust,
+      verbose = verbose,
+      ...
+    )
+    
+  })
+
 
 #' @rdname plotBoxplot
 #' @export
-plotDensityplot <- function(object,
-                            variables,
-                            phase = NULL,
-                            across = NULL,
-                            across_subset = NULL,
-                            relevel = NULL,
-                            clrp = "milo",
-                            clrp_adjust = NULL,
-                            display_facets = TRUE,
-                            scales = "free",
-                            nrow = NULL,
-                            ncol = NULL,
-                            verbose = TRUE,
-                            ...){
-  
-  stat_df <- getStatsDf(object = object, phase = phase, verbose = FALSE)
-  
-  confuns::plot_density(df = stat_df,
-                        variables = variables,
-                        across = across,
-                        across.subset = across_subset,
-                        relevel = relevel,
-                        scales = scales,
-                        display.facets = display_facets,
-                        nrow = nrow,
-                        ncol = ncol,
-                        clrp = clrp,
-                        clrp.adjust = clrp_adjust,
-                        verbose = verbose,
-                        ...)
-  
-}
+setMethod(
+  f = "plotBoxplot",
+  signature = "CyproTimeLapse",
+  definition = function(object, 
+                        features,
+                        across = NULL,
+                        across_subset = NULL,
+                        relevel = TRUE,
+                        clrp = "milo",
+                        clrp_adjust = NULL,
+                        test_groupwise = NULL,
+                        test_pairwise = NULL,
+                        ref_group = NULL,
+                        step_increase = 0.01,
+                        vjust = 0,
+                        display_facets = TRUE,
+                        scales = "free",
+                        nrow = NULL,
+                        ncol = NULL,
+                        display_points = FALSE,
+                        pt_alpha = 0.8,
+                        pt_clr = "black",
+                        pt_num = 100,
+                        pt_size = 1.25,
+                        pt_shape = 21,
+                        verbose = TRUE,
+                        ...){
+    
+    df <- 
+      getStatsDf(
+        object = object,
+        with_well_plate = TRUE,
+        with_meta = TRUE,
+        with_cluster = TRUE
+      )
+    
+    plot_boxplot(
+      df = df, 
+      variables = features, 
+      across = across,
+      across.subset = across_subset,
+      relevel = relevel,
+      test.pairwise = test_pairwise,
+      test.groupwise = test_groupwise,
+      ref.group = ref_group,
+      step.increase = step_increase,
+      vjust = vjust,
+      scales = scales,
+      nrow = nrow,
+      ncol = ncol,
+      display.facets = display_facets,
+      display.points = display_points,
+      pt.alpha = pt_alpha,
+      pt.color = pt_clr,
+      pt.num = pt_num,
+      pt.shape = pt_shape,
+      pt.size = pt_size,
+      clrp = clrp,
+      clrp.adjust = clrp_adjust,
+      verbose = verbose,
+      ...
+    )
+    
+  })
 
 #' @rdname plotBoxplot
 #' @export
-plotHistogram <- function(object,
-                          variables,
-                          phase = NULL,
-                          across = NULL,
-                          across_subset = NULL,
-                          relevel = TRUE,
-                          clrp = "milo",
-                          clrp_adjust = NULL,
-                          scales = "free",
-                          nrow = NULL,
-                          ncol = NULL,
-                          verbose = TRUE,
-                          ...){
-  
-  stat_df <- getStatsDf(object = object, phase = phase, verbose = FALSE)
-  
-  confuns::plot_histogram(df = stat_df,
-                          variables = variables,
-                          across = across,
-                          across.subset = across_subset,
-                          relevel = relevel,
-                          scales = scales,
-                          nrow = nrow,
-                          ncol = ncol,
-                          clrp = clrp,
-                          clrp.adjust = clrp_adjust,
-                          verbose = verbose,
-                          ...)
-  
-}
+setMethod(
+  f = "plotBoxplot",
+  signature = "CyproTimeLapseMP",
+  definition = function(object, 
+                        features,
+                        across = NULL,
+                        across_subset = NULL,
+                        relevel = TRUE,
+                        clrp = "milo",
+                        clrp_adjust = NULL,
+                        test_groupwise = NULL,
+                        test_pairwise = NULL,
+                        ref_group = NULL,
+                        step_increase = 0.01,
+                        vjust = 0,
+                        display_facets = TRUE,
+                        scales = "free",
+                        nrow = NULL,
+                        ncol = NULL,
+                        display_points = FALSE,
+                        pt_alpha = 0.8,
+                        pt_clr = "black",
+                        pt_num = 100,
+                        pt_size = 1.25,
+                        pt_shape = 21,
+                        phase = NULL, 
+                        verbose = TRUE,
+                        ...){
+    
+    df <- 
+      getStatsDf(
+        object = object,
+        with_well_plate = TRUE,
+        with_meta = TRUE,
+        with_cluster = TRUE, 
+        phase = phase
+      )
+    
+    plot_boxplot(
+      df = df, 
+      variables = features, 
+      across = across,
+      across.subset = across_subset,
+      relevel = relevel,
+      test.pairwise = test_pairwise,
+      test.groupwise = test_groupwise,
+      ref.group = ref_group,
+      step.increase = step_increase,
+      vjust = vjust,
+      scales = scales,
+      nrow = nrow,
+      ncol = ncol,
+      display.facets = display_facets,
+      display.points = display_points,
+      pt.alpha = pt_alpha,
+      pt.color = pt_clr,
+      pt.num = pt_num,
+      pt.shape = pt_shape,
+      pt.size = pt_size,
+      clrp = clrp,
+      clrp.adjust = clrp_adjust,
+      verbose = verbose,
+      ...
+    )
+    
+  })
 
-#' @rdname plotBoxplot
+# -----
+
+# violinplot --------------------------------------------------------------
+
+#' @title Plot numeric distribution and statistical tests
+#'
+#' @inherit plotBoxplot description params details return
+#'
 #' @export
-plotRidgeplot <- function(object,
-                          variables,
-                          phase = NULL,
-                          across = NULL,
-                          across_subset = NULL,
-                          relevel = TRUE,
-                          alpha = 0.8,
-                          clrp = "milo",
-                          clrp_adjust = NULL,
-                          scales = "free",
-                          nrow = NULL,
-                          ncol = NULL,
-                          verbose = TRUE,
-                          ...){
-  
-  stat_df <- getStatsDf(object = object, phase = phase, verbose = FALSE)
-  
-  confuns::plot_ridgeplot(df = stat_df,
-                          variables = variables,
-                          across = across,
-                          across.subset = across_subset,
-                          relevel = relevel,
-                          scales = scales,
-                          nrow = nrow,
-                          ncol = ncol,
-                          alpha = alpha,
-                          clrp = clrp,
-                          clrp.adjust = clrp_adjust,
-                          verbose = verbose)
-  
-}
 
-#' @rdname plotBoxplot
+setGeneric(name = "plotViolinplot", def = function(object, ...){
+  
+  standardGeneric(f = "plotViolinplot")
+  
+})
+
+
+#' @rdname plotViolinplot
 #' @export
-plotViolinplot <- function(object,
-                           variables,
-                           phase = NULL,
-                           across = NULL,
-                           across_subset = NULL,
-                           relevel = TRUE,
-                           clrp = "milo",
-                           clrp_adjust = NULL,
-                           test_groupwise = NULL,
-                           test_pairwise = NULL,
-                           ref_group = NULL,
-                           step_increase = 0.01,
-                           display_facets = TRUE,
-                           vjust = 0,
-                           scales = "free",
-                           nrow = NULL,
-                           ncol = NULL,
-                           display_points = FALSE,
-                           pt_alpha = 0.8,
-                           pt_clr = "black",
-                           pt_num = 100,
-                           pt_size = 1.25,
-                           pt_shape = 21,
-                           verbose = TRUE,
-                           ...){
-  
-  stat_df <- getStatsDf(object = object, phase = phase, verbose = FALSE)
-  
-  confuns::plot_violin(df = stat_df,
-                       variables = variables,
-                       across = across,
-                       across.subset = across_subset,
-                       relevel = relevel,
-                       test.pairwise = test_pairwise,
-                       test.groupwise = test_groupwise,
-                       ref.group = ref_group,
-                       step.increase = step_increase,
-                       vjust = vjust,
-                       scales = scales,
-                       display.facets = display_facets,
-                       nrow = nrow,
-                       ncol = ncol,
-                       display.points = display_points,
-                       pt.alpha = pt_alpha,
-                       pt.color = pt_clr,
-                       pt.num = pt_num,
-                       pt.shape = pt_shape,
-                       pt.size = pt_size,
-                       clrp = clrp,
-                       clrp.adjust = clrp_adjust,
-                       verbose = verbose,
-                       ...)
-  
-}
+setMethod(
+  f = "plotViolinplot",
+  signature = "CyproScreening",
+  definition = function(object, 
+                        features,
+                        across = NULL,
+                        across_subset = NULL,
+                        relevel = TRUE,
+                        clrp = "milo",
+                        clrp_adjust = NULL,
+                        test_groupwise = NULL,
+                        test_pairwise = NULL,
+                        ref_group = NULL,
+                        step_increase = 0.01,
+                        vjust = 0,
+                        display_facets = TRUE,
+                        scales = "free",
+                        nrow = NULL,
+                        ncol = NULL,
+                        display_points = FALSE,
+                        pt_alpha = 0.8,
+                        pt_clr = "black",
+                        pt_num = 100,
+                        pt_size = 1.25,
+                        pt_shape = 21,
+                        verbose = TRUE,
+                        ...){
+    
+    df <- 
+      getFeatureDf(
+        object = object,
+        with_well_plate = TRUE,
+        with_meta = TRUE,
+        with_cluster = TRUE
+      )
+    
+    plot_violinplot(
+      df = df, 
+      variables = features, 
+      across = across,
+      across.subset = across_subset,
+      relevel = relevel,
+      test.pairwise = test_pairwise,
+      test.groupwise = test_groupwise,
+      ref.group = ref_group,
+      step.increase = step_increase,
+      vjust = vjust,
+      scales = scales,
+      nrow = nrow,
+      ncol = ncol,
+      display.facets = display_facets,
+      display.points = display_points,
+      pt.alpha = pt_alpha,
+      pt.color = pt_clr,
+      pt.num = pt_num,
+      pt.shape = pt_shape,
+      pt.size = pt_size,
+      clrp = clrp,
+      clrp.adjust = clrp_adjust,
+      verbose = verbose,
+      ...
+    )
+    
+  })
 
 
-#' @title Plot distribution of discrete variables
+#' @rdname plotViolinplot
+#' @export
+setMethod(
+  f = "plotViolinplot",
+  signature = "CyproTimeLapse",
+  definition = function(object, 
+                        features,
+                        across = NULL,
+                        across_subset = NULL,
+                        relevel = TRUE,
+                        clrp = "milo",
+                        clrp_adjust = NULL,
+                        test_groupwise = NULL,
+                        test_pairwise = NULL,
+                        ref_group = NULL,
+                        step_increase = 0.01,
+                        vjust = 0,
+                        display_facets = TRUE,
+                        scales = "free",
+                        nrow = NULL,
+                        ncol = NULL,
+                        display_points = FALSE,
+                        pt_alpha = 0.8,
+                        pt_clr = "black",
+                        pt_num = 100,
+                        pt_size = 1.25,
+                        pt_shape = 21,
+                        verbose = TRUE,
+                        ...){
+    
+    df <- 
+      getStatsDf(
+        object = object,
+        with_well_plate = TRUE,
+        with_meta = TRUE,
+        with_cluster = TRUE
+      )
+    
+    plot_violinplot(
+      df = df, 
+      variables = features, 
+      across = across,
+      across.subset = across_subset,
+      relevel = relevel,
+      test.pairwise = test_pairwise,
+      test.groupwise = test_groupwise,
+      ref.group = ref_group,
+      step.increase = step_increase,
+      vjust = vjust,
+      scales = scales,
+      nrow = nrow,
+      ncol = ncol,
+      display.facets = display_facets,
+      display.points = display_points,
+      pt.alpha = pt_alpha,
+      pt.color = pt_clr,
+      pt.num = pt_num,
+      pt.shape = pt_shape,
+      pt.size = pt_size,
+      clrp = clrp,
+      clrp.adjust = clrp_adjust,
+      verbose = verbose,
+      ...
+    )
+    
+  })
+
+#' @rdname plotViolinplot
+#' @export
+setMethod(
+  f = "plotViolinplot",
+  signature = "CyproTimeLapseMP",
+  definition = function(object, 
+                        features,
+                        across = NULL,
+                        across_subset = NULL,
+                        relevel = TRUE,
+                        clrp = "milo",
+                        clrp_adjust = NULL,
+                        test_groupwise = NULL,
+                        test_pairwise = NULL,
+                        ref_group = NULL,
+                        step_increase = 0.01,
+                        vjust = 0,
+                        display_facets = TRUE,
+                        scales = "free",
+                        nrow = NULL,
+                        ncol = NULL,
+                        display_points = FALSE,
+                        pt_alpha = 0.8,
+                        pt_clr = "black",
+                        pt_num = 100,
+                        pt_size = 1.25,
+                        pt_shape = 21,
+                        phase = NULL, 
+                        verbose = TRUE,
+                        ...){
+    
+    df <- 
+      getStatsDf(
+        object = object,
+        with_well_plate = TRUE,
+        with_meta = TRUE,
+        with_cluster = TRUE, 
+        phase = phase
+      )
+    
+    plot_violinplot(
+      df = df, 
+      variables = features, 
+      across = across,
+      across.subset = across_subset,
+      relevel = relevel,
+      test.pairwise = test_pairwise,
+      test.groupwise = test_groupwise,
+      ref.group = ref_group,
+      step.increase = step_increase,
+      vjust = vjust,
+      scales = scales,
+      nrow = nrow,
+      ncol = ncol,
+      display.facets = display_facets,
+      display.points = display_points,
+      pt.alpha = pt_alpha,
+      pt.color = pt_clr,
+      pt.num = pt_num,
+      pt.shape = pt_shape,
+      pt.size = pt_size,
+      clrp = clrp,
+      clrp.adjust = clrp_adjust,
+      verbose = verbose,
+      ...
+    )
+    
+  })
+
+# -----
+
+
+# densityplot -------------------------------------------------------------
+
+#' @title Plot numeric distribution and statistical tests
+#'
+#' @inherit plotBoxplot description params details return
+#'
+#' @export
+
+setGeneric(name = "plotDensityplot", def = function(object, ...){
+  
+  standardGeneric(f = "plotDensityplot")
+  
+})
+
+
+#' @rdname plotDensityplot
+#' @export
+setMethod(
+  f = "plotDensityplot",
+  signature = "CyproScreening",
+  definition = function(object, 
+                        features,
+                        across = NULL,
+                        across_subset = NULL,
+                        relevel = TRUE,
+                        clrp = "milo",
+                        clrp_adjust = NULL,
+                        display_facets = TRUE,
+                        scales = "free",
+                        nrow = NULL,
+                        ncol = NULL,
+                        verbose = TRUE,
+                        ...){
+    
+    df <- 
+      getFeatureDf(
+        object = object,
+        with_well_plate = TRUE,
+        with_meta = TRUE,
+        with_cluster = TRUE
+      )
+    
+    plot_density(
+      df = df, 
+      variables = features, 
+      across = across,
+      across.subset = across_subset,
+      relevel = relevel,
+      scales = scales,
+      nrow = nrow,
+      ncol = ncol,
+      display.facets = display_facets,
+      verbose = verbose,
+      ...
+    )
+    
+  })
+
+
+#' @rdname plotDensityplot
+#' @export
+setMethod(
+  f = "plotDensityplot",
+  signature = "CyproTimeLapse",
+  definition = function(object, 
+                        features,
+                        across = NULL,
+                        across_subset = NULL,
+                        relevel = TRUE,
+                        clrp = "milo",
+                        clrp_adjust = NULL,
+                        display_facets = TRUE,
+                        scales = "free",
+                        nrow = NULL,
+                        ncol = NULL,
+                        verbose = TRUE,
+                        ...){
+    
+    df <- 
+      getStatsDf(
+        object = object,
+        with_well_plate = TRUE,
+        with_meta = TRUE,
+        with_cluster = TRUE
+      )
+    
+    plot_density(
+      df = df, 
+      variables = features, 
+      across = across,
+      across.subset = across_subset,
+      relevel = relevel,
+      scales = scales,
+      nrow = nrow,
+      ncol = ncol,
+      display.facets = display_facets,
+      verbose = verbose,
+      ...
+    )
+    
+  })
+
+#' @rdname plotDensityplot
+#' @export
+setMethod(
+  f = "plotDensityplot",
+  signature = "CyproTimeLapseMP",
+  definition = function(object, 
+                        features,
+                        across = NULL,
+                        across_subset = NULL,
+                        relevel = TRUE,
+                        clrp = "milo",
+                        clrp_adjust = NULL,
+                        display_facets = TRUE,
+                        scales = "free",
+                        nrow = NULL,
+                        ncol = NULL,
+                        phase = NULL, 
+                        verbose = TRUE,
+                        ...){
+    
+    df <- 
+      getStatsDf(
+        object = object,
+        with_well_plate = TRUE,
+        with_meta = TRUE,
+        with_cluster = TRUE, 
+        phase = phase
+      )
+    
+    plot_density(
+      df = df, 
+      variables = features, 
+      across = across,
+      across.subset = across_subset,
+      relevel = relevel,
+      scales = scales,
+      nrow = nrow,
+      ncol = ncol,
+      display.facets = display_facets,
+      verbose = verbose,
+      ...
+    )
+    
+  })
+
+
+# -----
+
+
+# histogram ---------------------------------------------------------------
+
+#' @title Plot numeric distribution and statistical tests
+#'
+#' @inherit plotBoxplot description params details return
+#'
+#' @export
+
+setGeneric(name = "plotHistogram", def = function(object, ...){
+  
+  standardGeneric(f = "plotHistogram")
+  
+})
+
+
+#' @rdname plotHistogram
+#' @export
+setMethod(
+  f = "plotHistogram",
+  signature = "CyproScreening",
+  definition = function(object, 
+                        features,
+                        across = NULL,
+                        across_subset = NULL,
+                        relevel = TRUE,
+                        clrp = "milo",
+                        clrp_adjust = NULL,
+                        display_facets = TRUE,
+                        scales = "free",
+                        nrow = NULL,
+                        ncol = NULL,
+                        verbose = TRUE,
+                        ...){
+    
+    df <- 
+      getFeatureDf(
+        object = object,
+        with_well_plate = TRUE,
+        with_meta = TRUE,
+        with_cluster = TRUE
+      )
+    
+    plot_histogram(
+      df = df, 
+      variables = features, 
+      across = across,
+      across.subset = across_subset,
+      relevel = relevel,
+      scales = scales,
+      nrow = nrow,
+      ncol = ncol,
+      display.facets = display_facets,
+      verbose = verbose,
+      ...
+    )
+    
+  })
+
+
+#' @rdname plotHistogram
+#' @export
+setMethod(
+  f = "plotHistogram",
+  signature = "CyproTimeLapse",
+  definition = function(object, 
+                        features,
+                        across = NULL,
+                        across_subset = NULL,
+                        relevel = TRUE,
+                        clrp = "milo",
+                        clrp_adjust = NULL,
+                        display_facets = TRUE,
+                        scales = "free",
+                        nrow = NULL,
+                        ncol = NULL,
+                        verbose = TRUE,
+                        ...){
+    
+    df <- 
+      getStatsDf(
+        object = object,
+        with_well_plate = TRUE,
+        with_meta = TRUE,
+        with_cluster = TRUE
+      )
+    
+    plot_histogram(
+      df = df, 
+      variables = features, 
+      across = across,
+      across.subset = across_subset,
+      relevel = relevel,
+      scales = scales,
+      nrow = nrow,
+      ncol = ncol,
+      display.facets = display_facets,
+      verbose = verbose,
+      ...
+    )
+    
+  })
+
+#' @rdname plotHistogram
+#' @export
+setMethod(
+  f = "plotHistogram",
+  signature = "CyproTimeLapseMP",
+  definition = function(object, 
+                        features,
+                        across = NULL,
+                        across_subset = NULL,
+                        relevel = TRUE,
+                        clrp = "milo",
+                        clrp_adjust = NULL,
+                        display_facets = TRUE,
+                        scales = "free",
+                        nrow = NULL,
+                        ncol = NULL,
+                        phase = NULL, 
+                        verbose = TRUE,
+                        ...){
+    
+    df <- 
+      getStatsDf(
+        object = object,
+        with_well_plate = TRUE,
+        with_meta = TRUE,
+        with_cluster = TRUE, 
+        phase = phase
+      )
+    
+    plot_histogram(
+      df = df, 
+      variables = features, 
+      across = across,
+      across.subset = across_subset,
+      relevel = relevel,
+      scales = scales,
+      nrow = nrow,
+      ncol = ncol,
+      display.facets = display_facets,
+      verbose = verbose,
+      ...
+    )
+    
+  })
+
+
+# -----
+
+
+
+# ridgeplot ---------------------------------------------------------------
+
+#' @title Plot numeric distribution and statistical tests
+#'
+#' @inherit plotBoxplot description params details return
+#'
+#' @export
+
+setGeneric(name = "plotRidgeplot", def = function(object, ...){
+  
+  standardGeneric(f = "plotRidgeplot")
+  
+})
+
+
+#' @rdname plotRidgeplot
+#' @export
+setMethod(
+  f = "plotRidgeplot",
+  signature = "CyproScreening",
+  definition = function(object, 
+                        features,
+                        across = NULL,
+                        across_subset = NULL,
+                        relevel = TRUE,
+                        clrp = "milo",
+                        clrp_adjust = NULL,
+                        display_facets = TRUE,
+                        scales = "free",
+                        nrow = NULL,
+                        ncol = NULL,
+                        verbose = TRUE,
+                        ...){
+    
+    df <- 
+      getFeatureDf(
+        object = object,
+        with_well_plate = TRUE,
+        with_meta = TRUE,
+        with_cluster = TRUE
+      )
+    
+    plot_ridgeplot(
+      df = df, 
+      variables = features, 
+      across = across,
+      across.subset = across_subset,
+      relevel = relevel,
+      scales = scales,
+      nrow = nrow,
+      ncol = ncol,
+      display.facets = display_facets,
+      verbose = verbose,
+      ...
+    )
+    
+  })
+
+
+#' @rdname plotRidgeplot
+#' @export
+setMethod(
+  f = "plotRidgeplot",
+  signature = "CyproTimeLapse",
+  definition = function(object, 
+                        features,
+                        across = NULL,
+                        across_subset = NULL,
+                        relevel = TRUE,
+                        clrp = "milo",
+                        clrp_adjust = NULL,
+                        display_facets = TRUE,
+                        scales = "free",
+                        nrow = NULL,
+                        ncol = NULL,
+                        verbose = TRUE,
+                        ...){
+    
+    df <- 
+      getStatsDf(
+        object = object,
+        with_well_plate = TRUE,
+        with_meta = TRUE,
+        with_cluster = TRUE
+      )
+    
+    plot_ridgeplot(
+      df = df, 
+      variables = features, 
+      across = across,
+      across.subset = across_subset,
+      relevel = relevel,
+      scales = scales,
+      nrow = nrow,
+      ncol = ncol,
+      display.facets = display_facets,
+      verbose = verbose,
+      ...
+    )
+    
+  })
+
+#' @rdname plotRidgeplot
+#' @export
+setMethod(
+  f = "plotRidgeplot",
+  signature = "CyproTimeLapseMP",
+  definition = function(object, 
+                        features,
+                        across = NULL,
+                        across_subset = NULL,
+                        relevel = TRUE,
+                        clrp = "milo",
+                        clrp_adjust = NULL,
+                        display_facets = TRUE,
+                        scales = "free",
+                        nrow = NULL,
+                        ncol = NULL,
+                        phase = NULL, 
+                        verbose = TRUE,
+                        ...){
+    
+    df <- 
+      getStatsDf(
+        object = object,
+        with_well_plate = TRUE,
+        with_meta = TRUE,
+        with_cluster = TRUE, 
+        phase = phase
+      )
+    
+    plot_ridgeplot(
+      df = df, 
+      variables = features, 
+      across = across,
+      across.subset = across_subset,
+      relevel = relevel,
+      scales = scales,
+      nrow = nrow,
+      ncol = ncol,
+      display.facets = display_facets,
+      verbose = verbose,
+      ...
+    )
+    
+  })
+
+# -----
+
+
+
+# barchart ----------------------------------------------------------------
+
+#' @title Plot distribution of grouping variables
 #'
 #' @description Visualizes the count or the proportion of barcode spots falling
 #' into certain groups via barcharts. It does so either for the whole sample or
@@ -257,38 +938,95 @@ plotViolinplot <- function(object,
 #' proportion you want to display. Must not contain the feature specified in
 #' \code{across} - if \code{across} is not set to NULL.
 
-plotBarchart <- function(object,
-                         variables,
-                         phase = NULL,
-                         across = NULL,
-                         across_subset = NULL,
-                         relevel = TRUE,
-                         clrp = "milo",
-                         clrp_adjust = NULL,
-                         position = "stack",
-                         display_facets = TRUE,
-                         ncol = NULL,
-                         nrow = NULL,
-                         ...){
-  
-  stat_df <- getStatsDf(object = object, phase = phase, verbose = FALSE)
-  
-  confuns::plot_barplot(df = stat_df,
-                        variables = variables,
-                        across = across,
-                        across.subset = across_subset,
-                        relevel = relevel,
-                        display.facets = display_facets,
-                        nrow = nrow,
-                        ncol = ncol,
-                        clrp = clrp,
-                        clrp.adjust = clrp_adjust, 
-                        position = position, 
-                        ...)
-  
-}
 
+setGeneric(name = "plotBarchart", def = function(object, ...){
+  
+  standardGeneric(f = "plotBarchart")
+  
+})
 
+#' @rdname plotBarchart
+#' @export
+setMethod(
+  f = "plotBarchart",
+  signature = "Cypro", 
+  definition = function(object,
+                        grouping_variables,
+                        across = NULL,
+                        across_subset = NULL,
+                        relevel = TRUE,
+                        clrp = "milo",
+                        clrp_adjust = NULL,
+                        position = "stack",
+                        display_facets = TRUE,
+                        ncol = NULL,
+                        nrow = NULL,
+                        ...){
+    
+    df <-
+      getGroupingDf(object) %>% 
+      dplyr::select(-cell_id)
+    
+    confuns::plot_barplot(
+      df = stat_df,
+      variables = grouping_variables,
+      across = across,
+      across.subset = across_subset,
+      relevel = relevel,
+      display.facets = display_facets,
+      nrow = nrow,
+      ncol = ncol,
+      clrp = clrp,
+      clrp.adjust = clrp_adjust, 
+      position = position, 
+      ...
+    )
+    
+  })
+
+#' @rdname plotBarchart
+#' @export
+setMethod(
+  f = "plotBarchart",
+  signature = "CyproTimeLapseMP", 
+  definition = function(object,
+                        grouping_variables,
+                        across = NULL,
+                        across_subset = NULL,
+                        relevel = TRUE,
+                        clrp = "milo",
+                        clrp_adjust = NULL,
+                        position = "stack",
+                        display_facets = TRUE,
+                        ncol = NULL,
+                        nrow = NULL,
+                        phase = NULL, 
+                        verbose = TRUE,
+                        ...){
+    
+    df <-
+      getGroupingDf(object, phase = phase) %>% 
+      dplyr::select(-cell_id)
+    
+    confuns::plot_barplot(
+      df = stat_df,
+      variables = grouping_variables,
+      across = across,
+      across.subset = across_subset,
+      relevel = relevel,
+      display.facets = display_facets,
+      nrow = nrow,
+      ncol = ncol,
+      clrp = clrp,
+      clrp.adjust = clrp_adjust, 
+      position = position, 
+      verbose = verbose,
+      ...
+    )
+    
+  })
+
+# -----
 
 
 
@@ -303,19 +1041,60 @@ plotBarchart <- function(object,
 #' @export
 #'
 
-plotStatisticsInteractive <- function(object, phase = NULL, drop_na = TRUE){
+setGeneric(name = "plotStatisticsInteractive", def = function(object, ...){
   
-  check_object(object)
-  assign_default(object)
+  standardGeneric(f = "plotStatisticsInteractive")
   
-  phase <- check_phase(object, phase = phase, max_phases = 1)
-  
-  stats_df <-
-    getStatsDf(object, phase = phase, verbose = FALSE, drop_na = drop_na) %>% 
-    dplyr::select(-cell_id)
-  
-  
-  confuns::plot_statistics_interactive(df = stats_df, n.across.subset = 100)
-  
-}
+})
+
+#' @rdname plotStatisticsInteractive
+#' @export
+setMethod(
+  f = "plotStatisticsInteractive", 
+  signature = "CyproScreening",
+  definition = function(object, ...){
+    
+    df <- 
+      getFeatureDf(object, with_well_plate = TRUE, with_meta = TRUE, with_cluster = TRUE) %>% 
+      dplyr::select(-cell_id)
+    
+    plot_statistics_interactive(df, n.across.subset = 50)
+    
+  })
+
+#' @rdname plotStatisticsInteractive
+#' @export
+setMethod(
+  f = "plotStatisticsInteractive", 
+  signature = "CyproTimeLapse",
+  definition = function(object, ...){
+    
+    df <- 
+      getStatsDf(object, with_well_plate = TRUE, with_meta = TRUE, with_cluster = TRUE) %>% 
+      dplyr::select(-cell_id)
+    
+    plot_statistics_interactive(df, n.across.subset = 50)
+    
+  })
+
+#' @rdname plotStatisticsInteractive
+#' @export
+setMethod(
+  f = "plotStatisticsInteractive", 
+  signature = "CyproTimeLapseMP",
+  definition = function(object, phase = NULL, ...){
+    
+    df <- 
+      getStatsDf(
+        object = object,
+        phase = phase, 
+        with_well_plate = TRUE,
+        with_meta = TRUE, 
+        with_cluster = TRUE
+        ) %>% 
+      dplyr::select(-cell_id)
+    
+    plot_statistics_interactive(df, n.across.subset = 50)
+    
+  })
 

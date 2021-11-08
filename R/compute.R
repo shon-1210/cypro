@@ -362,6 +362,49 @@ setMethod(
   
 })
 
+#' @rdname computeModuleVariables
+#' @export
+setMethod(
+  f = "computeModuleVariables",
+  signature = "CyproTimeLapseMP",
+  definition = function(object, verbose = TRUE){
+    
+    give_feedback(
+      msg = "Checking for analysis module related variables that need to be computed.", 
+      verbose = verbose
+    )
+    
+    phases <- getPhases(object)
+    
+    for(p in phases){
+      
+      give_feedback(
+        msg = glue::glue("Working on phase {p}."), 
+        verbose = verbose
+      )
+      
+      tracks_df <- getTracksDf(object, phase = p)
+      
+      tracks_df <- compute_module_variables_hlpr(object = object, df = tracks_df, verbose = verbose)
+      
+      if(p != 1){
+        
+        first_frame <- base::min(tracks_df$frame_num)
+        
+        # remove first frame as it actually belongs to
+        # previous frame
+        tracks_df <- dplyr::filter(tracks_df, frame_num != {{first_frame}})
+        
+      }
+      
+      object <- setTracksDf(object = object, df = tracks_df, phase = p)
+      
+    }
+    
+    return(object)
+    
+  })
+
 
 
 

@@ -2,19 +2,29 @@
 % Please edit documentation in R/set.R
 \name{setStorageDirectory}
 \alias{setStorageDirectory}
+\alias{setStorageDirectory,Cypro-method}
 \title{Set default storage directory}
 \usage{
-setStorageDirectory(object, directory)
+setStorageDirectory(object, ...)
+
+setStorageDirectory(object, ...)
+
+\S4method{setStorageDirectory}{Cypro}(object, directory, verbose = TRUE)
 }
 \arguments{
 \item{object}{Any object for whose class a method has been defined.}
 
-\item{directory}{Character value. The directory under which
-the object is supposed to be stored via \code{saveCyproObject()}.}
+\item{directory}{Character value. The file directory. Must end with \emph{'.RDS'}.}
+
+\item{verbose}{Logical. If set to TRUE informative messages regarding
+the computational progress will be printed.
+
+(Warning messages will always be printed.)}
 }
 \value{
-An updated version of the input \code{cypro}-object.
+The input object.
 }
 \description{
-Set default storage directory
+Sets the directory under which the \code{Cypro} object
+is saved by default with \code{saveCyproObject()}.
 }

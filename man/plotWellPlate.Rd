@@ -3,47 +3,83 @@
 \name{plotWellPlate}
 \alias{plotWellPlate}
 \alias{plotWellPlate,layout_df-method}
+\alias{plotWellPlate,layout_df_mp-method}
+\alias{plotWellPlate,Cypro-method}
 \title{Visualize well plates}
 \usage{
-plotWellPlate(
+plotWellPlate(object, ...)
+
+\S4method{plotWellPlate}{layout_df}(
   object,
-  clr_by = "file_status",
+  color_by = NULL,
+  fill_by = NULL,
   plot_type = "tile",
   well_alpha = 0.9,
+  well_color = "black",
   well_size = 13.5,
+  well_stroke = 2,
   display_border = TRUE,
-  border_clr = "black",
+  border_color = "black",
   border_size = 1,
   display_edge = TRUE,
-  edge_clr = "black",
+  edge_color = "black",
   edge_size = 1,
   display_labels = TRUE,
-  labels_clr = "black",
+  labels_color = "black",
   clrp = "milo",
   clrp_adjust = NULL,
   ncol = NULL,
   nrow = NULL,
-  ...
+  selected_wells = NULL
 )
 
-\S4method{plotWellPlate}{layout_df}(
+\S4method{plotWellPlate}{layout_df_mp}(
   object,
-  clr_by = "file_status",
+  color_by = NULL,
+  fill_by = NULL,
   plot_type = "tile",
   well_alpha = 0.9,
+  well_color = "black",
   well_size = 13.5,
+  well_stroke = 2,
   display_border = TRUE,
-  border_clr = "black",
+  border_color = "black",
   border_size = 1,
   display_edge = TRUE,
-  edge_clr = "black",
+  edge_color = "black",
   edge_size = 1,
   display_labels = TRUE,
-  labels_clr = "black",
+  labels_color = "black",
   clrp = "milo",
   clrp_adjust = NULL,
   ncol = NULL,
-  nrow = NULL
+  nrow = NULL,
+  selected_wells = NULL
+)
+
+\S4method{plotWellPlate}{Cypro}(
+  object,
+  well_plate = NULL,
+  color_by = NULL,
+  fill_by = NULL,
+  plot_type = "tile",
+  well_alpha = 0.9,
+  well_color = "black",
+  well_size = 13.5,
+  well_stroke = 2,
+  display_border = TRUE,
+  border_color = "black",
+  border_size = 1,
+  display_edge = TRUE,
+  edge_color = "black",
+  edge_size = 1,
+  display_labels = TRUE,
+  labels_color = "black",
+  clrp = "milo",
+  clrp_adjust = NULL,
+  ncol = NULL,
+  nrow = NULL,
+  selected_wells = NULL
 )
 }
 \arguments{

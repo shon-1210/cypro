@@ -2,9 +2,18 @@
 % Please edit documentation in R/plot-statistics.R
 \name{plotStatisticsInteractive}
 \alias{plotStatisticsInteractive}
+\alias{plotStatisticsInteractive,CyproScreening-method}
+\alias{plotStatisticsInteractive,CyproTimeLapse-method}
+\alias{plotStatisticsInteractive,CyproTimeLapseMP-method}
 \title{Plot statistics related plots interactively}
 \usage{
-plotStatisticsInteractive(object, phase = NULL, drop_na = TRUE)
+plotStatisticsInteractive(object, ...)
+
+\S4method{plotStatisticsInteractive}{CyproScreening}(object, ...)
+
+\S4method{plotStatisticsInteractive}{CyproTimeLapse}(object, ...)
+
+\S4method{plotStatisticsInteractive}{CyproTimeLapseMP}(object, phase = NULL, ...)
 }
 \arguments{
 \item{object}{Any object for whose class a method has been defined.}

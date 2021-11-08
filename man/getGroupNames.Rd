@@ -5,7 +5,7 @@
 \alias{getGroupNames}
 \alias{getGroupNames,Cypro-method}
 \alias{getGroupNames,CyproTimeLapseMP-method}
-\title{Extract group names a grouping variable contains}
+\title{Obtain group names a grouping variable contains}
 \usage{
 getGroups(object, option)
 
@@ -13,25 +13,18 @@ getGroupNames(object, ...)
 
 \S4method{getGroupNames}{Cypro}(object, grouping_variable, ...)
 
-\S4method{getGroupNames}{CyproTimeLapseMP}(object, grouping_variable, ..., phase = NULL)
+\S4method{getGroupNames}{CyproTimeLapseMP}(object, grouping_variable, ...)
 }
 \arguments{
 \item{object}{Any object for whose class a method has been defined.}
 
 \item{grouping_variable}{Character value. Denotes the categorical variable - the grouping of cells -
 of interest. Use \code{getGroupingVariableNames()} to obtain all valid input options.}
-
-\item{phase}{Character or numeric. If character, the ordinal value referring to the phase of interest (e.g. \emph{'first'}, \emph{'second'} etc.).
-referring to the phase of interest or \emph{'all'}. If numeric, the number referring to the phase.
-
-If set to NULL takes the phase denoted as default with \code{adjustDefault()}.
-
-Ignored if the experiment design contains only one phase.}
 }
 \value{
 A character vector.
 }
 \description{
-Obtain the names of the groups in which a specific grouping
+Extracts the names of the groups in which a specific grouping
 variable groups the cells. Useful to obtain input options for arguments like \code{across_subset}.
 }

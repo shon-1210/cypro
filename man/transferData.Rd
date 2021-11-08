@@ -4,13 +4,16 @@
 \alias{transferData}
 \alias{transferData,CyproScreening-method}
 \alias{transferData,CyproTimeLapse-method}
+\alias{transferData,CyproTimeLapseMP-method}
 \title{Transfer loaded data}
 \usage{
 transferData(object, ...)
 
 \S4method{transferData}{CyproScreening}(object, verbose = TRUE)
 
-\S4method{transferData}{CyproTimeLapse}(object)
+\S4method{transferData}{CyproTimeLapse}(object, verbose = TRUE)
+
+\S4method{transferData}{CyproTimeLapseMP}(object, verbose = TRUE)
 }
 \arguments{
 \item{object}{Any object for whose class a method has been defined.}

@@ -470,6 +470,39 @@ setMethod(f = "discardDataFiles", signature = "Cypro", definition = function(obj
 })
 
 
+
+# S -----------------------------------------------------------------------
+
+
+#' @title Discard storage directory
+#' 
+#' @description Discards the currently set storage directory 
+#' 
+#' @inherit argument_dummy params
+#' 
+#' @return The input object.
+
+setGeneric(name = "discardStorageDirectory", def = function(object, ...){
+  
+  standardGeneric(f = "discardStorageDirectory")
+  
+})
+
+#' @rdname discardStorageDirectory
+#' @export
+setMethod(f = "discardStorageDirectory", signature = "Cypro", definition = function(object, verbose = TRUE){
+  
+  object@information$storage_directory <- NULL
+  
+  give_feedback(
+    msg = "Discarded storge directory. Make sure to set a new one with 'setStorageDirectory()'.",
+    verbose = verbose
+  )
+  
+  return(object)
+  
+})
+
 # W -----------------------------------------------------------------------
 
 #' @title Discard well plate
@@ -512,6 +545,8 @@ setMethod(
     return(object)
     
   })
+
+
 
 
 

@@ -4,6 +4,7 @@
 \alias{processData}
 \alias{processData,CyproScreening-method}
 \alias{processData,CyproTimeLapse-method}
+\alias{processData,CyproTimeLapseMP-method}
 \title{Data loading - Process data}
 \usage{
 processData(object, verbose = TRUE)
@@ -11,6 +12,8 @@ processData(object, verbose = TRUE)
 \S4method{processData}{CyproScreening}(object, verbose = TRUE)
 
 \S4method{processData}{CyproTimeLapse}(object, verbose = TRUE)
+
+\S4method{processData}{CyproTimeLapseMP}(object, verbose = TRUE)
 }
 \arguments{
 \item{object}{Any object for whose class a method has been defined.}

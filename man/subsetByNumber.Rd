@@ -27,7 +27,7 @@ input object is taken and suffixed with \emph{'_subset'}.}
 \item{across}{Character vector. The grouping variables across which to reduce the cell number. This ensures that
 the randomly selected cells are equally distributed across certain groups. Defaults to \emph{'cell_line'} and \emph{'condition'}.}
 
-\item{n_by_group}{Numeric value or NA If numeric, denotes the number of cells that is randomly selected from
+\item{n_by_group}{Numeric value or NA If numeric, denotes the number of cells that are randomly selected from
 every group.}
 
 \item{n_total}{Numeric value or NA If numeric, denotes the final number of cells that the subsetted object is supposed

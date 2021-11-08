@@ -4,6 +4,7 @@
 \alias{computeModuleVariables}
 \alias{computeModuleVariables,CyproScreening-method}
 \alias{computeModuleVariables,CyproTimeLapse-method}
+\alias{computeModuleVariables,CyproTimeLapseMP-method}
 \title{Compute module variables}
 \usage{
 computeModuleVariables(object, ...)
@@ -11,6 +12,8 @@ computeModuleVariables(object, ...)
 \S4method{computeModuleVariables}{CyproScreening}(object, verbose = TRUE)
 
 \S4method{computeModuleVariables}{CyproTimeLapse}(object, verbose = TRUE)
+
+\S4method{computeModuleVariables}{CyproTimeLapseMP}(object, verbose = TRUE)
 }
 \arguments{
 \item{object}{Any object for whose class a method has been defined.}

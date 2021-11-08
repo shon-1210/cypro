@@ -6,9 +6,8 @@
 \alias{WellPlate}
 \title{The WellPlate Class}
 \description{
-S4-objects that abstracts a well plate.
-It additionally carries information about if and how the related data has been
-loaded.
+S4-classs that abstracts a well plate. It additionally carries
+information about if and how the related data has been loaded.
 }
 \section{Slots}{
 

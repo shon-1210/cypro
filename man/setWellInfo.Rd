@@ -9,7 +9,7 @@ setWellInfo(df, ...)
 
 \method{setWellInfo}{layout_df}(
   df,
-  selected_wells,
+  wells = character(0),
   cell_line = NULL,
   condition = NULL,
   verbose = TRUE,
@@ -19,7 +19,7 @@ setWellInfo(df, ...)
 \arguments{
 \item{df}{A data.frame of a class for which a method has been defined.}
 
-\item{selected_wells}{Character vector. Denotes the wells for which the information
+\item{wells}{Character vector. Denotes the wells for which the information
 is supposed to be set.}
 
 \item{cell_line}{Character value, NA or NULL. The cell line seeded in the wells denoted in
@@ -39,4 +39,18 @@ A data.frame.
 }
 \description{
 Subsequently fills the well plate \code{layout_df} with information.
+}
+\details{
+Sets well cell line and condition for all wells that are selected -
+meaning for which their value in variable \emph{selected} is TRUE. This
+can be manipulated with argument \code{wells} with which wells are selected.
+Wells selected this way are deselected right before the data.frame is returned.
+}
+\note{
+\code{setWellInfo()} sets the provided information for all selected
+wells. If the input data.frame already contains selected wells these are
+included in addition to those denoted in argument \code{wells}.
+}
+\seealso{
+\code{selectWells()}, \code{deselectWells()}
 }

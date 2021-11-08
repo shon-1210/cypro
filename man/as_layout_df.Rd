@@ -11,21 +11,21 @@
 \alias{asLayoutDfMP.layout_df}
 \title{Coerce to \code{layout_df} data.frame}
 \usage{
-as_layout_df(df, well_plate_type)
+as_layout_df(df, well_plate_type = NULL)
 
-as_layout_df_mp(df, well_plate_type, n_phases)
+as_layout_df_mp(df, well_plate_type = NULL, n_phases = NULL)
 
-\method{as_layout_df}{data.frame}(df, well_plate_type)
+\method{as_layout_df}{data.frame}(df, well_plate_type = NULL)
 
-\method{as_layout_df_mp}{layout_df}(df, well_plate_type = NULL, n_phases)
+\method{as_layout_df_mp}{layout_df}(df, well_plate_type = NULL, n_phases = NULL)
 
 asLayoutDf(df, well_plate_type)
 
-\method{asLayoutDf}{data.frame}(df, well_plate_type)
+\method{asLayoutDf}{data.frame}(df, well_plate_type = NULL)
 
-asLayoutDfMP(df, well_plate_type, n_phases)
+asLayoutDfMP(df, well_plate_type = NULL, n_phases = NULL)
 
-\method{asLayoutDfMP}{layout_df}(df, well_plate_type = NULL, n_phases)
+\method{asLayoutDfMP}{layout_df}(df, well_plate_type = NULL, n_phases = NULL)
 }
 \arguments{
 \item{df}{A data.frame.}

@@ -7,16 +7,28 @@ NULL
 NULL
 
 
+
+# p -----------------------------------------------------------------------
+
+get_phase <- function(df){
+  
+  base::attr(x = df, which = "phase")
+  
+}
+
+
 # P -----------------------------------------------------------------------
 
 #' @title Extract phase names
 #' 
-#' @description Obtain the names of all phases the experiment design 
-#' contains in form of a vector.
+#' @description Obtain a numeric vector of valid phases. 
 #' 
 #' @inherit argument_dummy params
 #' 
-#' @return Character vector.
+#' @return Numeric vector.
+#' 
+#' @seealso \code{getPhaseNames()}
+#' 
 #' @export
 
 setGeneric(name = "getPhases", def = function(object){
@@ -29,7 +41,78 @@ setGeneric(name = "getPhases", def = function(object){
 #' @export
 setMethod(f = "getPhases", signature = "CyproTimeLapseMP", definition = function(object){
   
-  object@design@phases %>% base::names()
+  base::seq_along(object@experiment_design@phases)
+  
+})
+
+#' @title Obtain phase start points 
+#' 
+#' @description Extracts the frames with which the respective 
+#' experiment phases started.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Numeric vector.
+#' @export
+#'
+setGeneric(name = "getPhaseStarts", def = function(object, ...){
+  
+  standardGeneric(f = "getPhaseStarts")
+  
+})
+
+#' @rdname getPhaseStarts
+#' @export
+setMethod(f = "getPhaseStarts", signature = "CyproTimeLapseMP", definition = function(object, numeric = TRUE){
+  
+  exp_design <- getExperimentDesign(object)
+  
+  phase_list <- exp_design@phases
+  
+  frame_time_vec <- make_frame_vec(n_frames = nFrames(object))
+  
+  out <- 
+    purrr::map_int(
+      .x = phase_list, 
+      .f = function(phase){
+        
+        string <-
+          stringr::str_extract(phase, pattern = "/.*$") %>% 
+          stringr::str_remove_all(pattern = "/") %>% 
+          remove_empty_space()
+        
+        frame <- base::which(x = frame_time_vec == string)
+        
+        return(frame)
+        
+      }
+    )
+  
+  return(out)
+  
+})
+
+
+#' @title Obtain phase start points 
+#' 
+#' @description Extracts the names of the phases.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Character vector.
+#' @export
+#'
+setGeneric(name = "getPhaseNames", def = function(object, ...){
+  
+  standardGeneric(f = "getPhaseNames")
+  
+})
+
+#' @rdname getPhaseNames
+#' @export
+setMethod(f = "getPhaseNames", signature = "CyproTimeLapseMP", definition = function(object){
+  
+  english::ordinal(x = 1:nPhases(object))
   
 })
 
@@ -67,8 +150,7 @@ setMethod(f = "getStatsDf", signature = "CdataTimeLapse", definition = function(
                                                                                 ...){
   
   df <- 
-    tibble::as_tibble(object@features_stats) %>% 
-    as_cypro_df() 
+    tibble::as_tibble(object@features_stats) 
   
   df <- 
     joinWith(
@@ -80,7 +162,7 @@ setMethod(f = "getStatsDf", signature = "CdataTimeLapse", definition = function(
       ...
     )
   
-  return(as_stats_df(df))
+  return(df)
   
 })
 
@@ -116,7 +198,29 @@ setMethod(f = "getStatsDf", signature = "CyproTimeLapse", definition = function(
 
 #' @rdname getStatsDf
 #' @export
-setMethod(f = "getStatsDf", signature = "CyproTimeLapseMP", definition = get_stats_df_mp)
+setMethod(f = "getStatsDf", signature = "CyproTimeLapseMP", definition = function(object,
+                                                                                  phase = 1,
+                                                                                  with_cluster = FALSE, 
+                                                                                  with_meta = FALSE, 
+                                                                                  with_well_plate = FALSE, 
+                                                                                  ...){
+  
+  phase <- check_phase(object, phase = phase, max_phases = 1)
+  
+  cdata <- getCdata(object)
+  
+  stats_df <- 
+    joinWith(
+      object = cdata, 
+      df = cdata@features_stats[[phase]], 
+      with_cluster = with_cluster, 
+      with_meta = with_meta, 
+      with_well_plate = with_well_plate
+    )
+  
+  return(stats_df)
+  
+})
 
 #' @title Extract numeric variables of cell stat data 
 #'
@@ -181,13 +285,12 @@ setMethod(
     
     return(res)
     
-    
   }
 )
 
-#' @title Extract storage directory
+#' @title Obtain storage directory
 #' 
-#' @description Obtain the directory under which the \code{Cypro} object 
+#' @description Extract the directory under which the \code{Cypro} object 
 #' is currently stored by default using \code{saveCyproObject()}.
 #' 
 #' @inherit argument_dummy params
@@ -206,21 +309,20 @@ setGeneric(name = "getStorageDirectory", def = function(object){
 #' @export
 setMethod(f = "getStorageDirectory", signature = "Cypro", definition = function(object){
   
-  check_object(object, set_up_req = "experiment_design")
   
-  dir <- object@storage
+  dir <- object@information$storage_directory
   
   if(base::length(dir) == 0){
     
-    base::stop("Storage directory has not beend defined yet.")
+    stop("Storage directory has not beend defined yet.")
     
   } else if(!stringr::str_detect(dir, pattern = "\\.{1}RDS")){
     
-    base::stop("Invalid storage directory. Must end with '.RDS'.")
+    stop("Invalid storage directory. Must end with '.RDS'.")
     
   } else {
     
-    base::return(dir)
+    return(dir)
     
   }
   
@@ -302,8 +404,7 @@ setMethod(f = "getTracksDf", signature = "CdataTimeLapse", definition = function
                                                                                  ...){
   
   df <- 
-    tibble::as_tibble(object@features_tracks) %>% 
-    as_cypro_df() 
+    tibble::as_tibble(object@features_tracks)
   
   df <- 
     joinWith(
@@ -315,7 +416,7 @@ setMethod(f = "getTracksDf", signature = "CdataTimeLapse", definition = function
       ...
     )
   
-  return(as_tracks_df(df))
+  return(df)
   
 })
 
@@ -338,7 +439,30 @@ setMethod(f = "getTracksDf", signature = "CyproTimeLapse", definition = function
 
 #' @rdname getTracksDf
 #' @export
-setMethod(f = "getTracksDf", signature = "CyproTimeLapseMP", definition = get_tracks_df_mp)
+setMethod(f = "getTracksDf", signature = "CyproTimeLapseMP", definition = function(object,
+                                                                                   phase = 1,
+                                                                                   with_cluster = FALSE,
+                                                                                   with_meta = FALSE, 
+                                                                                   with_well_plate = FALSE,
+                                                                                   ...){
+  
+  phase <- check_phase(object, phase = phase, max_phases = 1)
+  
+  cdata <- getCdata(object)
+  
+  out <- 
+    joinWith(
+      object = cdata, 
+      df = cdata@features_tracks[[phase]], 
+      with_cluster = with_cluster, 
+      with_meta = with_meta, 
+      with_well_plate = with_well_plate
+    )
+  
+  return(out)
+  
+  
+})
 
 #' @title Extract numeric variables of cell track data 
 #' 
@@ -487,7 +611,7 @@ setMethod(f = "getWellLevels", signature = "Cypro", function(object){
 #' @return A data.frame.
 #' @export
 
-setGeneric(name = "getWellPlate", def = function(object, well_plate){
+setGeneric(name = "getWellPlate", def = function(object, well_plate = NULL){
   
   standardGeneric(f = "getWellPlate")
   
@@ -496,12 +620,9 @@ setGeneric(name = "getWellPlate", def = function(object, well_plate){
 
 #' @rdname getWellPlate
 #' @export
-setMethod(f = "getWellPlate", signature = "ExperimentDesign", definition = function(object, well_plate){
+setMethod(f = "getWellPlate", signature = "ExperimentDesign", definition = function(object, well_plate = NULL){
   
-  confuns::check_one_of(
-    input = well_plate, 
-    against = base::names(object@well_plates)
-  )
+  well_plate <- check_wp_name(object, well_plate)
   
   wp <- object@well_plates[[well_plate]]
   
@@ -511,12 +632,9 @@ setMethod(f = "getWellPlate", signature = "ExperimentDesign", definition = funct
 
 #' @rdname getWellPlate
 #' @export
-setMethod(f = "getWellPlate", signature = "Cypro", definition = function(object, well_plate){
+setMethod(f = "getWellPlate", signature = "Cypro", definition = function(object, well_plate = NULL){
   
-  confuns::check_one_of(
-    input = well_plate, 
-    against = getWellPlateNames(object)
-  )
+  well_plate <- check_wp_name(object, well_plate)
   
   wp <- 
     getExperimentDesign(object) %>% 
@@ -604,11 +722,18 @@ setGeneric(name = "getWellPlateDf", def = function(object, ...){
   
 })
 
+
 #' @rdname getWellPlateDf
 #' @export
-setMethod(f = "getWellPlateDf", signature = "Cypro", definition = function(object, well_plate){
+setMethod(f = "getWellPlateDf", signature = "Cdata", definition = function(object){
   
-  check_object(object)
+  tibble::as_tibble(object@well_plate)
+  
+})
+
+#' @rdname getWellPlateDf
+#' @export
+setMethod(f = "getWellPlateDf", signature = "Cypro", definition = function(object){
   
   cdata_object <- getCdata(object)
   
@@ -641,21 +766,61 @@ setMethod(f = "getWellPlateDirectories", signature = "Cypro", definition = funct
   
   wp_names <- base::names(well_plate_list)
   
-  out <- 
-    purrr::map(.x = well_plate_list, .f = function(x){
-      
-      base::ifelse(
-        test = isOfLength(x@directory, 0), 
-        yes = NA_character_, 
-        no = x@directory
-      )
-      
-    }) %>%
-    purrr::flatten_chr()
-  
-  if(base::isTRUE(named)){
+  if(byFolder(object)){
     
-    out <- purrr::set_names(out, nm = wp_names)
+    out <- 
+      purrr::map(.x = well_plate_list, .f = function(x){
+        
+        dir <- 
+          base::ifelse(
+            test = isOfLength(x@directory, 0), 
+            yes = NA_character_, 
+            no = x@directory
+          )
+        
+        return(dir)
+        
+      }) %>%
+      purrr::flatten_chr()
+    
+    if(base::isTRUE(named)){
+      
+      out <- purrr::set_names(out, nm = wp_names)
+      
+    } else {
+      
+      out <- base::unname(out)
+      
+    }
+    
+  } else {
+    
+    out <- 
+      purrr::map(.x = well_plate_list, .f = function(x){
+        
+        if(isOfLength(x@directory, l = 0)){
+          
+          dir <- NA_character_
+          
+        } else {
+          
+          dir <- x@directory
+          
+        }
+        
+        return(dir)
+        
+      }) 
+    
+    if(base::isTRUE(named)){
+      
+      out <- purrr::set_names(out, nm = wp_names)
+      
+    } else {
+      
+      out <- base::unname(out)
+      
+    }
     
   }
   
@@ -821,7 +986,15 @@ setMethod(f = "getWellPlateType", signature = "layout_df", function(object, ...)
   
 })
 
-
+#' @rdname getWellPlateType
+#' @export
+setMethod(f = "getWellPlateType", signature = "layout_df_mp", function(object, ...){
+  
+  wp_type <- base::attr(x = object, which = "well_plate_type")
+  
+  return(wp_type)
+  
+})
 
 #' @title Obtain wells and well rois
 #' 
@@ -843,6 +1016,17 @@ setGeneric(name = "getWells", def = function(object,  info_status = info_status_
 #' @rdname getWells
 #' @export
 setMethod(f = "getWells", signature = "layout_df", definition = function(object, info_status = info_status_levels){
+  
+  nestLayoutDf(object) %>% 
+    dplyr::filter(info_status %in% {{info_status}}) %>% 
+    dplyr::pull(var = "well") %>% 
+    base::as.character()
+  
+})
+
+#' @rdname getWells
+#' @export
+setMethod(f = "getWells", signature = "layout_df_mp", definition = function(object, info_status = info_status_levels){
   
   nestLayoutDf(object) %>% 
     dplyr::filter(info_status %in% {{info_status}}) %>% 
@@ -882,17 +1066,23 @@ setMethod(f = "getWellRois", signature = "layout_df", definition = function(obje
 
 #' @rdname getWells
 #' @export
+setMethod(f = "getWellRois", signature = "layout_df_mp", definition = function(object, info_status = info_status_levels){
+  
+  unnestLayoutDf(object) %>% 
+    dplyr::filter(info_status %in% {{info_status}}) %>% 
+    dplyr::pull(var = "well_roi") %>% 
+    base::as.character()
+  
+})
+
+#' @rdname getWells
+#' @export
 setMethod(f = "getWellRois", signature = "WellPlate", definition = function(object, info_status = info_status_level){
   
   getLayoutDf(object) %>% 
     getWellRois() 
     
 })
-
-
-
-
-
 
 
 
@@ -1055,3 +1245,77 @@ get_variable_assignment_hlpr <- function(variable_list, variables, assignments, 
 }
 
 
+#' @title Obtain variable assignment 
+#' 
+#' @inherit getVariableAssignment params description
+#' 
+#' @return A character vector. 
+#' 
+#' @export
+setGeneric(name = "getVariableAssignmentID", def = function(object, drop_na = FALSE){
+  
+  standardGeneric(f = "getVariableAssignmentID")
+  
+})
+
+
+#' @rdname getVariableAssignmentID
+#' @export
+setMethod(
+  f = "getVariableAssignmentID", 
+  signature = "CyproScreening", 
+  definition = function(object, drop_na = FALSE){
+    
+    res <- 
+      getVariableAssignment(
+        object = object,
+        modules = "identification",
+        flatten = TRUE,
+        drop_na = drop_na
+      )
+    
+    return(res)
+    
+  }
+)
+
+
+#' @rdname getVariableAssignmentID
+#' @export
+setMethod(
+  f = "getVariableAssignmentID", 
+  signature = "CyproTimeLapse", 
+  definition = function(object, drop_na = FALSE){
+    
+    res <- 
+      getVariableAssignment(
+        object = object,
+        modules = "identification_timelapse",
+        flatten = TRUE,
+        drop_na = drop_na
+      )
+    
+    return(res)
+    
+  }
+)
+
+#' @rdname getVariableAssignmentID
+#' @export
+setMethod(
+  f = "getVariableAssignmentID", 
+  signature = "CyproTimeLapseMP", 
+  definition = function(object, drop_na = FALSE){
+    
+    res <- 
+      getVariableAssignment(
+        object = object,
+        modules = "identification_timelapse",
+        flatten = TRUE,
+        drop_na = drop_na
+      )
+    
+    return(res)
+    
+  }
+)

@@ -114,21 +114,27 @@ check_object <- function(object, experiment = NULL, set_up_req = "process_data",
 #' 
 check_phase <- function(object, phase, max_phases = NULL){
   
-  if(multiplePhases(object)){
+  if(base::is.null(phase)){
+    
+    phase <- 1
+    
+  }
+  
+  phase_names <- getPhaseNames(object)
     
     if(base::is.numeric(phase)){
       
-      lp <- base::length(getPhases(object))
+      lp <- base::length(phase_names)
       
-      confuns::is_vec(phase, mode = "numeric", max.length = lp)
+      is_vec(phase, mode = "numeric", max.length = lp)
       
       if(base::max(phase) > lp){
         
-        base::stop(glue::glue("Input for argument 'phase' must not exceed the number of phases of the experiment which is {lp}."))
+        stop(glue::glue("Input for argument 'phase' must not exceed the number of phases of the experiment which is {lp}."))
         
       }
       
-      phase <- base::names(object@set_up$phases)[phase]
+      phase <- phase_names[phase]
       
     }
     
@@ -137,11 +143,11 @@ check_phase <- function(object, phase, max_phases = NULL){
       
       if(max_phases == 1){
         
-        confuns::is_vec(x = phase, mode = "character", of.length = max_phases)
+        is_vec(x = phase, mode = "character", of.length = max_phases)
         
       } else {
         
-        confuns::is_vec(x = phase, mode = "character", max.length = max_phases)
+        is_vec(x = phase, mode = "character", max.length = max_phases)
         
       }
       
@@ -149,32 +155,30 @@ check_phase <- function(object, phase, max_phases = NULL){
     
     if(base::all(phase == "all") & base::is.null(max_phases)){
       
-      phase <- getPhases(object)
+      phase <- getPhaseNames(object)
       
     } else if(base::is.numeric(max_phases) && base::length(phase) > max_phases){
       
       msg <- glue::glue("Length of input for argument phase must be equal to or lower than {max_phases}.")
       
-      confuns::give_feedback(msg = msg, fdb.fn = "stop", with.time = FALSE)
+      give_feedback(msg = msg, fdb.fn = "stop", with.time = FALSE)
       
     } else if(base::all(phase == "all") && base::is.numeric(max_phases) && base::length(getPhases(object) > max_phases)){
       
       msg <- glue::glue("Length of input for argument phase must be equal to or lower than {max_phases}. All phases sum up to {base::length(getPhases(object))}.")
       
-      confuns::give_feedback(msg = msg, fdb.fn = "stop", with.time = FALSE)
+      give_feedback(msg = msg, fdb.fn = "stop", with.time = FALSE)
       
     } else {
       
-      confuns::check_one_of(
+      check_one_of(
         input = phase, 
-        against = getPhases(object)
+        against = getPhaseNames(object)
       )
       
     }
-    
-  }
   
-  base::return(phase)
+  return(phase)
   
 }
 
@@ -305,7 +309,7 @@ check_renamed_variables <- function(cnames){
 #' @title Input check of summarize_with
 check_summarize_with <- function(summarize_with, max_length = 1){
   
-  confuns::is_vec(x = summarize_with, mode = "character", max.length = 1)
+  confuns::is_vec(x = summarize_with, mode = "character", max.length = max_length)
   
   confuns::check_one_of(
     input = summarize_with, 
@@ -402,15 +406,17 @@ check_wp_name <- function(object, well_plate){
     
   } else {
     
-    well_plate <- confuns::check_vector(input = well_plate, 
-                                        against = wp_names, 
-                                        verbose = TRUE, 
-                                        ref.input = "input for argument 'well_plate'",
-                                        ref.against = "valid well plate names")
+    well_plate <- 
+      confuns::check_vector(
+        input = well_plate, 
+        against = wp_names, 
+        verbose = TRUE, 
+        ref.input = "input for argument 'well_plate'",
+        ref.against = "valid well plate names")
     
   }
   
-  base::return(well_plate)
+  return(well_plate)
   
 }
 
@@ -705,7 +711,7 @@ check_var_frame_num <- function(df, name_in_cypro, object = NULL){
       
     } else if(min_var == 1){
       
-      out <- var
+      out <- base::as.integer(var)
       
     } else {
       
@@ -759,7 +765,9 @@ check_var_numeric <- function(df, name_in_cypro, object = NULL){
 
 check_var_roi <- function(df, name_in_cypro, object = NULL){
   
-  name_in_example <- getVariableAssignment(object, variables = name_in_cypro) %>% base::unname()
+  name_in_example <- 
+    getVariableAssignment(object, variables = name_in_cypro) %>%
+    base::unname()
   
   if(base::is.na(name_in_example)){
     
@@ -803,13 +811,15 @@ check_var_roi <- function(df, name_in_cypro, object = NULL){
     
   }
   
-
+  return(out)
   
 }
 
 check_var_well <- function(df, name_in_cypro, object = NULL){
   
-  name_in_example <- getVariableAssignment(object, variables = name_in_cypro) %>% base::unname()
+  name_in_example <-
+    getVariableAssignment(object, variables = name_in_cypro) %>%
+    base::unname()
   
   if(base::is.na(name_in_example)){
     
@@ -852,6 +862,8 @@ check_var_well <- function(df, name_in_cypro, object = NULL){
     }
     
   }
+  
+  return(out)
   
 }
 
@@ -907,7 +919,6 @@ check_var_well_roi <- function(df, name_in_cypro, object = NULL){
             
           }
           
-          
         } else {
           
           out <- write_variable_problem(problem = check_res$problem, name_in_app = name_in_app)
@@ -924,7 +935,7 @@ check_var_well_roi <- function(df, name_in_cypro, object = NULL){
       
       # the data.frame df contains already checked variables 
       # well and roi, if the checking resulted in errors the 
-      # output of this funciton isn't going to be used anyway
+      # output of this function isn't going to be used anyway
       well_var <- df[[well_in_example]]
       roi_var <- df[[roi_in_example]]
       
@@ -981,7 +992,6 @@ check_var_well_plate <- function(df, name_in_cypro, object = NULL){
           out <- var
           
         }
-        
         
       } else {
         

@@ -5,20 +5,30 @@
 \alias{setTracksDf}
 \alias{setTracksDf,CdataTimeLapse-method}
 \alias{setTracksDf,CyproTimeLapse-method}
+\alias{setTracksDf,CyproTimeLapseMP-method}
 \title{Set cypro data.frames}
 \usage{
-setStatsDf(object, df)
+setStatsDf(object, df, ...)
 
-setTracksDf(object, df)
+setTracksDf(object, df, ...)
 
 \S4method{setTracksDf}{CdataTimeLapse}(object, df)
 
 \S4method{setTracksDf}{CyproTimeLapse}(object, df)
+
+\S4method{setTracksDf}{CyproTimeLapseMP}(object, df, phase)
 }
 \arguments{
 \item{object}{Any object for whose class a method has been defined.}
 
 \item{df}{The data.frame to be set.}
+
+\item{phase}{Character or numeric. If character, the ordinal value referring to the phase of interest (e.g. \emph{'first'}, \emph{'second'} etc.).
+referring to the phase of interest or \emph{'all'}. If numeric, the number referring to the phase.
+
+If set to NULL takes the phase denoted as default with \code{adjustDefault()}.
+
+Ignored if the experiment design contains only one phase.}
 }
 \value{
 The input object.

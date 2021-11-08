@@ -30,13 +30,10 @@ getStatsDf(object, ...)
 
 \S4method{getStatsDf}{CyproTimeLapseMP}(
   object,
-  drop_na = TRUE,
-  with_grouping = NULL,
-  with_cluster = NULL,
-  with_meta = NULL,
-  with_well_plate = NULL,
-  phase = NULL,
-  verbose = NULL,
+  phase = 1,
+  with_cluster = FALSE,
+  with_meta = FALSE,
+  with_well_plate = FALSE,
   ...
 )
 }
@@ -53,11 +50,6 @@ referring to the phase of interest or \emph{'all'}. If numeric, the number refer
 If set to NULL takes the phase denoted as default with \code{adjustDefault()}.
 
 Ignored if the experiment design contains only one phase.}
-
-\item{verbose}{Logical. If set to TRUE informative messages regarding
-the computational progress will be printed.
-
-(Warning messages will always be printed.)}
 }
 \value{
 A data.frame with all numeric variables summarizing the measurements of

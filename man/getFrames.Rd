@@ -7,13 +7,13 @@
 \alias{getFrames,CyproTimeLapseMP-method}
 \title{Obtain frame range}
 \usage{
-getFrames(object)
+getFrames(object, ...)
 
 \S4method{getFrames}{ExperimentDesign}(object)
 
 \S4method{getFrames}{CyproTimeLapse}(object)
 
-\S4method{getFrames}{CyproTimeLapseMP}(object)
+\S4method{getFrames}{CyproTimeLapseMP}(object, by_phase = FALSE)
 }
 \arguments{
 \item{object}{}

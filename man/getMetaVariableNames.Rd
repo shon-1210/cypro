@@ -8,7 +8,7 @@
 \usage{
 getMetaVariableNames(object, ...)
 
-\S4method{getMetaVariableNames}{Cypro}(object, ..., named = FALSE, verbose = NULL)
+\S4method{getMetaVariableNames}{Cypro}(object, ..., verbose = NULL)
 
 \S4method{getMetaVariableNames}{CyproTimeLapseMP}(object, ..., named = FALSE, phase = NULL, verbose = NULL)
 }

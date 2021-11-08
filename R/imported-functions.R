@@ -20,6 +20,8 @@ allColorspectra <- confuns::all_color_spectra
 
 adapt_reference <- confuns::adapt_reference
 
+adjust_ggplot_params <- confuns::adjust_ggplot_params
+
 # c -----------------------------------------------------------------------
 
 check_one_of <- confuns::check_one_of
@@ -47,9 +49,26 @@ make_pretty_df <- confuns::make_pretty_df
 make_pretty_name <- confuns::make_pretty_name
 
 
+
+# p -----------------------------------------------------------------------
+
+plot_barchart <- confuns::plot_barplot 
+plot_boxplot <- confuns::plot_boxplot
+plot_density <- confuns::plot_density
+plot_histogram <- confuns::plot_histogram
+plot_ridgeplot <- confuns::plot_ridgeplot 
+plot_violinplot <- confuns::plot_violinplot
+
+
 # s -----------------------------------------------------------------------
 
 scollapse <- confuns::scollapse
+
+
+
+# v -----------------------------------------------------------------------
+
+vselect <- confuns::vselect
 
 
 

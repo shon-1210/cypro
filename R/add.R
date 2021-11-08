@@ -11,7 +11,6 @@ add_family <- function(){}
 
 
 
-# Functions ---------------------------------------------------------------
 
 
 #' @title Add predefined set of variables 
@@ -78,7 +77,7 @@ addVariableSet <- function(object, variable_names, set_name, overwrite = FALSE){
   
   object@analysis$correlation[[set_name]] <- NULL
   
-  base::return(object)
+  return(object)
   
 }
 
@@ -715,6 +714,39 @@ addRoiInfoVarNames.layout_df <- function(df, vars){
 }
 
 
+# S -----------------------------------------------------------------------
+
+
+#' @title Add subset information 
+#' 
+#' @description Adds a new object of class \code{CyproSubset} to @@slot 
+#' subset.
+#' 
+#' @inherit argument_dummy params
+#' @param subset_object An object of class \code{CyproSubset}.
+#' 
+#' @inherit add_family return
+
+setGeneric(name = "addSubset", def = function(object, subset_object){
+  
+  standardGeneric(f = "addSubset")
+  
+})
+
+#' @rdname addSubset
+#' @export
+setMethod(f = "addSubset", signature = "Cypro", definition = function(object, subset_object){
+  
+  base::stopifnot(isOfClass(subset_object, valid_class = "CyproSubset"))
+  
+  subset_slot <- english::ordinal(nSubsets(object) + 1)
+  
+  object@subsets[[subset_slot]] <- subset_object
+  
+  return(object)
+  
+})
+
 # W -----------------------------------------------------------------------
 
 #' @title Add a well plate 
@@ -767,7 +799,7 @@ setMethod(f = "addWellPlate", signature = "ExperimentDesign", function(object, n
       Class = "WellPlate", 
       experiment = object@experiment, 
       name = name,
-      layout = layout,
+      layout = base::as.data.frame(layout),
       index = n_wps + 1,
       type = getWellPlateType(layout),
       ...

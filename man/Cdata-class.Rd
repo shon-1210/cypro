@@ -6,7 +6,7 @@
 \alias{Cdata}
 \title{The Cdata Class (Cell Data)}
 \description{
-The parent S4-object of every \code{Cypro}-objects \code{@cdata}
+The parent S4-class of every \code{Cypro}-objects \code{@cdata}
 slot. Contains the experiment data in form of data.frames. All data.frames
 are functionally connected by their common data variable \emph{cell_id} with which
 they can be joined via \code{dplyr::left_join()}.

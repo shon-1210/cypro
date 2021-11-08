@@ -143,7 +143,7 @@ setMethod(f = "containsDirectory", signature = "DataFile", definition = function
   
   dir <- object@directory 
   
-  if(!base::length(dir) == 1){
+  if(base::length(dir) == 1){
     
     out <- FALSE
     
@@ -172,7 +172,7 @@ setMethod(f = "containsDirectory", signature = "WellPlate", definition = functio
   
   dir <- object@directory 
   
-  if(!base::length(dir) == 1){
+  if(!base::length(dir) >= 1){
     
     out <- FALSE
     
@@ -256,6 +256,8 @@ setMethod(f = "containsOptionalVariables", signature = "AnalysisModule", definit
 
 
 # S -----------------------------------------------------------------------
+
+
 
 #' @title Tests for analysis modules
 #' 

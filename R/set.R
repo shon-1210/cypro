@@ -223,6 +223,280 @@ setMethod(
 
 # C -----------------------------------------------------------------------
 
+
+#' @title Set cell IDs
+#' 
+#' @description Sets a vector of all cell IDs the \code{Cypro} object
+#' contains.
+#' 
+#' @inherit argument_dummy params
+#' @param cell_ids Character vector. All cell IDs. 
+#' 
+#' @export
+setGeneric(name = "setCellIDs", def = function(object, ...){
+  
+  standardGeneric(f = "setCellIDs")
+  
+})
+
+#' @rdname setCellIDs
+#' @export
+setMethod(f = "setCellIDs", signature = "Cypro", definition = function(object, cell_ids){
+  
+  base::stopifnot(base::is.character(cell_ids))
+  
+  object@information$cell_ids <- cell_ids
+  
+  return(object)
+  
+})
+
+
+#' @title Set cdata slot 
+#' 
+#' @description Sets slot @@cdata of the \code{Cypro} object by splitting 
+#' the data.frame provided with \code{df} into its functional subcategories. 
+#' 
+#' @inherit argument_dummy params 
+#' @param df A data.frame that contains the whole data set of the experiment
+#' named according to the \code{cypro} naming convention. Can (should) be obtained
+#' via \code{getMergedDf()} after loading all the data.
+#' 
+#' @param directory Character value. The directory under which 
+#' the object is supposed to be stored via \code{saveCyproObject()}.
+#' 
+#' @export
+#'
+
+setGeneric(name = "setCdata", def = function(object, df, verbose = TRUE, ...){
+  
+  standardGeneric(f = "setCdata")
+  
+})
+
+#' @rdname setCdata
+#' @export
+setMethod(f = "setCdata", signature = "CyproScreening", definition = function(object, df, verbose = TRUE, ...){
+  
+  cluster_df <- 
+    dplyr::select(df, cell_id) %>% 
+    dplyr::distinct() 
+  
+  feature_df <- 
+    dplyr::select(df, cell_id, where(base::is.numeric))
+  
+  well_plate_df <-
+    dplyr::select(df, cell_id, dplyr::all_of(var_names_dfs$well_plate)) %>% 
+    dplyr::distinct()
+  
+  layouts_df <- 
+    getWellPlates(object) %>% 
+    purrr::map_df(.f = ~ .x@layout) %>% 
+    dplyr::select(well_plate_name, well, cell_line, condition)
+  
+  grouping_vars <- getAdditionalVariableNames(object)$grouping
+  
+  meta_df <- 
+    dplyr::select(df, cell_id, dplyr::any_of(x = grouping_vars), well_plate_name, well) %>% 
+    dplyr::distinct() %>% 
+    dplyr::left_join(x = ., y = layouts_df, by = c("well_plate_name", "well")) %>% 
+    dplyr::select(-well_plate_name, -well) %>% 
+    dplyr::mutate(cell_line = base::as.factor(cell_line), condition = base::as.factor(condition))
+  
+  give_feedback(msg = "Setting cell data.", verbose = verbose)
+  
+  cdata_object <- 
+    methods::new(
+      Class = "CdataScreening", 
+      cluster = base::as.data.frame(cluster_df),
+      features = base::as.data.frame(feature_df),
+      meta = base::as.data.frame(meta_df),
+      well_plate = base::as.data.frame(well_plate_df)
+    )
+  
+  object@cdata <- cdata_object
+  
+  return(object)
+  
+})
+
+#' @rdname setCdata
+#' @export
+setMethod(f = "setCdata", signature = "CyproTimeLapse", definition = function(object, df, verbose = TRUE){
+  
+  n_frames <- nFrames(object)
+  
+  df <- dplyr::filter(df, frame_num <= n_frames)
+  
+  cluster_df <- 
+    dplyr::select(df, cell_id) %>% 
+    dplyr::distinct() 
+  
+  stats_df <- 
+    dplyr::select(df, cell_id) %>% 
+    dplyr::distinct() 
+  
+  tracks_df <- 
+    dplyr::select(df, -dplyr::all_of(var_names_dfs$well_plate)) 
+  
+  well_plate_df <-
+    dplyr::select(df, cell_id, dplyr::all_of(var_names_dfs$well_plate)) %>% 
+    dplyr::distinct() 
+  
+  layouts_df <- 
+    getWellPlates(object) %>% 
+    purrr::map_df(.f = ~ .x@layout) %>% 
+    dplyr::select(well_plate_name, well, cell_line, condition)
+  
+  grouping_vars <- getAdditionalVariableNames(object)$grouping
+  
+  meta_df <- 
+    dplyr::select(df, cell_id, dplyr::any_of(x = grouping_vars), well_plate_name, well) %>% 
+    dplyr::distinct() %>% 
+    dplyr::left_join(x = ., y = layouts_df, by = c("well_plate_name", "well")) %>% 
+    dplyr::select(-well_plate_name, -well) %>% 
+    dplyr::mutate(cell_line = base::as.factor(cell_line), condition = base::as.factor(condition))
+  
+  give_feedback(msg = "Setting cell data.", verbose = verbose)
+  
+  cdata_object <- 
+    methods::new(
+      Class = "CdataTimeLapse", 
+      cluster = base::as.data.frame(cluster_df),
+      features_stats = base::as.data.frame(stats_df),
+      features_tracks = base::as.data.frame(tracks_df),
+      meta = base::as.data.frame(meta_df),
+      well_plate = base::as.data.frame(well_plate_df)
+    )
+  
+  object@cdata <- cdata_object
+  
+  return(object)
+  
+})
+
+#' @rdname setCdata
+#' @export
+setMethod(f = "setCdata", signature = "CyproTimeLapseMP", definition = function(object, df, verbose = TRUE){
+  
+  n_frames <- nFrames(object)
+  
+  n_phases <- nPhases(object)
+  
+  phase_starts <- getPhaseStarts(object)
+  
+  phase_names <- base::names(phase_starts)
+  
+  well_plate_df <- 
+    dplyr::select(df, cell_id, dplyr::all_of(var_names_dfs$well_plate)) %>% 
+    dplyr::distinct()
+  
+  cluster_list <- 
+    purrr::map(.x = base::seq_along(phase_starts), .f = function(p){
+      
+      dplyr::select(df, cell_id) %>% 
+        dplyr::distinct() %>% 
+        magrittr::set_attr(which = "phase", value = p)
+      
+    })
+  
+  stats_list <- 
+    purrr::map(.x = base::seq_along(phase_starts), .f = function(p){ 
+      
+      dplyr::select(df, cell_id) %>% 
+        dplyr::distinct() %>% 
+        magrittr::set_attr(which = "phase", value = p)
+      
+    })
+  
+  meta_list <- 
+    purrr::map(.x = phase_starts, .f = function(x){ tibble::tibble()})
+  
+  tracks_list <- 
+    purrr::map(.x = phase_starts, .f = function(x){ tibble::tibble()})
+  
+  for(p in base::seq_along(phase_starts)){
+    
+    phase <- phase_names[p]
+    
+    start <- phase_starts[p]
+    
+    if(p > 1){
+      
+      # temporarily keep the first frame of the subsequent phase 
+      # in the data.frame of phase a for the computations done in 
+      # computeModulVariables
+      start <- start - 1
+      
+    }
+    
+    if(p < n_phases){
+      
+      # last frame of phase a is first frame_num of next phase -1
+      end <- (phase_starts[p + 1] - 1)
+      
+    } else {
+      
+      # last frame of last phase is the last frame
+      end <- n_frames
+      
+    }
+    
+    layouts_df <- 
+      getWellPlates(object) %>% 
+      purrr::map_df(.f = function(wp){
+        
+        getLayoutDf(object = wp) %>% 
+          merge_condition(phases = p)
+        
+        }) %>% 
+      dplyr::select(well_plate_name, well, cell_line, condition)
+    
+    tracks_df <- 
+      dplyr::filter(
+        .data = df,
+        dplyr::between(x = frame_num, left = start, right = end)
+        ) %>% 
+      dplyr::select(-dplyr::all_of(var_names_dfs$well_plate)) %>% 
+      dplyr::select(cell_id, where(base::is.numeric)) %>% 
+      magrittr::set_attr(which = "phase", value = p) %>% 
+      tibble::as_tibble()
+    
+    tracks_list[[phase]] <- tracks_df
+    
+    meta_df <- 
+      dplyr::left_join(
+        x = well_plate_df,
+        y = layouts_df,
+        by = c("well_plate_name", "well")
+        ) %>% 
+      dplyr::select(cell_id, cell_line, condition) %>% 
+      dplyr::distinct() %>% 
+      magrittr::set_attr(which = "phase", value = p) %>% 
+      tibble::as_tibble()
+    
+    meta_list[[phase]] <- meta_df
+    
+  }
+  
+  give_feedback(msg = "Setting cell data.", verbose = verbose)
+  
+  cdata_object <- 
+    methods::new(
+      Class = "CdataTimeLapseMP", 
+      cluster = cluster_list,
+      features_stats = stats_list,
+      features_tracks = tracks_list,
+      meta = meta_list,
+      well_plate = well_plate_df
+    )
+  
+  object@cdata <- cdata_object
+  
+  return(object)
+  
+})
+
 #' @title Set layout cell line
 #'
 #' @description Sets the cell line of all wells that are selected 
@@ -540,7 +814,6 @@ setCondition.layout_df_mp <- function(df, condition, in_shiny = FALSE, verbose =
 }
 
 
-
 # D -----------------------------------------------------------------------
 
 #' @title Set layout data status
@@ -628,7 +901,6 @@ set_data_status_hlpr <- function(df){
 
 # E -----------------------------------------------------------------------
 
-
 #' @title Set experiment design 
 #' 
 #' @description Sets the experiment design of the \code{Cypro} object.
@@ -652,6 +924,49 @@ setMethod(f = "setExperimentDesign", signature = "Cypro", definition = function(
   isOfClass(x = exp_design, valid_class = "ExperimentDesign", stop_if_false = TRUE)
   
   object@experiment_design <- exp_design
+  
+  return(object)
+  
+})
+
+#' @title Set experiment name
+#' 
+#' @description Sets the content for slot @@experiment in the \code{Cypro} object and
+#' all S4 objects that have an @@experiment slot.
+#' 
+#' @inherit argument_dummy params
+#' @param name Character value. The experiment name. 
+#' 
+#' @return The input object.
+
+setGeneric(name = "setExperimentName", def = function(object, name){
+  
+  standardGeneric(f = "setExperimentName")
+  
+})
+
+#' @rdname setExperimentName
+#' @export
+setMethod(f = "setExperimentName", signature = "Cypro", definition = function(object, name){
+  
+  is_value(x = name, mode = "character")
+  
+  # cypro
+  object@experiment <- name
+  
+  # experiment_design
+  object@experiment_design@experiment <- name
+  
+  # well plates
+  for(well_plate in getWellPlateNames(object)){
+    
+    wp <- getWellPlate(object, well_plate = well_plate)
+    
+    wp@experiment <- name
+    
+    object <- setWellPlate(object, well_plate_object = wp)
+    
+  }
   
   return(object)
   
@@ -681,6 +996,92 @@ setMethod(f = "setFeatureDf", signature = "CyproScreening", definition = functio
 
 # I -----------------------------------------------------------------------
 
+
+#' @title Sets image directory data.frame
+#' 
+#' @description Sets an \bold{empty} data.frame in slot @@image_directories
+#' of the \code{Cypro} object. Do not confuse with \code{setImageDirectories()}.
+#'
+#' @inherit argument_dummy params
+#' @param df The image directory data.frame.
+#' 
+#' @return The input object.
+#' @export
+#'
+
+setGeneric(name = "setImageDirDf", def = function(object,df = NULL, force = FALSE){
+  
+  standardGeneric(f = "setImageDirDf")
+  
+})
+
+
+#' @rdname setImageDirDf
+#' @export
+setMethod(f = "setImageDirDf", signature = "Cypro", definition = function(object, df = NULL, force = FALSE){
+  
+  idir_df <- getImageDirDf(object)
+  
+  if(base::nrow(idir_df) >= 1 && !base::isTRUE(force)){
+    
+    stop(
+      "Image directory data.frame has already been set. Set argument 'force' to ", 
+      "TRUE to overwrite it."
+      )
+    
+  }
+  
+  if(!base::is.data.frame(df)){
+    
+    object@image_directories <- 
+      getWellPlateDf(object) %>% 
+      dplyr::select(well_plate_name, well_plate_index, well, roi) %>% 
+      dplyr::distinct() %>% 
+      dplyr::mutate(dir = NA_character_) %>% 
+      base::as.data.frame()
+    
+  } else {
+    
+    object@image_directories <- df
+    
+  }
+  
+  return(object)
+  
+})
+
+#' @rdname setImageDirDf
+#' @export
+setMethod(f = "setImageDirDf", signature = "CyproTimeLapse", definition = function(object){
+  
+  idir_df <- getImageDirDf(object)
+  
+  if(base::nrow(idir_df) >= 1 && !base::isTRUE(force)){
+    
+    stop(
+      "Image directory data.frame has already been set. Set argument 'force' to ", 
+      "TRUE to overwrite it."
+    )
+    
+  }
+  
+  if(!base::is.data.frame(df)){
+  
+    object@image_directories <- 
+      getTracksDf(object, with_well_plate = TRUE) %>% 
+      dplyr::select(well_plate_name, well_plate_index, well, roi, frame_num) %>% 
+      dplyr::distinct() %>% 
+      dplyr::mutate(dir = NA_character_, stack = NA)
+  
+  } else {
+    
+    object@image_directories <- df
+    
+  }
+  
+  return(object)
+  
+})
 
 #' @title Sets info status
 #' 
@@ -720,6 +1121,31 @@ setInfoStatus.layout_df <- function(df){
   
 }
 
+#' @rdname setInfoStats
+#' @export
+setInfoStatus.layout_df_mp <- function(df){
+  
+  dfm <- mergeCondition(df)
+  
+  dfm <- 
+    dplyr::mutate(
+      .data = dfm, 
+      info_status = base::as.character(info_status),
+      info_status = dplyr::case_when(
+        base::is.na(cell_line) & base::is.na(condition) ~ "Missing", 
+        base::is.character(cell_line) & base::is.na(condition) ~ "Incomplete", 
+        base::is.na(cell_line) & base::is.character(condition) ~ "Incomplete",
+        base::is.character(cell_line) & base::is.character(condition) ~ "Complete"
+      ), 
+      info_status = base::factor(info_status, levels = levels_info_status)
+    )
+  
+  df$info_status <- dfm$info_status
+  
+  return(df)
+  
+}
+
 #' @rdname setDataStatus
 #' @export
 setInfoStatus.layout_df_mp <- function(df){
@@ -741,7 +1167,6 @@ setInfoStatus.layout_df_mp <- function(df){
   df <- 
     dplyr::mutate(
       .data = df, 
-      selected = NULL, 
       info_status = base::as.character(info_status),
       info_status = dplyr::case_when(
         base::is.na(cell_line) & !condition_complete ~ "Missing", 
@@ -864,9 +1289,9 @@ setGeneric(name = "setLayoutDf", def = function(object, layout_df, ...){
 #' @export
 setMethod(f = "setLayoutDf", signature = "WellPlate", definition = function(object, layout_df, ...){
   
-  base::stopifnot(methods::is(layout_df, class2 = "layout_df"))
+  base::stopifnot(isOfClass(layout_df,"layout_df"))
   
-  object@layout <- layout_df
+  object@layout <- base::as.data.frame(layout_df)
   
   return(object)
   
@@ -1117,7 +1542,7 @@ setMethod(
 
 #' @rdname setTracksDf
 #' @export
-setGeneric(name = "setStatsDf", def = function(object, df){
+setGeneric(name = "setStatsDf", def = function(object, df, ...){
   
   standardGeneric(f = "setStatsDf")
   
@@ -1143,6 +1568,52 @@ setMethod(f = "setStatsDf", signature = "CyproTimeLapse", definition = function(
   
 })
 
+#' @rdname setStatsDf
+#' @export
+setMethod(f = "setStatsDf", signature = "CyproTimeLapseMP", definition = function(object, df, phase){
+  
+  phase <- check_phase(object, phase = phase, max_phases = 1)
+  
+  object@cdata@features_stats[[phase]] <- base::as.data.frame(df)
+  
+  return(object)
+  
+})
+
+#' @title Set storage directory
+#' 
+#' @description Sets the directory under which the \code{Cypro} object
+#' is saved by default with \code{saveCyproObject()}.
+#' 
+#' @inherit argument_dummy params
+#' 
+#' @param directory Character value. The file directory. Must end with \emph{'.RDS'}.
+#' 
+#' @return The input object. 
+#' 
+setGeneric(name = "setStorageDirectory", def = function(object, ...){
+  
+  standardGeneric(f = "setStorageDirectory")
+  
+}) 
+
+#' @rdname setStorageDirectory
+#' @export
+setMethod(f = "setStorageDirectory", signature = "Cypro", definition = function(object, directory, verbose = TRUE){
+  
+  base::stopifnot(stringr::str_detect(directory, pattern = "RDS$"))
+  
+  object@information$storage_directory <- directory
+  
+  give_feedback(
+    msg = glue::glue("Set directory '{directory}'."),
+    verbose = verbose, 
+    with.time = FALSE
+  )
+  
+  return(object)
+  
+})
 
 # T -----------------------------------------------------------------------
 
@@ -1157,7 +1628,7 @@ setMethod(f = "setStatsDf", signature = "CyproTimeLapse", definition = function(
 #' @return The input object. 
 #' @export
 #'
-setGeneric(name = "setTracksDf", def = function(object, df){
+setGeneric(name = "setTracksDf", def = function(object, df, ...){
   
   standardGeneric(f = "setTracksDf")
   
@@ -1178,6 +1649,18 @@ setMethod(f = "setTracksDf", signature = "CdataTimeLapse", definition = function
 setMethod(f = "setTracksDf", signature = "CyproTimeLapse", definition = function(object, df){
   
   object@cdata@features_tracks <- base::as.data.frame(df)
+  
+  return(object)
+  
+})
+
+#' @rdname setTracksDf
+#' @export
+setMethod(f = "setTracksDf", signature = "CyproTimeLapseMP", definition = function(object, df, phase){
+  
+  phase <- check_phase(object, phase = phase, max_phases = 1)
+  
+  object@cdata@features_tracks[[phase]] <- base::as.data.frame(df)
   
   return(object)
   
@@ -1317,13 +1800,25 @@ set_variable_assignment_shiny_hlpr <- function(variable, input_list, module_name
 #'
 #' @inherit argument_dummy params
 #' @param df A data.frame of a class for which a method has been defined.
-#' @param selected_wells Character vector. Denotes the wells for which the information 
+#' @param wells Character vector. Denotes the wells for which the information 
 #' is supposed to be set.
 #' @param cell_line Character value, NA or NULL. The cell line seeded in the wells denoted in 
 #' \code{selected_wells}.
 #' @param condition Character value, NA, or NULL. The condition of the well. If multiple phase
 #' experiment a character vector of length equal to the number of phases of
 #' the experiment design.
+#'
+#' @details Sets well cell line and condition for all wells that are selected - 
+#' meaning for which their value in variable \emph{selected} is TRUE. This 
+#' can be manipulated with argument \code{wells} with which wells are selected.
+#' Wells selected this way are deselected right before the data.frame is returned. 
+#' 
+#' @note \code{setWellInfo()} sets the provided information for all selected 
+#' wells. If the input data.frame already contains selected wells these are 
+#' included in addition to those denoted in argument \code{wells}.
+#' 
+#' @seealso \code{selectWells()}, \code{deselectWells()}
+#'
 #'
 #' @return A data.frame.
 #' @export
@@ -1337,26 +1832,21 @@ setWellInfo <- function(df, ...){
 #' @rdname setWellInfo
 #' @export 
 setWellInfo.layout_df <- function(df,
-                                  selected_wells,
+                                  wells = character(0),
                                   cell_line = NULL,
                                   condition = NULL,
                                   verbose = TRUE, 
                                   in_shiny = FALSE){
   
-  confuns::is_vec(x = selected_wells, mode = "character", min.length = 1)
-  
-  confuns::check_one_of(
-    input = selected_wells, 
-    against = df$well
-  )
-  
-  df$selected <- df$well %in% selected_wells
+  df <- selectWells(df = df, wells = wells)
   
   df <- setCondition(df = df, condition = condition, in_shiny = in_shiny, verbose = verbose)
   
   df <- setCellLine(df = df, cell_line = cell_line, in_shiny = in_shiny, verbose = verbose)
   
   df <- setInfoStatus(df)
+  
+  df <- deselectWells(df = df, wells = wells)
   
   return(df)
   

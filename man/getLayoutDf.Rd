@@ -5,15 +5,15 @@
 \alias{getLayoutDf,WellPlate-method}
 \alias{getLayoutDf,ExperimentDesign-method}
 \alias{getLayoutDf,Cypro-method}
-\title{Extract well plate layout data.frame}
+\title{Obtain well plate layout data.frame}
 \usage{
 getLayoutDf(object, ...)
 
 \S4method{getLayoutDf}{WellPlate}(object, ...)
 
-\S4method{getLayoutDf}{ExperimentDesign}(object, well_plate, ...)
+\S4method{getLayoutDf}{ExperimentDesign}(object, well_plate = NULL, ...)
 
-\S4method{getLayoutDf}{Cypro}(object, well_plate, ...)
+\S4method{getLayoutDf}{Cypro}(object, well_plate = NULL, ...)
 }
 \arguments{
 \item{object}{Any object for whose class a method has been defined.}
@@ -25,5 +25,5 @@ via \code{getWellPlateNames()}.}
 A \code{layout_df} - data.frame.
 }
 \description{
-Obtain the well plate layout in form of a data.frame.
+Extracts the well plate layout in form of a data.frame.
 }

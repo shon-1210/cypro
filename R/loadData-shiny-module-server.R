@@ -136,7 +136,7 @@ moduleLoadDataServer <- function(id, object){
                    id = ns("input_dir"), 
                    label = "Browse", 
                    title = NULL, 
-                   multiple = FALSE
+                   multiple = TRUE
                  ))
               
             )
@@ -290,7 +290,7 @@ moduleLoadDataServer <- function(id, object){
         object <- 
           prepareDataLoading(
             object = cypro_object(), 
-            directory = input_dir_string(), 
+            dir_input = input_dir_string(), 
             valid_filetypes = input$valid_filetypes,
             well_plate = input$selected_well_plate, 
             recursive = input$recursive,
@@ -318,8 +318,6 @@ moduleLoadDataServer <- function(id, object){
             check_additional = TRUE,
             check_vars = TRUE
             )
-        
-        debug_assign(object, "object_new")
         
         cypro_object(object)
         
@@ -407,7 +405,6 @@ moduleLoadDataServer <- function(id, object){
       }
       
       
-      
       # assembled directory 
       input_dir_string <- shiny::reactive({ 
         
@@ -422,7 +419,9 @@ moduleLoadDataServer <- function(id, object){
         
         if(sysname == "Windows"){
           
-          out <- flatten_folder_path(input_dir = input$input_dir)
+          by_folder <- shiny::isolate(byFolder(cypro_object()))
+          
+          out <- flatten_input_dir(input_dir = input$input_dir, by_folder = by_folder)
           
         } else {
           
@@ -475,8 +474,7 @@ moduleLoadDataServer <- function(id, object){
       # loading status
       loading_status <- shiny::reactive({
 
-        getLoadingStatusDf(object = cypro_object(), with_transferred = FALSE) %>% 
-          make_pretty_df()
+        getLoadingStatusDf(object = cypro_object(), with_transferred = FALSE)
         
       })
       
@@ -487,7 +485,8 @@ moduleLoadDataServer <- function(id, object){
         
         plotWellPlate(
           object = layout_df(), 
-          clr_by = input$clr_by, 
+          fill_by = input$clr_by, 
+          well_color = "black",
           plot_type = "well"
         )
         
@@ -556,26 +555,6 @@ moduleLoadDataServer <- function(id, object){
       
       # Text outputs ------------------------------------------------------------
       
-      output$all_missing_files <- shiny::renderText({
-        
-        shiny::validate(
-          shiny::need(
-            expr = !base::is.null(well_plate()[["missing_files"]]), 
-            message = "No folder has been chosen for this well plate."
-          )
-        )
-        
-        shiny::validate(
-          shiny::need(
-            expr = base::length(well_plate()[["missing_files"]]) == 0, 
-            message = "No missing files."
-          )
-        )
-        
-        stringr::str_c(well_plate()[["missing_files"]], collapse = ", ")
-        
-      })
-      
       output$chosen_dir <- shiny::renderText({
         
         shiny::req(input$selected_well_plate)
@@ -583,8 +562,17 @@ moduleLoadDataServer <- function(id, object){
         
         #well_plate()[["directory"]]
         
-        getWellPlateDirectories(cypro_object(), well_plates = input$selected_well_plate) %>% 
-          base::unname()
+        dir <- 
+          getWellPlateDirectories(cypro_object(), well_plates = input$selected_well_plate) %>% 
+          base::unname() 
+          
+        
+        shiny::validate(
+          shiny::need(
+            expr = !base::is.na(dir), 
+            message = "No directory information for well plate '{well_plate}'."
+          )
+        )
         
       })
       
@@ -599,7 +587,7 @@ moduleLoadDataServer <- function(id, object){
         
         shiny::validate(
           shiny::need(
-            expr = shiny::isTruthy(file_error_message()), 
+            expr = shiny::isTruthy(file_error_messages()), 
             message = "No errors occured."
           )
         )
@@ -612,32 +600,18 @@ moduleLoadDataServer <- function(id, object){
       
       
       # Table outputs -----------------------------------------------------------
-
-      
-      output$ambiguous_directories <- DT::renderDataTable({
-        
-        shiny::validate(
-          shiny::need(
-            expr = well_plate()[["ambiguous_directories"]], 
-            message = "No folder has been chosen for this well plate."
-          )
-        )
-        
-        shiny::validate(
-          shiny::need(
-            expr = !base::identical(well_plate()[["ambiguous_directories"]], base::data.frame()), 
-            message = "No ambiguous directories detected."
-          )
-        )
-        
-        # print output
-        well_plate()[["ambiguous_directories"]]
-        
-      })
       
       output$loading_status <- DT::renderDataTable({
         
-        loading_status()
+        shiny::validate(
+          shiny::need(
+            expr = base::nrow(loading_status()) >= 1, 
+            message = "No directories have been assigned yet."
+          )
+        )
+        
+        loading_status() %>% 
+          make_pretty_df()
         
       }, options = list(scrollX = TRUE))
       

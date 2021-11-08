@@ -277,6 +277,18 @@ setMethod(f = "isActive", signature = "AnalysisModule", definition = function(ob
 isClusterDf <- is_cluster_df
 
 
+#' @rdname is_complete
+#' @export
+isComplete <- function(df){
+  
+  UseMethod(generic = "isComplete", object = df)
+  
+}
+
+#' @rdname is_complete
+#' @export
+isComplete.cypro_df <- is_complete.cypro_df
+
 #' @title Test example data.frame
 #' 
 #' @description Tests if the data file loaded as an example data.frame during 
@@ -299,9 +311,9 @@ setMethod(f = "isCompleteExampleDf", signature = "Cypro", function(object){
   
   warning("isCompleteExampleDf is used here")
   
-  loading_fn <- suggestLoadingFunction(object)
+  ldm <- suggestLoadingModality(object)
   
-  if(loading_fn != "loadByFile"){
+  if(ldm != "by_file"){
     
     res <- FALSE
     
@@ -343,22 +355,6 @@ setMethod(f = "isCompleteExampleDf", signature = "Cypro", function(object){
   
   
 })
-
-
-
-#' @rdname is_complete
-#' @export
-isComplete <- function(df){
-  
-  UseMethod(generic = "isComplete", object = df)
-  
-}
-
-#' @rdname is_complete
-#' @export
-isComplete.cypro_df <- is_complete.cypro_df
-
-
 
 
 #' @rdname is_cypro_df
@@ -469,6 +465,30 @@ setGeneric(name = "isMultiplePhase", def = function(object, stop_if_false = FALS
 
 #' @rdname isMultiplePhase
 #' @export
+setMethod(f = "isMultiplePhase", signature = "data.frame", definition = function(object, stop_if_false){
+  
+  is_multiple_phase_df(df = object, stop_if_false = stop_if_false)
+  
+})
+
+#' @rdname isMultiplePhase
+#' @export
+setMethod(f = "isMultiplePhase", signature = "layout_df", definition = function(object, stop_if_false){
+  
+  is_multiple_phase_df(df = object, stop_if_false = stop_if_false)
+  
+})
+
+#' @rdname isMultiplePhase
+#' @export
+setMethod(f = "isMultiplePhase", signature = "layout_df_mp", definition = function(object, stop_if_false){
+  
+  is_multiple_phase_df(df = object, stop_if_false = stop_if_false)
+  
+})
+
+#' @rdname isMultiplePhase
+#' @export
 setMethod(f = "isMultiplePhase", signature = "WellPlate", function(object, stop_if_false = FALSE){
   
   res <- base::is.numeric(base::attr(object@layout, "n_phases"))
@@ -516,7 +536,33 @@ setMethod(f = "isMultiplePhase", signature = "Cypro", function(object, stop_if_f
   
 })
 
-
+is_multiple_phase_df <- function(df, stop_if_false = FALSE){
+  
+  test1 <- isOfClass(df, valid_class = "layout_df", stop_if_false = stop_if_false)
+  
+  if(base::isFALSE(test1)){
+    
+    out <- FALSE
+    
+  } else {
+    
+    n_phases <- base::attr(x = df, which = "n_phases")
+    
+    if(!base::is.numeric(n_phases)){
+      
+      out <- FALSE
+      
+    } else {
+      
+      out <- TRUE
+      
+    }
+    
+  }
+  
+  return(TRUE)
+  
+}
 
 
 

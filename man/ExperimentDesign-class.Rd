@@ -6,42 +6,31 @@
 \alias{ExperimentDesign}
 \title{The ExperimentDesign Class}
 \description{
-S4-object that contains the information around the
+S4-class that contains the information around the
 experiment design.
-}
-\details{
-E.g. @n_frames = 25, @interval = 1, @interval_unit = 'hours' means
-that during the experiment every well region of interest was captured 25 times.
-The read in data should therefore contain 25 rows for every observed cell - assuming
-that no cells emerged due to mitosis or went missing due to imaging artifacts.
 }
 \section{Slots}{
 
 \describe{
 \item{\code{experiment}}{character. The name of the \code{Cypro} object it is part of.}
 
-\item{\code{n_frames}}{numeric. Only relevant in case of time lapse experiments. The total
-number of images that have been made for every well-region-of-interest (well-roi).}
+\item{\code{example_df}}{data.frame. The example spreadsheet uploaded during \code{assignVariables()}.}
 
-\item{\code{ias}}{character. Name of the Image Analysis Software used.}
+\item{\code{example_dir}}{character. The file directory of the loaded example spreadsheet.}
 
-\item{\code{interval}}{numeric. Only relevant in case of time lapse experiments.
-The interval in between which the images were made.}
-
-\item{\code{interval_unit}}{character. Only relevant in case of time lapse experiments.
-The unit of the numeric value specified in slot @interval. One of
-\emph{'days', 'hours', 'minutes', 'seconds'}.}
-
-\item{\code{type}}{character. The experiment type. One of \emph{'screening', 'time_lapse',
-'time_lapse_mp'}.}
+\item{\code{ias}}{character. The image analysis software used to quantify the images.}
 
 \item{\code{variables_grouping}}{character. Contains variable names that were denoted as
-additional grouping variables.}
+additional grouping variables. All variables denoted like this are converted to factors.}
 
 \item{\code{variables_numeric}}{character. Contains variable names that were denoted as
-additional numeric variables.}
+additional numeric variables. All variables denoted like this are converted to numeric.}
 
 \item{\code{well_plates}}{list. Contains as many S4-objects of class \code{WellPlate}
 as defined during the interactive session of \code{designExperiment()}.}
 }}
 
+\seealso{
+\code{ExperimentDesignScreening}, \code{ExperimentDesignTimeLapse},
+\code{ExperimentDesignTimeLapseMP}
+}

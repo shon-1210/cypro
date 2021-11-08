@@ -3,6 +3,7 @@
 \name{joinWith}
 \alias{joinWith}
 \alias{joinWith,Cdata-method}
+\alias{joinWith,CdataTimeLapseMP-method}
 \title{Join cell data frames}
 \usage{
 joinWith(
@@ -14,6 +15,14 @@ joinWith(
 )
 
 \S4method{joinWith}{Cdata}(
+  object,
+  df,
+  with_cluster = FALSE,
+  with_meta = FALSE,
+  with_well_plate = FALSE
+)
+
+\S4method{joinWith}{CdataTimeLapseMP}(
   object,
   df,
   with_cluster = FALSE,

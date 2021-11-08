@@ -111,7 +111,7 @@ AnalysisModuleTimeLapse <- setClass(Class = "AnalysisModuleTimeLapse",
 
 #' @title The Cdata Class (Cell Data)
 #' 
-#' @description The parent S4-object of every \code{Cypro}-objects \code{@@cdata}
+#' @description The parent S4-class of every \code{Cypro}-objects \code{@@cdata}
 #' slot. Contains the experiment data in form of data.frames. All data.frames 
 #' are functionally connected by their common data variable \emph{cell_id} with which 
 #' they can be joined via \code{dplyr::left_join()}. 
@@ -426,48 +426,102 @@ SummaryVariable <- setClass(Class = "SummaryVariable",
 
 #' @title The ExperimentDesign Class 
 #' 
-#' @description S4-object that contains the information around the 
+#' @description S4-class that contains the information around the 
 #' experiment design.
 #'
 #' @slot experiment character. The name of the \code{Cypro} object it is part of.
-#' @slot n_frames numeric. Only relevant in case of time lapse experiments. The total
-#' number of images that have been made for every well-region-of-interest (well-roi).
-#' @slot ias character. Name of the Image Analysis Software used. 
-#' @slot interval numeric. Only relevant in case of time lapse experiments. 
-#' The interval in between which the images were made. 
-#' @slot interval_unit character. Only relevant in case of time lapse experiments. 
-#' The unit of the numeric value specified in slot @@interval. One of 
-#' \emph{'days', 'hours', 'minutes', 'seconds'}.
-#' @slot type character. The experiment type. One of \emph{'screening', 'time_lapse',
-#' 'time_lapse_mp'}.
+#' @slot example_df data.frame. The example spreadsheet uploaded during \code{assignVariables()}.
+#' @slot example_dir character. The file directory of the loaded example spreadsheet.
+#' @slot ias character. The image analysis software used to quantify the images. 
 #' @slot variables_grouping character. Contains variable names that were denoted as
-#' additional grouping variables.
+#' additional grouping variables. All variables denoted like this are converted to factors.
 #' @slot variables_numeric character. Contains variable names that were denoted as
-#' additional numeric variables.
+#' additional numeric variables. All variables denoted like this are converted to numeric.
 #' @slot well_plates list. Contains as many S4-objects of class \code{WellPlate}
 #' as defined during the interactive session of \code{designExperiment()}.
 #' 
+#' @seealso \code{ExperimentDesignScreening}, \code{ExperimentDesignTimeLapse}, 
+#' \code{ExperimentDesignTimeLapseMP}
 #' 
-#' @details E.g. @@n_frames = 25, @@interval = 1, @@interval_unit = 'hours' means 
-#' that during the experiment every well region of interest was captured 25 times. 
-#' The read in data should therefore contain 25 rows for every observed cell - assuming 
-#' that no cells emerged due to mitosis or went missing due to imaging artifacts.
-#'
+
 ExperimentDesign <- setClass(Class = "ExperimentDesign", 
                              slots = list(
                                example_df = "data.frame",
                                example_dir = "character",
                                experiment = "character",
                                ias = "character",
-                               interval = "numeric", 
-                               interval_unit = "character",
-                               n_frames = "numeric",
-                               phases = "list",
-                               type = "character",
                                variables_grouping = "character",
                                variables_numeric = "character", 
                                well_plates = "list"
-                             ))
+                             )
+                             )
+
+
+#' @title The ExperimentDesignScreening Class 
+#' 
+#' @description S4-class that contains the information around the 
+#' experiment design in a \code{CyproScreening} object.
+#' 
+#' @details Inherits from class \code{ExperimentDesign}. Does not contain any 
+#' additional information.
+#' 
+#' @seealso \code{ExperimentDesign}, \code{ExperimentDesignTimeLapse}, 
+#' \code{ExperimentDesignTimeLapseMP}
+#'
+ExperimentDesignSreening <- setClass(Class = "ExperimentDesignScreening", 
+                                     slots = list(), 
+                                     contains = "ExperimentDesign"
+                                     )
+
+#' @title The ExperimentDesignTimeLapse Class 
+#' 
+#' @description S4-class that contains the information around the 
+#' experiment design in a \code{CyproTimeLapse} object.
+#' 
+#' @details Inherits from class \code{ExperimentDesign} and contains additional
+#' information about the imaging process.
+#'
+#' @slot n_frames numeric. Only relevant in case of time lapse experiments. The total
+#' number of images that have been made for every well-region-of-interest (well-roi).
+#' @slot interval numeric. Only relevant in case of time lapse experiments. 
+#' The interval in between which the images were made. 
+#' @slot interval_unit character. Only relevant in case of time lapse experiments. 
+#' The unit of the numeric value specified in slot @@interval. One of 
+#' \emph{'days', 'hours', 'minutes', 'seconds'}.
+#' 
+#' @seealso \code{ExperimentDesign}, \code{ExperimentDesignScreening}, 
+#' \code{ExperimentDesignTimeLapseMP}
+#'
+ExperimentDesignTimeLapse <- setClass(Class = "ExperimentDesignTimeLapse", 
+                                      slots = list(
+                                        interval = "numeric", 
+                                        interval_unit = "character",
+                                        n_frames = "numeric"
+                                      ), 
+                                      contains = "ExperimentDesign"
+                                      )
+
+#' @title The ExperimentDesignTimeLapseMP Class 
+#' 
+#' @description S4-class that contains the information around the 
+#' experiment design in a \code{CyproTimeLapseMP} object. 
+#' 
+#' @details Inherits from class \code{ExperimentDesignTimeLapse} and contains
+#' additional information about the phase spans.
+#'
+#' @slot phases list. A list of numeric vectors. 
+#' 
+#' @seealso \code{ExperimentDesignScreening}, \code{ExperimentDesignTimeLapse}, 
+#' \code{ExperimentDesignTimeLapseMP}
+#'
+ExperimentDesignTimeLapseMP <- setClass(Class = "ExperimentDesignTimeLapseMP", 
+                                        slots = list(
+                                          phases = "list"
+                                        ), 
+                                        contains = "ExperimentDesignTimeLapse"
+                                        )
+
+
 
 # -----
 
@@ -477,7 +531,7 @@ ExperimentDesign <- setClass(Class = "ExperimentDesign",
 
 #' @title The DataFile Class
 #' 
-#' @description S4-object that contains the information about every file loaded. 
+#' @description S4-class that contains the information about every file loaded. 
 #'
 #' @slot added logical. TRUE if all variables of slot @@content were valid and 
 #' the data has been integrated in the \code{Cypro} object slot @@cdata.
@@ -511,7 +565,7 @@ DataFile <- setClass(Class = "DataFile",
 
 #' @title The Progress Class
 #' 
-#' @description S4-object that keeps track of the necessary function
+#' @description S4-class that keeps track of the necessary function
 #' calls that have to be made in order to use a \code{Cypro}-object.
 #'
 #' @slot experiment character. The name of the \code{Cypro} object it is part of.
@@ -537,9 +591,8 @@ Progress <- setClass(Class = "Progress",
 
 #' @title The WellPlate Class
 #' 
-#' @description S4-objects that abstracts a well plate. 
-#' It additionally carries information about if and how the related data has been 
-#' loaded.
+#' @description S4-classs that abstracts a well plate. It additionally carries
+#' information about if and how the related data has been loaded.
 #' 
 #' @slot directory character. The directory assigned to the well plate during \code{loadData()}.
 #' Is either a directory leading to a folder that contains the files to read in or a directory leading 
@@ -561,7 +614,7 @@ WellPlate <- setClass(Class = "WellPlate",
                         experiment = "character",
                         files = "list",
                         filetypes = "character",
-                        layout = "layout_df", 
+                        layout = "data.frame", 
                         loading_modality = "character",
                         index = "numeric",
                         name = "character",
@@ -596,7 +649,7 @@ WellPlate <- setClass(Class = "WellPlate",
 #' @slot directory character. Directory under which the \code{Cypro}-object is stored by default 
 #' using \code{saveCyproObject()}.
 #' @slot experiment character. The name of the experiment. 
-#' @slot design ExperimentDesign. An S4-object of class \code{ExperimentDesign}.
+#' @slot experiment_design ExperimentDesign. An S4-class of class \code{ExperimentDesign}.
 #' @slot feature_sets list. Each slot contains a character vector of names of numeric variables forming 
 #' a \emph{feature_set}. Based on these features clustering and dimensional reduction can be 
 #' performed. This allows to store several clustering results based on different features in one and the 
@@ -605,7 +658,7 @@ WellPlate <- setClass(Class = "WellPlate",
 #' @slot modules list. Each slot is again a list representing one of the modules that has been denoted 
 #' during \code{assignVariables()}. In addition to the variable denotation it can contain 
 #' module specific data, computation or analysis results. 
-#' @slot progress Progress. S4-object of class \code{Progress.}
+#' @slot progress Progress. S4-class of class \code{Progress.}
 #' @slot quality_checks list. Contains results of quality check related results such as outlier detection.
 #' @slot subsets list. Contains information of each subsetting process the \code{Cypro}-object
 #' has gone through. See functions prefixed with \code{subsetBy*()}.
@@ -651,7 +704,8 @@ Cypro <- setClass(Class = "Cypro",
 #' 
 CyproScreening <- setClass(Class = "CyproScreening", 
                            slots = list(
-                             cdata = "CdataScreening"
+                             cdata = "CdataScreening", 
+                             experiment_design = "ExperimentDesignScreening"
                            ), 
                            contains = "Cypro"
 )
@@ -674,7 +728,8 @@ CyproScreening <- setClass(Class = "CyproScreening",
 #' 
 CyproTimeLapse <- setClass(Class = "CyproTimeLapse", 
                            slots = list(
-                             cdata = "CdataTimeLapse"
+                             cdata = "CdataTimeLapse", 
+                             experiment_design = "ExperimentDesignTimeLapse"
                            ),
                            contains = "Cypro"
 )
@@ -697,7 +752,8 @@ CyproTimeLapse <- setClass(Class = "CyproTimeLapse",
 #' 
 CyproTimeLapseMP <- setClass(Class = "CyproTimeLapseMP", 
                              slots = list(
-                               cdata = "CdataTimeLapseMP"
+                               cdata = "CdataTimeLapseMP", 
+                               experiment_design = "ExperimentDesignTimeLapseMP"
                              ),
                              contains = "Cypro"
 )
@@ -798,4 +854,157 @@ setMethod(f = "show", signature = "cypro", definition = function(object){
   
 })
 
+setMethod(f = "show", signature = "Cypro", definition = function(object){
+  
+  print("write that")
+  
+})
+
+
+
+# Subset + ----------------------------------------------------------------
+
+
+
+#' @title The CyproSubset Class
+#' 
+#' @description Subsetting allows to conveniently split data sets by certain
+#' characteristics such as cell lines, conditions, cluster etc. or for specific
+#' cell ids. All outlier removal functions of \code{cypro} base on this system
+#' and it might be additionally useful if you want apply some machine learning 
+#' algorithms such as clustering and correlation on only a subset of cells.
+#' 
+#' The \code{CyproSubset}-class contains information about the subsetting the 
+#' \code{Cypro} object it is part of has undergone. This allows to trace 
+#' all subsetting steps back to original data set with which downstream analysis
+#' began.
+#' 
+#' object after the subsetting.
+#' @slot new_name character. The content of slot @@experiment of the new \code{Cypro}
+#' object.
+#' @slot parent_name character. The content of slot @@experiment of the \code{Cypro}
+#' object that underwent subsetting.
+#' @slot reasoning character. Character string of length one that describes in 
+#' a human readable way the reasoning behind the subsetting.
+#' 
+#' @seealso \code{CyproSubsetByCellID},\code{CyproSubsetByGroup}, \code{CyproSubsetByNumber}
+#' 
+#' @export
+#' 
+CyproSubset <- setClass(Class = "CyproSubset", 
+                        slots = list(
+                          new_name = "character",
+                          parent_name = "character",
+                          reasoning = "character"
+                        )
+                        )
+
+
+#' @title The CyproSubsetByCellID Class
+#' 
+#' @description Every subsetting in \code{Cypro} happens by cell id. The 
+#' \code{CyproSubsetByCellID} class contains information about 
+#' the cell IDs that were kept and that were discarded. 
+#' 
+#' @slot ids_discarded character. The cell IDs that were discarded.
+#' @slot ids_remaining character. The cell IDs that remained in the \code{Cypro}
+#' 
+#' @details Inherits from class \code{CyproSubset}.
+#' 
+#' @section Subset mechanism:
+#' 
+#' Cells with cell IDs that were not part of the input ids are discarded.
+#' 
+CyproSubsetByCellID <- setClass(Class = "CyproSubsetByCellID", 
+                                slots = list(
+                                  ids_discarded = "character",
+                                  ids_remaining = "character"
+                                ), 
+                                contains = "CyproSubset"
+                                )
+
+
+#' @title The CyproSubsetByGroup Class
+#' 
+#' @description Subsetting by group allows to only denote the groups
+#' from a grouping variable that are supposed to be kept. The cell IDs
+#' are then filtered and subsetting by cell ID takes place. 
+#' 
+#' The class \code{CyproSubsetByGroup} contains the denoted information 
+#' that lead to the cell IDs that were used to subset the \code{Cypro}
+#' object eventually. 
+#' 
+#' @slot grouping_variable character. The grouping variable that contains
+#' the groups that are supposed to be kept.
+#' @slot groups character. The groups whose cells are supposed to be kept.
+#' 
+#' @details Inherits from classes \code{CyproSubset} and \code{CyproSubsetByCellID}.
+#' 
+#' @section Subset mechanism:
+#' 
+#' The cell IDs that belong to the groups denoted are gathered. The object is 
+#' then subsetted by the mechanism described in the documentation for S4-class
+#' \code{CyproSubsetByCellID}.
+#' 
+CyproSubsetByGroup <- setClass(Class = "CyproSubsetByGroup", 
+                               slots = list(
+                                 grouping_variable = "character", 
+                                 groups_kept = "character"
+                               ),
+                               contains = c("CyproSubset", "CyproSubsetByCellID")
+                               )
+
+
+#' @title The CyproSubsetByNumber Class
+#' 
+#' @description The class \code{CyproSubsetByGroup} contains the denoted information 
+#' that lead to the cell IDs that were used to subset the \code{Cypro}
+#' object eventually. See details for more information about the options.
+#' 
+#' @param across character. The grouping variables across which 
+#' to reduce the cell number. 
+#' @param n_by_group numeric. The number of cells that are selected by 
+#' group in case of option \emph{groupwise}.
+#' @param n_total numeric. The number of cells the \code{Cypro} object 
+#' is supposed to contain after the subsetting in case of either option \emph{total_fixed}
+#' or option \emph{total_weighted}.
+#' @param weighted logical. Decides if the proportion of cells in each group is 
+#' maintained (weighted = TRUE, option \emph{total_weighted}) or is equalized
+#' (weighted = FALSE, option \emph{total_fixed}).
+#' 
+#' @details Inherits from classes \code{CyproSubset} and \code{CyproSubsetByCellID}.
+#' 
+#' @section Subset mechanism:  
+#' 
+#' Subsetting by number does not subset by anything 
+#' specific but simply reduces the number of cells in the object by random
+#' selection across certain grouping variables. There are three ways to subset by number:
+#' 
+#'  \itemize{
+#'   \item{\emph{groupwise:}}{ A fixed number of cells is picked from every group. The 
+#'   resulting total number of cells in the new \code{Cypro} object is the sum of groups
+#'   of the chosen grouping variable multiplied by the denoted number.}
+#'   \item{\emph{total_fixed:}}{ The number of cells in the whole data set is reduced 
+#'   to a fixed number. In the new \code{Cypro} object very group of the grouping variable
+#'   across which the data is subsetted contains the same number of cells.}
+#'   \item{\emph{total_weighted:}}{ The number of cells in the whole data set is reduced 
+#'   to a fixed number. In the new \code{Cypro} object the original proportion of cells in
+#'   the groups of the grouping variable across which the object is subsetted stays the same.}
+#'   } 
+#' 
+CyproSubsetByNumber <- setClass(Class = "CyproSubsetByNumber", 
+                                slots = list(
+                                  across = "character",
+                                  n_by_group = "numeric", 
+                                  n_total = "numeric",
+                                  weighted = "logical",
+                                  seed = "character"
+                                ), 
+                                contains = c("CyproSubset", "CyproSubsetByCellID")
+                                )
+
+
+
+
+# -----
 
