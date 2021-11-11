@@ -3,12 +3,15 @@
 \name{merge_condition}
 \alias{merge_condition}
 \alias{merge_condition.layout_df_mp}
+\alias{mergeCondition}
 \alias{mergeCondition.layout_df_mp}
 \title{Merge multiple phase conditions}
 \usage{
 merge_condition(df, ...)
 
 \method{merge_condition}{layout_df_mp}(df, collapse_with = " -> ", phases = NULL)
+
+mergeCondition(df, ...)
 
 \method{mergeCondition}{layout_df_mp}(df, collapse_with = " -> ", phases = NULL)
 }

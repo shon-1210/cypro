@@ -654,14 +654,12 @@ setMethod(f = "getWellPlate", signature = "Cypro", definition = function(object,
 #' @return A named list of \code{WellPlate} objects. 
 #' 
 #' @export
-#' 
 
 setGeneric(name = "getWellPlates", def = function(object, well_plates = NULL){
   
   standardGeneric(f = "getWellPlates")
   
 })
-
 
 #' @rdname getWellPlates
 #' @export
@@ -713,6 +711,10 @@ setMethod(f = "getWellPlates", signature = "Cypro", definition = function(object
 #'
 #' @inherit argument_dummy params
 #' 
+#' @details \code{getWellPlateDf()} is the only function of those that 
+#' start with \code{getWellPlate*()} that extracts its return value - the 
+#' data.frame - from slot @@cdata of the \code{Cypro} object. 
+#' 
 #' @return A data.frame.
 #' @export
 
@@ -760,7 +762,10 @@ setGeneric(name = "getWellPlateDirectories", def = function(object, ...){
 
 #' @rdname getWellPlateDirectories
 #' @export
-setMethod(f = "getWellPlateDirectories", signature = "Cypro", definition = function(object, well_plates = NULL, named = TRUE){
+setMethod(
+  f = "getWellPlateDirectories",
+  signature = "Cypro",
+  definition = function(object, well_plates = NULL, named = TRUE){
   
   well_plate_list <- getWellPlates(object, well_plates = well_plates)
   
@@ -1002,6 +1007,8 @@ setMethod(f = "getWellPlateType", signature = "layout_df_mp", function(object, .
 #' in form of a vector. 
 #'
 #' @inherit argument_dummy params 
+#' 
+#' @details In all methods, data is eventually extracted from the layout data.frames.
 #'
 #' @return A character vector.
 #' @export

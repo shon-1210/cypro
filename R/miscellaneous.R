@@ -107,6 +107,26 @@ cypro_object_ready <- function(object, verbose = TRUE){
   
 }
 
+cypro_object_is_being_subsetted <- function(object, by, verbose = TRUE, prev_subset = NULL){
+
+  if(!isOfClass(prev_subset, "CyproSubset")){
+  
+    exp_name <- object@experiment
+    
+    obj_class <-
+      base::class(object) %>% 
+      base::as.character()
+    
+    give_feedback(
+      msg = glue::glue("Subsetting {obj_class} object '{exp_name}' by {by}."), 
+      verbose = verbose
+    )
+    
+  }
+  
+  NULL
+
+  }
 
 # d -----------------------------------------------------------------------
 
@@ -551,7 +571,7 @@ merge_condition.layout_df_mp <- function(df, collapse_with = " -> ", phases = NU
   
 }
 
-#' @rdname mergeCondition
+#' @rdname merge_condition
 #' @export
 mergeCondition <- function(df, ...){
   
@@ -1243,6 +1263,26 @@ selectWells.layout_df <- function(df, wells = NULL){
   
 }
 
+
+
+#' @title Set seed
+#'
+#' @param set_seed Numeric or NULL.
+#'
+set_seed_hlpr <- function(set_seed){
+  
+  if(base::is.numeric(set_seed)){
+    
+    confuns::give_feedback(
+      msg = glue::glue("Setting seed: {set_seed}"), 
+      verbose = verbose
+    )
+    
+    base::set.seed(seed = set_seed)
+    
+  }
+  
+}
 
 #' @title Suggest the proper loading function
 #' 

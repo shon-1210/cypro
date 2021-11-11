@@ -24,6 +24,6 @@ Inherits from class \code{CyproSubset}.
 \section{Subset mechanism}{
 
 
-Cells with cell IDs that were not part of the input ids are discarded.
+Cells with cell IDs that were not part of the input IDs are discarded.
 }
 

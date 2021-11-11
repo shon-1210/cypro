@@ -6,7 +6,7 @@
 
 make_cell_id <- function(cell_id, well_plate_index, well, roi){
   
-  stringr::str_c("C", cell_id, "|R", roi, "|W", well, "|WP", well_plate_index, sep = "|")
+  stringr::str_c("ID", cell_id, "|R", roi, "|W", well, "|WP", well_plate_index, sep = "|")
   
 }
 

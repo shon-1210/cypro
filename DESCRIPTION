@@ -113,7 +113,6 @@ Collate:
     'shiny-functions.R'
     'shiny-module-quality-check-server.R'
     'shiny-module-quality-check-ui.R'
-    'subset.R'
     'subsetBy.R'
     'update.R'
     'valid-input-options.R'

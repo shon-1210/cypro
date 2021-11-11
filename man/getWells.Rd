@@ -40,3 +40,6 @@ A character vector.
 Extracts unique well or well regions of interest of a well plate
 in form of a vector.
 }
+\details{
+In all methods, data is eventually extracted from the layout data.frames.
+}

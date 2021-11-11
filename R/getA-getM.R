@@ -267,9 +267,6 @@ setMethod(f = "getClusterDf",
           signature = "Cypro",
           definition = function(object, verbose = NULL, ...){
             
-            assign_default(object = object)
-            
-            
             cluster_df <- 
               getCdata(object) %>% 
               getClusterDf()
@@ -371,17 +368,13 @@ setMethod(
   signature = "CyproTimeLapseMP", 
   definition = function(object, ..., named = FALSE, phase = NULL, verbose = NULL){
     
-    check_object(object)
-    
-    assign_default(object)
-    
     phase <- check_phase(object, phase = phase, max_phases = 1)
 
     res <- 
       getClusterDf(object, verbose = TRUE, phase = phase) %>% 
-      dplyr::select(-cell_id) %>% 
-      dplyr::select(...) %>% 
-      base::colnames()
+      dplyr::select(-cell_id) %>%
+      dplyr::select() %>% 
+      base::colnames() 
     
     return(res)
     
@@ -1034,7 +1027,6 @@ setMethod(
         y = getClusterDf(object, verbose = verbose), 
         by = "cell_id"
       ) %>% 
-      dplyr::select(cell_id) %>% 
       purrr::discard(.p = base::is.numeric)
     
     return(group_df)
@@ -1231,7 +1223,7 @@ setMethod(
   }
 )
 
-get_grouping_variable_names_hlp <- function(group_df, ..., named = FALSE, verbose = TRUE){
+get_grouping_variable_names_hlpr <- function(group_df, ..., named = FALSE, verbose = TRUE){
   
   all_var_names <- 
     base::colnames(group_df)

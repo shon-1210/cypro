@@ -2,11 +2,14 @@
 % Please edit documentation in R/n-functions.R
 \name{nCells}
 \alias{nCells}
+\alias{nCells,Cypro-method}
 \alias{nCellLines}
 \alias{nConditions}
-\title{Number of miscellaneous content}
+\title{Number of cells}
 \usage{
-nCells(object, across = NULL, drop_na = FALSE, phase = NULL, ...)
+nCells(object)
+
+\S4method{nCells}{Cypro}(object)
 
 nCellLines(object)
 
@@ -14,12 +17,6 @@ nConditions(object, phase = NULL)
 }
 \arguments{
 \item{object}{Any object for whose class a method has been defined.}
-
-\item{across}{Character value, character vector or NULL (see details for more).
-Specifies the grouping variable of interest.
-
-Use \code{getGroupingVariableNames()} to obtain all variable names that group the
-cells of your experiment in a certain manner.}
 
 \item{phase}{Character or numeric. If character, the ordinal value referring to the phase of interest (e.g. \emph{'first'}, \emph{'second'} etc.).
 referring to the phase of interest or \emph{'all'}. If numeric, the number referring to the phase.
@@ -29,9 +26,14 @@ If set to NULL takes the phase denoted as default with \code{adjustDefault()}.
 Ignored if the experiment design contains only one phase.}
 }
 \value{
+Numeric value.
+
 A numeric value. If \code{across} is specified a data.frame.
 }
 \description{
+Returns the number of cells the \code{Cypro} object
+contains data about.
+
 These functions return a numeric value describing the number
 of \code{n*()} the object contains. (E.g. \code{nCells()} returns the total
 number of cells about which the object contains data, \code{nConditions()}

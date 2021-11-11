@@ -913,7 +913,7 @@ CyproSubset <- setClass(Class = "CyproSubset",
 #' 
 #' @section Subset mechanism:
 #' 
-#' Cells with cell IDs that were not part of the input ids are discarded.
+#' Cells with cell IDs that were not part of the input IDs are discarded.
 #' 
 CyproSubsetByCellID <- setClass(Class = "CyproSubsetByCellID", 
                                 slots = list(
@@ -949,7 +949,7 @@ CyproSubsetByCellID <- setClass(Class = "CyproSubsetByCellID",
 CyproSubsetByGroup <- setClass(Class = "CyproSubsetByGroup", 
                                slots = list(
                                  grouping_variable = "character", 
-                                 groups_kept = "character"
+                                 groups = "character"
                                ),
                                contains = c("CyproSubset", "CyproSubsetByCellID")
                                )
@@ -959,18 +959,19 @@ CyproSubsetByGroup <- setClass(Class = "CyproSubsetByGroup",
 #' 
 #' @description The class \code{CyproSubsetByGroup} contains the denoted information 
 #' that lead to the cell IDs that were used to subset the \code{Cypro}
-#' object eventually. See details for more information about the options.
+#' object eventually. See section 'Subset mechanism' for more information about the options.
 #' 
-#' @param across character. The grouping variables across which 
+#' @slot across character. The grouping variables across which 
 #' to reduce the cell number. 
-#' @param n_by_group numeric. The number of cells that are selected by 
+#' @slot n_by_group numeric. The number of cells that are selected by 
 #' group in case of option \emph{groupwise}.
-#' @param n_total numeric. The number of cells the \code{Cypro} object 
+#' @slot n_total numeric. The number of cells the \code{Cypro} object 
 #' is supposed to contain after the subsetting in case of either option \emph{total_fixed}
 #' or option \emph{total_weighted}.
-#' @param weighted logical. Decides if the proportion of cells in each group is 
+#' @slot weighted logical. Decides if the proportion of cells in each group is 
 #' maintained (weighted = TRUE, option \emph{total_weighted}) or is equalized
 #' (weighted = FALSE, option \emph{total_fixed}).
+#' @slot option character. The option according to which the subsettign took place.
 #' 
 #' @details Inherits from classes \code{CyproSubset} and \code{CyproSubsetByCellID}.
 #' 
@@ -998,7 +999,8 @@ CyproSubsetByNumber <- setClass(Class = "CyproSubsetByNumber",
                                   n_by_group = "numeric", 
                                   n_total = "numeric",
                                   weighted = "logical",
-                                  seed = "character"
+                                  option = "character",
+                                  seed = "numeric"
                                 ), 
                                 contains = c("CyproSubset", "CyproSubsetByCellID")
                                 )

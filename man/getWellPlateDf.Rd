@@ -25,3 +25,8 @@ design.
 Not to be confused with the well plate layout which is stored in data.frames
 of class \code{layout_df} that can be obtained via \code{getLayoutDf()}.
 }
+\details{
+\code{getWellPlateDf()} is the only function of those that
+start with \code{getWellPlate*()} that extracts its return value - the
+data.frame - from slot @cdata of the \code{Cypro} object.
+}

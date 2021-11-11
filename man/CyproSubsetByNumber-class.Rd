@@ -5,29 +5,34 @@
 \alias{CyproSubsetByNumber-class}
 \alias{CyproSubsetByNumber}
 \title{The CyproSubsetByNumber Class}
-\arguments{
-\item{across}{character. The grouping variables across which
-to reduce the cell number.}
-
-\item{n_by_group}{numeric. The number of cells that are selected by
-group in case of option \emph{groupwise}.}
-
-\item{n_total}{numeric. The number of cells the \code{Cypro} object
-is supposed to contain after the subsetting in case of either option \emph{total_fixed}
-or option \emph{total_weighted}.}
-
-\item{weighted}{logical. Decides if the proportion of cells in each group is
-maintained (weighted = TRUE, option \emph{total_weighted}) or is equalized
-(weighted = FALSE, option \emph{total_fixed}).}
-}
 \description{
 The class \code{CyproSubsetByGroup} contains the denoted information
 that lead to the cell IDs that were used to subset the \code{Cypro}
-object eventually. See details for more information about the options.
+object eventually. See section 'Subset mechanism' for more information about the options.
 }
 \details{
 Inherits from classes \code{CyproSubset} and \code{CyproSubsetByCellID}.
 }
+\section{Slots}{
+
+\describe{
+\item{\code{across}}{character. The grouping variables across which
+to reduce the cell number.}
+
+\item{\code{n_by_group}}{numeric. The number of cells that are selected by
+group in case of option \emph{groupwise}.}
+
+\item{\code{n_total}}{numeric. The number of cells the \code{Cypro} object
+is supposed to contain after the subsetting in case of either option \emph{total_fixed}
+or option \emph{total_weighted}.}
+
+\item{\code{weighted}}{logical. Decides if the proportion of cells in each group is
+maintained (weighted = TRUE, option \emph{total_weighted}) or is equalized
+(weighted = FALSE, option \emph{total_fixed}).}
+
+\item{\code{option}}{character. The option according to which the subsettign took place.}
+}}
+
 \section{Subset mechanism}{
 
 

@@ -20,6 +20,9 @@ A numeric vector named by well plate. Values indicate the number of valid direct
 that have been read in via \code{loadData()}
 }
 \description{
+Returns the number of cells the \code{Cypro} object
+contains data about.
+
 These functions return a numeric value describing the number
 of \code{n*()} the object contains. (E.g. \code{nCells()} returns the total
 number of cells about which the object contains data, \code{nConditions()}
