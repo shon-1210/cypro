@@ -2,6 +2,9 @@
 % Please edit documentation in R/setO-Z.R
 \name{setStatsDf}
 \alias{setStatsDf}
+\alias{setStatsDf,CdataTimeLapse-method}
+\alias{setStatsDf,CyproTimeLapse-method}
+\alias{setStatsDf,CyproTimeLapseMP-method}
 \alias{setTracksDf}
 \alias{setTracksDf,CdataTimeLapse-method}
 \alias{setTracksDf,CyproTimeLapse-method}
@@ -9,6 +12,12 @@
 \title{Set cypro data.frames}
 \usage{
 setStatsDf(object, df, ...)
+
+\S4method{setStatsDf}{CdataTimeLapse}(object, df)
+
+\S4method{setStatsDf}{CyproTimeLapse}(object, df)
+
+\S4method{setStatsDf}{CyproTimeLapseMP}(object, df, phase)
 
 setTracksDf(object, df, ...)
 

@@ -3,8 +3,6 @@
 
 
 
-#' @param variable An S4 object of class \code{AssignableVariable}.
-
 write_html_variable_picker <- function(variable,
                                        example_df,
                                        identifier_names = base::character(1),

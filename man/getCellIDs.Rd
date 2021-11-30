@@ -2,9 +2,12 @@
 % Please edit documentation in R/getA-getM.R
 \name{getCellIDs}
 \alias{getCellIDs}
+\alias{getCellIDs,CyproScreening-method}
 \title{Obtain cell IDs}
 \usage{
 getCellIDs(object)
+
+\S4method{getCellIDs}{CyproScreening}(object)
 }
 \arguments{
 \item{object}{Any object for whose class a method has been defined.}

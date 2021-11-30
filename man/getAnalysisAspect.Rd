@@ -2,14 +2,32 @@
 % Please edit documentation in R/getA-getM.R
 \name{getAnalysisAspect}
 \alias{getAnalysisAspect}
+\alias{getAnalysisAspect,CyproScreening-method}
+\alias{getAnalysisAspect,CyproTimeLapse-method}
 \title{Obtain analysis aspect}
 \usage{
 getAnalysisAspect(object, ...)
+
+\S4method{getAnalysisAspect}{CyproScreening}(object, aspect, fset)
+
+\S4method{getAnalysisAspect}{CyproTimeLapse}(object, aspect, fset, phase)
+
+\S4method{getAnalysisAspect}{CyproTimeLapse}(object, aspect, fset, phase)
 }
 \arguments{
 \item{object}{Any object for whose class a method has been defined.}
 
 \item{aspect}{Character value. The analysis aspect.}
+
+\item{fset}{Character value. The feature set of interest. Obtain all added feature set names
+with \code{getFeatureSetNames()}.}
+
+\item{phase}{Character or numeric. If character, the ordinal value referring to the phase of interest (e.g. \emph{'first'}, \emph{'second'} etc.).
+referring to the phase of interest or \emph{'all'}. If numeric, the number referring to the phase.
+
+If set to NULL takes the phase denoted as default with \code{adjustDefault()}.
+
+Ignored if the experiment design contains only one phase.}
 }
 \value{
 An object of class \code{AnalysisAspect}.

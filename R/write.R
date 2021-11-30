@@ -1,7 +1,5 @@
 
 
-#' @param variable An S4 object of class \code{AssignableVariable}.
-
 write_basic_subset_text <- function(object){
   
   n_discarded <- base::length(object@ids_discarded)

@@ -276,7 +276,7 @@ setGeneric(name = "containsSummaryVariables", def = function(object){
   
 })
 
-#' @rdname containsSummarizableVariables
+#' @rdname containsSummaryVariables
 #' @export
 
 setMethod(f = "containsSummaryVariables", signature = "AnalysisModule", definition = function(object){

@@ -2,9 +2,25 @@
 % Please edit documentation in R/setA-M.R
 \name{setAdditionalVariableNames}
 \alias{setAdditionalVariableNames}
+\alias{setAdditionalVariableNames,ExperimentDesign-method}
+\alias{setAdditionalVariableNames,Cypro-method}
 \title{Set additional variables}
 \usage{
 setAdditionalVariableNames(object, ...)
+
+\S4method{setAdditionalVariableNames}{ExperimentDesign}(
+  object,
+  grouping_vars = NULL,
+  numeric_vars = NULL,
+  in_shiny = FALSE
+)
+
+\S4method{setAdditionalVariableNames}{Cypro}(
+  object,
+  grouping_vars = NULL,
+  numeric_vars = NULL,
+  in_shiny = FALSE
+)
 }
 \arguments{
 \item{object}{Any object for whose class a method has been defined.}

@@ -2,9 +2,12 @@
 % Please edit documentation in R/logical-tests-contains.R
 \name{containsSummaryVariables}
 \alias{containsSummaryVariables}
+\alias{containsSummaryVariables,AnalysisModule-method}
 \title{Tests for analysis modules}
 \usage{
 containsSummaryVariables(object)
+
+\S4method{containsSummaryVariables}{AnalysisModule}(object)
 }
 \arguments{
 \item{object}{Any object for whose class a method has been defined.}

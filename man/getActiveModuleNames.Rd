@@ -2,9 +2,12 @@
 % Please edit documentation in R/getA-getM.R
 \name{getActiveModuleNames}
 \alias{getActiveModuleNames}
+\alias{getActiveModuleNames,Cypro-method}
 \title{Obtain names of active modules}
 \usage{
 getActiveModuleNames(object)
+
+\S4method{getActiveModuleNames}{Cypro}(object)
 }
 \arguments{
 \item{object}{Any object for whose class a method has been defined.}

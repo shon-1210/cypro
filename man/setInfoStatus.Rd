@@ -3,11 +3,14 @@
 \name{setInfoStatus}
 \alias{setInfoStatus}
 \alias{setInfoStatus.layout_df}
+\alias{setInfoStatus.layout_df_mp}
 \title{Sets info status}
 \usage{
 setInfoStatus(df)
 
 \method{setInfoStatus}{layout_df}(df)
+
+\method{setInfoStatus}{layout_df_mp}(df)
 }
 \arguments{
 \item{df}{A data.frame of a class for which a method has been defined.}

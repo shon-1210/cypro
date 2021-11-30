@@ -126,7 +126,7 @@ setGeneric(name = "setStatsDf", def = function(object, df, ...){
   
 })
 
-#' @rdname setStatsDf
+#' @rdname setTracksDf
 #' @export
 setMethod(f = "setStatsDf", signature = "CdataTimeLapse", definition = function(object, df){
   
@@ -136,7 +136,7 @@ setMethod(f = "setStatsDf", signature = "CdataTimeLapse", definition = function(
   
 })
 
-#' @rdname setStatsDf
+#' @rdname setTracksDf
 #' @export
 setMethod(f = "setStatsDf", signature = "CyproTimeLapse", definition = function(object, df){
   
@@ -146,7 +146,7 @@ setMethod(f = "setStatsDf", signature = "CyproTimeLapse", definition = function(
   
 })
 
-#' @rdname setStatsDf
+#' @rdname setTracksDf
 #' @export
 setMethod(f = "setStatsDf", signature = "CyproTimeLapseMP", definition = function(object, df, phase){
   

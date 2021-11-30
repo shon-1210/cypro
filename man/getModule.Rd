@@ -2,9 +2,12 @@
 % Please edit documentation in R/getA-getM.R
 \name{getModule}
 \alias{getModule}
+\alias{getModule,Cypro-method}
 \title{Obtain analysis module}
 \usage{
 getModule(object, module_name, ...)
+
+\S4method{getModule}{Cypro}(object, module_name, ...)
 }
 \arguments{
 \item{object}{Any object for whose class a method has been defined.}

@@ -3,11 +3,14 @@
 \name{completeTracksDf}
 \alias{completeTracksDf}
 \alias{completeTracksDf,CyproTimeLapse-method}
+\alias{completeTracksDf,CyproTimeLapseMP-method}
 \title{Complete tracks data.frame}
 \usage{
 completeTracksDf(object, verbose = TRUE)
 
 \S4method{completeTracksDf}{CyproTimeLapse}(object, verbose = TRUE)
+
+\S4method{completeTracksDf}{CyproTimeLapseMP}(object, verbose = TRUE)
 }
 \arguments{
 \item{object}{Any object for whose class a method has been defined.}

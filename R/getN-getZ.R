@@ -523,9 +523,9 @@ setMethod(f = "getStatsDf", signature = "CyproTimeLapseMP", definition = functio
   
 })
 
-#' @title Extract numeric variables of cell stat data 
+#' @title Obtain numeric variables of cell stat data 
 #'
-#' @description Obtain the names of the numeric data variables of your 
+#' @description Extracts the names of the numeric data variables of your 
 #' cell data. Useful to obtain vectors of variable names as input for recurring
 #' arguments like \code{variables}.
 #'
@@ -794,9 +794,9 @@ setMethod(f = "getTracksDf", signature = "CyproTimeLapseMP", definition = functi
   
 })
 
-#' @title Extract numeric variables of cell track data 
+#' @title Obtain numeric variables of cell track data 
 #' 
-#' @description Obtain the names of cell features of time lapse experiments.
+#' @description Extracts the names of cell features of time lapse experiments.
 #'
 #' @inherit getStatVariableNames params
 #' 

@@ -206,7 +206,7 @@ setMethod(
   })
 
 
-#' @rdname completeTracks
+#' @rdname completeTracksDf
 #' @export
 setMethod(
   f = "completeTracksDf",

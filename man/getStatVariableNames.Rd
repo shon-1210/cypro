@@ -4,7 +4,7 @@
 \alias{getStatVariableNames}
 \alias{getStatVariableNames,CyproTimeLapse-method}
 \alias{getStatVariableNames,CyproTimeLapseMP-method}
-\title{Extract numeric variables of cell stat data}
+\title{Obtain numeric variables of cell stat data}
 \usage{
 getStatVariableNames(object, ...)
 
@@ -29,7 +29,7 @@ Ignored if the experiment design contains only one phase.}
 A character vector.
 }
 \description{
-Obtain the names of the numeric data variables of your
+Extracts the names of the numeric data variables of your
 cell data. Useful to obtain vectors of variable names as input for recurring
 arguments like \code{variables}.
 }

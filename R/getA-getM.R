@@ -25,7 +25,7 @@ setGeneric(name = "getActiveModuleNames", def = function(object){
 })
 
 
-#' @rdname getUsedModuleNames
+#' @rdname getActiveModuleNames
 #' @export
 setMethod(f = "getActiveModuleNames", signature = "Cypro", definition = function(object){
   
@@ -98,7 +98,7 @@ setGeneric(name = "getAnalysisAspect", def = function(object, ...){
   
 })
 
-#' @rdname getAnylsisAspect
+#' @rdname getAnalysisAspect
 #' @export
 setMethod(
   f = "getAnalysisAspect", 
@@ -129,7 +129,7 @@ setMethod(
   }
 )
 
-#' @rdname getAnylsisAspect
+#' @rdname getAnalysisAspect
 #' @export
 setMethod(
   f = "getAnalysisAspect", 
@@ -156,7 +156,7 @@ setMethod(
   }
 )
 
-#' @rdname getAnylsisAspect
+#' @rdname getAnalysisAspect
 #' @export
 setMethod(
   f = "getAnalysisAspect", 
@@ -206,7 +206,7 @@ setGeneric(name = "getCellIDs", def = function(object){
   
 })
 
-#' @rdname getCellIds
+#' @rdname getCellIDs
 #' @export
 setMethod(f = "getCellIDs", signature = "CyproScreening", definition = function(object){
   
@@ -2153,7 +2153,7 @@ setGeneric(name = "getModule", def = function(object, module_name, ...){
 })
 
 
-#' @rdname getAnalysisModule
+#' @rdname getModule
 #' @export
 setMethod(f = "getModule", signature = "Cypro", definition = function(object, module_name, ...){
   

@@ -8,9 +8,9 @@
 \usage{
 computeUMAP(object, ...)
 
-\S4method{computeUMAP}{Cypro}(object, fset = "all_features", ...)
+\S4method{computeUMAP}{Cypro}(object, fset = "all_features", verbose = TRUE, ...)
 
-\S4method{computeUMAP}{CyproTimeLapseMP}(object, phase, fset = "all_features", ...)
+\S4method{computeUMAP}{CyproTimeLapseMP}(object, phase, fset = "all_features", verbose = TRUE, ...)
 }
 \arguments{
 \item{object}{Any object for whose class a method has been defined.}
@@ -19,6 +19,11 @@ computeUMAP(object, ...)
 
 \item{fset}{Character value. The feature set of interest. Obtain all added feature set names
 with \code{getFeatureSetNames()}.}
+
+\item{verbose}{Logical. If set to TRUE informative messages regarding
+the computational progress will be printed.
+
+(Warning messages will always be printed.)}
 
 \item{phase}{Character or numeric. If character, the ordinal value referring to the phase of interest (e.g. \emph{'first'}, \emph{'second'} etc.).
 referring to the phase of interest or \emph{'all'}. If numeric, the number referring to the phase.

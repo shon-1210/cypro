@@ -4,7 +4,7 @@
 \alias{getTrackVariableNames}
 \alias{getTrackVariableNames,CyproTimeLapse-method}
 \alias{getTrackVariableNames,CyproTimeLapseMP-method}
-\title{Extract numeric variables of cell track data}
+\title{Obtain numeric variables of cell track data}
 \usage{
 getTrackVariableNames(object, ...)
 
@@ -29,7 +29,7 @@ Ignored if the experiment design contains only one phase.}
 A character vector.
 }
 \description{
-Obtain the names of cell features of time lapse experiments.
+Extracts the names of cell features of time lapse experiments.
 }
 \seealso{
 starts_with(), ends_with(), contains(), matches()

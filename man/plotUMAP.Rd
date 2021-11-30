@@ -11,7 +11,6 @@ plotUMAP(object, ...)
 \S4method{plotUMAP}{Cypro}(
   object,
   fset = "all_features",
-  n_dims = 2,
   alpha_by = NULL,
   color_by = NULL,
   shape_by = NULL,
@@ -32,7 +31,6 @@ plotUMAP(object, ...)
   object,
   phase,
   fset = "all_features",
-  n_dims = 2,
   alpha_by = NULL,
   color_by = NULL,
   shape_by = NULL,
