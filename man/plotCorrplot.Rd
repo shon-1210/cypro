@@ -14,6 +14,7 @@ plotCorrplot(object, ...)
   across = NULL,
   across_subset = NULL,
   features = NULL,
+  relevel = FALSE,
   pval_threshold = NULL,
   type = "lower",
   diagonal = TRUE,
@@ -41,6 +42,7 @@ plotCorrplot(object, ...)
   across = NULL,
   across_subset = NULL,
   features = NULL,
+  relevel = FALSE,
   pval_threshold = NULL,
   type = "lower",
   diagonal = TRUE,
@@ -76,6 +78,9 @@ no grouping is done.}
 \item{across_subset}{Character vector or NULL. If character, specifies groups of the
 grouping variable that are of interest. Prefixing group names with \emph{'-'} excludes them.
 If NULL, all groups are considered.}
+
+\item{relevel}{Logical value. If set to TRUE the input order of \code{across.subset} and
+\code{variables} determines the order in which the groups of interest are displayed.}
 
 \item{pval_threshold}{Numeric value or NULL. If numeric, denotes the maximum p-value to be considered as
 significant. Must no be higher than 0.05.}

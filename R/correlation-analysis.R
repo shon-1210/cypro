@@ -28,7 +28,7 @@ setMethod(
       setAnalysisAspect(
         object = object,
         analysis_aspect = corr_obj, 
-        fset_name = "all_features"
+        fset = "all_features"
         )
     
     return(object)
@@ -63,7 +63,7 @@ setMethod(
       setAnalysisAspect(
         object = object,
         analysis_aspect = corr_obj,
-        fset_name = "all_features",
+        fset = "all_features",
         phase = phase
         )
     

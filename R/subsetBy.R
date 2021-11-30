@@ -154,7 +154,9 @@ subset_by_cell_id_hlpr <- function(object,
   object@cdata <- cdata
   
   # reset slots 
-  object@analysis <- list()
+  fnames <- getFeatureNames(object) %>% vselect(-dplyr::any_of(non_data_variables))
+  
+  object <- setAnalysisList(object)
   
   object@quality_checks <- list()
   
@@ -410,7 +412,7 @@ setMethod(
                         across = c("cell_line", "condition"),
                         n_by_group = NULL, 
                         n_total = NULL, 
-                        weighted = NULL, 
+                        weighted = TRUE, 
                         reasoning = NA_character_,
                         seed = NULL,
                         verbose = TRUE){

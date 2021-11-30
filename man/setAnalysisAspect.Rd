@@ -8,12 +8,15 @@
 \usage{
 setAnalysisAspect(object, ...)
 
-\S4method{setAnalysisAspect}{Cypro}(object, analysis_aspect, fset_name)
+\S4method{setAnalysisAspect}{Cypro}(object, analysis_aspect, fset)
 
-\S4method{setAnalysisAspect}{CyproTimeLapseMP}(object, analysis_aspect, fset_name, phase)
+\S4method{setAnalysisAspect}{CyproTimeLapseMP}(object, analysis_aspect, fset, phase)
 }
 \arguments{
 \item{object}{Any object for whose class a method has been defined.}
+
+\item{fset}{Character value. The feature set of interest. Obtain all added feature set names
+with \code{getFeatureSetNames()}.}
 
 \item{phase}{Character or numeric. If character, the ordinal value referring to the phase of interest (e.g. \emph{'first'}, \emph{'second'} etc.).
 referring to the phase of interest or \emph{'all'}. If numeric, the number referring to the phase.

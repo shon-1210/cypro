@@ -103,9 +103,9 @@ setGeneric(name = "getAnalysisAspect", def = function(object, ...){
 setMethod(
   f = "getAnalysisAspect", 
   signature = "CyproScreening", 
-  definition = function(object, aspect, fset_name){
+  definition = function(object, aspect, fset){
     
-    out <- object@analysis[[aspect]][[fset_name]]
+    out <- object@analysis[[aspect]][[fset]]
     
     out@data <- 
       getFeatureDf(object, with_everything = TRUE) 
@@ -113,6 +113,10 @@ setMethod(
     out@data_scaled <- 
       getScaledDf(object) %>% 
       dplyr::select(cell_id, dplyr::all_of(out@variables_numeric))
+    
+    out@meta <- 
+      getFeatureDf(object) %>% 
+      dplyr::select(cell_id)
     
     out@variables_grouping <- getGroupingVariableNames(object)
     
@@ -130,9 +134,9 @@ setMethod(
 setMethod(
   f = "getAnalysisAspect", 
   signature = "CyproTimeLapse", 
-  definition = function(object, aspect, fset_name){
+  definition = function(object, aspect, fset){
     
-    out <- object@analysis[[aspect]][[fset_name]]
+    out <- object@analysis[[aspect]][[fset]]
     
     out@data <- 
       getStatsDf(object, with_everything = TRUE) 
@@ -157,11 +161,11 @@ setMethod(
 setMethod(
   f = "getAnalysisAspect", 
   signature = "CyproTimeLapse", 
-  definition = function(object, aspect, fset_name, phase){
+  definition = function(object, aspect, fset, phase){
     
     phase <- check_phase(object, phase = phase, max_phases = 1)
     
-    out <- object@analysis[[aspect]][[fset_name]][[phase]]
+    out <- object@analysis[[aspect]][[fset]][[phase]]
     
     out@data <- 
       getStatsDf(object, with_everything = TRUE, phase = phase) 
@@ -412,38 +416,21 @@ setMethod(f = "getClusterDf",
           })
 
 
-#' @title Obtain \code{Clustering} object
-#' 
-#' @description Extracts \code{Clustering} object of the respective
-#' feature set. 
-#' 
-#' @inherit argument_dummy params
-#' 
-#' @return Object of class \code{Clustering}.
-#' 
-#' @export
-#' 
-setGeneric(name = "getClustering", def = function(object, ...){
-  
-  standardGeneric(f = "getClustering")
-  
-})
-
 #' @rdname getClustering
 #' @export
 setMethod(
   f = "getClustering", 
   signature = "Cypro",
-  definition = function(object, fset_name = "all_features"){
+  definition = function(object, fset = "all_features", ...){
     
     check_one_of(
-      input = fset_name, 
+      input = fset, 
       against = getFeatureSetNames(object)
     )
     
-    out <- getAnalysisAspect(object, aspect = "clustering", fset_name = fset_name)
+    out <- getAnalysisAspect(object, aspect = "clustering", fset = fset)
     
-    return(Out)
+    return(out)
     
   }
 )
@@ -453,16 +440,16 @@ setMethod(
 setMethod(
   f = "getClustering", 
   signature = "CyproTimeLapseMP",
-  definition = function(object, fset_name = "all_features", phase = NULL){
+  definition = function(object, fset = "all_features", phase = NULL){
     
     check_one_of(
-      input = fset_name, 
+      input = fset, 
       against = getFeatureSetNames(object)
     )
     
-    out <- getAnalysisAspect(object, aspect = "clustering", fset_name = fset_name, phase = phase)
+    out <- getAnalysisAspect(object, aspect = "clustering", fset = fset, phase = phase)
     
-    return(Out)
+    return(out)
     
   }
 )
@@ -535,36 +522,20 @@ setMethod(
 )
 
 
-#' @title Obtain \code{Correlation} object
-#' 
-#' @description Extracts \code{Correlation} object of the respective
-#' feature set. 
-#' 
-#' @inherit argument_dummy params
-#' 
-#' @return Object of class \code{Correlation}.
-#' 
-#' @export
-#' 
-setGeneric(name = "getCorrelation", def = function(object, ...){
-  
-  standardGeneric(f = "getCorrelation")
-  
-})
 
 #' @rdname getCorrelation
 #' @export
 setMethod(
   f = "getCorrelation", 
   signature = "Cypro",
-  definition = function(object, fset_name = "all_features"){
+  definition = function(object, fset = "all_features"){
     
     check_one_of(
-      input = fset_name, 
+      input = fset, 
       against = getFeatureSetNames(object)
     )
     
-    out <- getAnalysisAspect(object, aspect = "correlation", fset_name = fset_name)
+    out <- getAnalysisAspect(object, aspect = "correlation", fset = fset)
     
     return(out)
     
@@ -576,14 +547,14 @@ setMethod(
 setMethod(
   f = "getCorrelation", 
   signature = "CyproTimeLapseMP",
-  definition = function(object, fset_name = "all_features", phase = NULL){
+  definition = function(object, fset = "all_features", phase = NULL){
     
     check_one_of(
-      input = fset_name, 
+      input = fset, 
       against = getFeatureSetNames(object)
     )
     
-    out <- getAnalysisAspect(object, aspect = "correlation", fset_name = fset_name, phase = phase)
+    out <- getAnalysisAspect(object, aspect = "correlation", fset = fset, phase = phase)
     
     return(out)
     
@@ -727,16 +698,16 @@ setGeneric(name = "getDimRed", def = function(object, ...){
 setMethod(
   f = "getDimRed", 
   signature = "Cypro",
-  definition = function(object, fset_name = "all_features"){
+  definition = function(object, fset = "all_features"){
     
     check_one_of(
-      input = fset_name, 
+      input = fset, 
       against = getFeatureSetNames(object)
     )
     
-    out <- getAnalysisAspect(object, aspect = "dimred", fset_name = fset_name)
+    out <- getAnalysisAspect(object, aspect = "dimred", fset = fset)
     
-    return(Out)
+    return(out)
     
   }
 )
@@ -746,16 +717,16 @@ setMethod(
 setMethod(
   f = "getDimRed", 
   signature = "CyproTimeLapseMP",
-  definition = function(object, fset_name = "all_features", phase = NULL){
+  definition = function(object, fset = "all_features", phase = NULL){
     
     check_one_of(
-      input = fset_name, 
+      input = fset, 
       against = getFeatureSetNames(object)
     )
     
-    out <- getAnalysisAspect(object, aspect = "dimred", fset_name = fset_name, phase = phase)
+    out <- getAnalysisAspect(object, aspect = "dimred", fset = fset, phase = phase)
     
-    return(Out)
+    return(out)
     
   }
 )
@@ -1020,7 +991,7 @@ setMethod(f = "getFeatureNames", signature = "CyproScreening", definition = func
 #' @export
 #'
 
-setGeneric(name = "getFeatureSet", def = function(object, feature_set){
+setGeneric(name = "getFeatureSet", def = function(object, ...){
   
   standardGeneric(f = "getFeatureSet")
   
@@ -1028,7 +999,7 @@ setGeneric(name = "getFeatureSet", def = function(object, feature_set){
 
 #' @rdname getFeatureSet 
 #' @export 
-setMethod(f = "getFeatureSet", signature = "Cypro", definition = function(object){
+setMethod(f = "getFeatureSet", signature = "Cypro", definition = function(object, fset){
   
   if(base::length(base::names(object@feature_sets)) == 0){
     
@@ -1037,13 +1008,13 @@ setMethod(f = "getFeatureSet", signature = "Cypro", definition = function(object
   }
   
   confuns::check_one_of(
-    input = feature_set, 
+    input = fset, 
     against = base::names(object@feature_sets), 
     fdb.opt = 2, 
-    ref.opt.2 = "defined variable sets"
+    ref.opt.2 = "defined feature sets"
   )
   
-  fset <- object@feature_sets[[feature_set]]
+  fset <- object@feature_sets[[fset]]
   
   return(fset)
   

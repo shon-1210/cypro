@@ -1,543 +1,495 @@
 
-
-
-# NOT EXPORTED ------------------------------------------------------------
-
-
-#' Title
-#'
-#' @inherit argument_dummy params
-run_dim_red <- function(object,
-                        variable_set,
-                        phase = NULL,
-                        method_dim_red = "pca",
-                        force = FALSE,
-                        set_seed = NULL, 
-                        verbose = NULL,
+#' @rdname computePCA
+#' @export
+setMethod(
+  f = "computePCA", 
+  signature = "Cypro", 
+  definition = function(object, 
+                        n_dims,
+                        fset = "all_features", 
+                        verbose = TRUE, 
                         ...){
-  
-  check_object(object)
-  assign_default(object)
-  
-  phase <- check_phase(object, phase = phase, max_phases = 1)
-  
-  variables <- getVariableSet(object, variable_set = variable_set)
-  
-  if(multiplePhases(object)){
     
-    dim_red_obj <- object@analysis$dim_red[[method_dim_red]][[variable_set]][[phase]]
+    dimred_obj <- getDimRed(object, fset = fset)
     
-  } else {
-    
-    dim_red_obj <- object@analysis$dim_red[[method_dim_red]][[variable_set]]
-    
-  }
-  
-  if(base::class(dim_red_obj) != "dim_red_conv" | base::isTRUE(force)){
-    
-    stat_df <- 
-      getStatsDf(
-        object = object,
-        phase = phase,
-        with_cluster = FALSE,
-        with_meta = FALSE
-        ) %>% 
-      dplyr::select(cell_id, dplyr::all_of(variables))
-    
-    cell_ids <- stat_df$cell_id
-    stat_df$cell_id <- NULL
-    
-    stat_df <- base::as.data.frame(stat_df)
-    base::rownames(stat_df) <- cell_ids
-    
-    dim_red_obj <- 
-      confuns::compute_dim_red(
-        data = stat_df, 
-        key.name = "cell_id", 
-        method.dim.red = method_dim_red, 
-        seed = set_seed, 
-        scale = TRUE,
-        ...
+    dimred_obj <- 
+      computePCA(
+        object = dimred_obj, 
+        n_dims = n_dims, 
+        verbose = verbose
       )
     
-    msg <- 
-      glue::glue(
-        "Successfully calculated dimensional reduction",
-        "(method = {method_dim_red}){ref_phase}with '{variable_set}'-variables:",
-        "'{variables}'",
-        variables = glue::glue_collapse(x = variables, sep = "', '", last = "' and '", width = 100),
-        ref_phase = hlpr_glue_phase(object, phase)
-        )
+    object <- setAnalysisAspect(object, analysis_aspect = dimred_obj, fset = fset)
     
-    # remove data to prevent the object from becoming to big
-    dim_red_obj@data <- base::matrix()
-    dim_red_obj@meta <- base::data.frame()
-    
-    confuns::give_feedback(msg = msg, verbose = verbose, with.time = TRUE)
-    
-  } else {
-    
-    msg <-
-      glue::glue(
-        "Dimensional reduction (method = {method_dim_red}) of variable set",
-        "'{variable_set}'{ref_phase}already exists. Set argument 'force' to",
-        "TRUE in order to overwrite it.", 
-        ref_phase = hlpr_glue_phase(object, phase)
-        )
-    
-    confuns::give_feedback(msg = msg, fdb.fn = "stop", with.time = FALSE)
+    return(object)
     
   }
-  
-  object <- 
-    setDimRedConv(
-      object = object,
-      dim_red_object = dim_red_obj,
-      method = method_dim_red,
-      phase = phase,
-      variable_set = variable_set
+)
+
+#' @rdname computePCA
+#' @export
+setMethod(
+  f = "computePCA", 
+  signature = "CyproTimeLapseMP", 
+  definition = function(object, 
+                        phase,
+                        n_dims,
+                        fset = "all_features", 
+                        verbose = TRUE, 
+                        ...){
+    
+    dimred_obj <- getDimRed(object, fset = fset, phase = phase)
+    
+    dimred_obj <- 
+      computePCA(
+        object = dimred_obj, 
+        n_dims = n_dims, 
+        verbose = verbose
       )
-  
-  base::return(object)
-  
-}
-
-#' Title
-#'
-#' @param object 
-#' @param phase 
-#' @param method_dim_red 
-#'
-#' @return
-#'
-get_dim_red_obj <- function(object, variable_set, phase = NULL, method_dim_red){
-  
-  check_object(object)
-  assign_default(object)
-  
-  if(multiplePhases(object)){
     
-    phase <- check_phase(object, phase = phase, max_phases = 1)
+    object <- setAnalysisAspect(object, analysis_aspect = dimred_obj, fset = fset, phase = phase)
     
-    dim_red_obj <- object@analysis$dim_red[[method_dim_red]][[variable_set]][[phase]]
-    
-  } else {
-    
-    dim_red_obj <- object@analysis$dim_red[[method_dim_red]][[variable_set]]
+    return(object)
     
   }
-  
-  ref_fun <-
-    stringr::str_c("run",
-                   confuns::make_capital_letters(method_dim_red),
-                   glue::glue("(..., variable_set = '{variable_set}')"), sep = "")
-  
-  check_availability(
-    evaluate = base::class(dim_red_obj) == "dim_red_conv", 
-    ref_input = glue::glue("{method_dim_red} results{ref_phase}of variable set '{variable_set}'", ref_phase = hlpr_glue_phase(object, phase)), 
-    ref_fun = ref_fun, 
-    phase = phase
-  )
-  
-  # add data
-  numeric_vars <- dim_red_obj@variables_num
-  
-  stat_df <- getStatsDf(object, phase = phase, verbose = FALSE, drop_na = FALSE)
-  
-  dim_red_obj@data <- 
-    dplyr::select(stat_df, cell_id, dplyr::all_of(numeric_vars)) %>% 
-    tibble::column_to_rownames(var = "cell_id") %>% 
-    base::as.matrix()
-  
-  
-  dim_red_obj@meta <- 
-    dplyr::select(stat_df, where(base::is.character), where(base::is.factor))
-  
-  
-  base::return(dim_red_obj)
-  
-}
+)
 
 
-#' Title
-#'
-#' @param object 
-#' @param phase 
-#' @param method_dim_red 
-#' @param color_by 
-#' @param color_aes 
-#' @param clrp 
-#' @param clrp_adjust 
-#' @param clrsp 
-#' @param pt_alpha 
-#' @param pt_clr 
-#' @param pt_fill 
-#' @param pt_size 
-#'
-plot_dim_red <- function(object,
-                         variable_set,
-                         phase = NULL, 
-                         method_dim_red = "pca", 
-                         color_by = NULL, 
-                         color_aes = "fill",
-                         pt_clrp = NULL, 
-                         clrp_adjust = NULL, 
-                         pt_alpha = NULL, 
-                         pt_clr = NULL,
-                         pt_clrsp = NULL,
-                         pt_fill = NULL,
-                         pt_size = NULL, 
-                         add_ons = list(ggplot2::labs(fill = NULL, color = NULL)),
-                         ...
-                         ){
-  
-  check_object(object)
-  assign_default(object)
-  
-  dim_red_obj <- 
-    get_dim_red_obj(object,
-                    variable_set = variable_set, 
-                    phase = phase,
-                    method_dim_red = method_dim_red)
-  
-  confuns::plot_dim_red(
-    dimred.obj = dim_red_obj, 
-    clr.by = color_by,
-    clr.aes = color_aes, 
-    pt.clrp = pt_clrp, 
-    pt.clrsp = pt_clrsp, 
-    pt.alpha = pt_alpha, 
-    pt.fill = pt_fill, 
-    pt.shape = base::ifelse(color_aes == "fill", 21, 19), 
-    pt.size = pt_size ,
-    add.ons = add_ons,
-    clrp.adjust = clrp_adjust, 
-    ...
-  )
-  
-}
-
-
-
-# EXPORTED ----------------------------------------------------------------
-
-
-
-#' @title Compute dimensional reductions
-#' 
-#' @description Reduces the dimensions of all specified numeric variables using the respective 
-#' algorithm. 
-#'
-#' @inherit argument_dummy
-#' @param variables_subset Character vector or NULL. Specifies the numeric variables the dimensional reduction
-#' algorithms will include.
-#' 
-#' If set to NULL all of them are chosen. You can prefix variables you do NOT want to influence the clustering
-#' with a \emph{'-'}. (Saves writing if there are more variables you are interested in
-#' than variables you are not interested in.)
-#' 
-#' Use \code{getNumericVariableNames()} to obtain all valid input options.
-#'
-#' @inherit updated_object return
+#' @rdname computeTSNE
 #' @export
-#'
-runPca <- function(object,
-                   variable_set, 
-                   phase = NULL,
-                   force = FALSE,
-                   set_seed = NULL, 
-                   verbose = NULL,
-                   ...){
-  
-  check_object(object)
-  assign_default(object)
-  
-  object <- run_dim_red(object = object, 
-                        variable_set = variable_set,
-                        phase = phase, 
-                        method_dim_red = "pca",
-                        force = force, 
-                        set_seed = set_seed, 
-                        verbose = verbose, 
-                        ...)
+setMethod(
+  f = "computeTSNE", 
+  signature = "Cypro", 
+  definition = function(object, 
+                        n_dims,
+                        fset = "all_features",
+                        ...){
+    
+    dimred_obj <- getDimRed(object, fset = fset)
+    
+    dimred_obj <- computeTSNE(object = dimred_obj, n_dims = n_dims, ...)
+    
+    object <- setAnalysisAspect(object, analysis_aspect = dimred_obj, fset = fset)
+    
+    return(object)
+    
+  }
+)
 
-  base::return(object)  
-  
-}
-
-
-#' @rdname runPca
+#' @rdname computeTSNE
 #' @export
-runTsne <- function(object,
-                    variable_set,
-                    phase = NULL,
-                    force = FALSE,
-                    set_seed = NULL, 
-                    verbose = NULL,
-                    ...){
-  
-  check_object(object)
-  assign_default(object)
-  
-  object <- run_dim_red(object = object,
-                        variable_set = variable_set,
-                        phase = phase, 
-                        method_dim_red = "tsne",
-                        force = force, 
-                        set_seed = set_seed, 
-                        verbose = verbose, 
-                        ...)
-  
-  base::return(object)  
-  
-}
+setMethod(
+  f = "computeTSNE", 
+  signature = "CyproTimeLapseMP", 
+  definition = function(object, 
+                        phase,
+                        n_dims,
+                        fset = "all_features",
+                        ...){
+    
+    dimred_obj <- getDimRed(object, fset = fset, phase = phase)
+    
+    dimred_obj <- computeTSNE(object = dimred_obj, n_dims = n_dims, ...)
+    
+    object <- setAnalysisAspect(object, analysis_aspect = dimred_obj, fset = fset, phase = phase)
+    
+    return(object)
+    
+  }
+)
 
-#' @rdname runPca
+
+#' @rdname computeUMAP
 #' @export
-runUmap <- function(object,
-                    variable_set,
-                    phase = NULL,
-                    force = FALSE,
-                    set_seed = NULL, 
-                    verbose = NULL,
-                    ...){
-  
-  check_object(object)
-  assign_default(object)
-  
-  object <- run_dim_red(object = object, 
-                        variable_set = variable_set, 
-                        phase = phase, 
-                        method_dim_red = "umap",
-                        force = force, 
-                        set_seed = set_seed, 
-                        verbose = verbose, 
-                        ...)
-  
-  base::return(object)  
-  
-}
+setMethod(
+  f = "computeUMAP", 
+  signature = "Cypro", 
+  definition = function(object, 
+                        fset = "all_features",
+                        verbose = TRUE,
+                        ...){
+    
+    dimred_obj <- getDimRed(object, fset = fset)
+    
+    dimred_obj <- computeUMAP(object = dimred_obj, verbose = verbose, ...)
+    
+    object <- setAnalysisAspect(object, analysis_aspect = dimred_obj, fset = fset)
+    
+    return(object)
+    
+  }
+)
 
-
-
-
-# get ---------------------------------------------------------------------
-
-
-
-
-
-#' @title Obtain dimensional reduction objects
-#' 
-#' @description Returns the S4 objects in which the dimensional reduction
-#' results are stored. 
-#'
-#' @inherit argument_dummy params
-#' 
-#' @return An S4 object of class \emph{'dim_red_conv'}.
+#' @rdname computeUMAP
 #' @export
-#'
-getPcaConv <- function(object, variable_set, phase = NULL){
-  
-  get_dim_red_obj(object = object, 
-                  phase = phase, 
-                  variable_set = variable_set, 
-                  method_dim_red = "pca")
-  
-}
+setMethod(
+  f = "computeUMAP", 
+  signature = "CyproTimeLapseMP", 
+  definition = function(object,
+                        phase,
+                        fset = "all_features", 
+                        verbose = TRUE,
+                        ...){
+    
+    dimred_obj <- getDimRed(object, fset = fset, phase = phase)
+    
+    dimred_obj <- computeUMAP(object = dimred_obj, verbose = verbose, ...)
+    
+    object <- setAnalysisAspect(object, analysis_aspect = dimred_obj, fset = fset, phase = phase)
+    
+    return(object)
+    
+  }
+)
 
-#' @rdname getPcaConv
+
+#' @rdname getEmbeddingDf
 #' @export
-getPcaObject <- getPcaConv
+setMethod(
+  f = "getEmbeddingDf", 
+  signature = "Cypro", 
+  definition = function(object, 
+                        fset = "all_features", 
+                        method_dimred = "pca",
+                        numeric = FALSE,
+                        numeric_scaled = FALSE,
+                        grouping = FALSE,
+                        logical = FALSE,
+                        complete = FALSE,
+                        shift = FALSE){
+    
+    dimred_obj <- getDimRed(object, fset = fset)
+    
+    out <- 
+      getEmbeddingDf(
+        object = dimred_obj, 
+        method_dimred = method_dimred, 
+        numeric = numeric, 
+        numeric_scaled = numeric_scaled, 
+        grouping = grouping, 
+        logical = logical, 
+        complete = complete, 
+        shift = shift
+      )
+    
+    return(out)
+    
+  }
+)
 
-
-#' @rdname getPcaConv
+#' @rdname getEmbeddingDf
 #' @export
-getTsneConv <- function(object, variable_set, phase = NULL){
-  
-  get_dim_red_obj(object = object, 
-                  phase = phase, 
-                  variable_set = variable_set,
-                  method_dim_red = "tsne")
-  
-}
+setMethod(
+  f = "getEmbeddingDf", 
+  signature = "CyproTimeLapseMP", 
+  definition = function(object,
+                        phase,
+                        fset = "all_features", 
+                        method_dimred = "pca",
+                        numeric = FALSE,
+                        numeric_scaled = FALSE,
+                        grouping = FALSE,
+                        logical = FALSE,
+                        complete = FALSE,
+                        shift = FALSE){
+    
+    dimred_obj <- getDimRed(object, fset = fset, phase = phase)
+    
+    out <- 
+      getEmbeddingDf(
+        object = dimred_obj, 
+        method_dimred = method_dimred, 
+        numeric = numeric, 
+        numeric_scaled = numeric_scaled, 
+        grouping = grouping, 
+        logical = logical, 
+        complete = complete, 
+        shift = shift
+      )
+    
+    return(out)
+    
+  }
+)
 
-#' @rdname getPcaConv
+
+#' @rdname plotPCA
 #' @export
-getTsneObject <- getTsneConv
+setMethod(
+  f = "plotPCA", 
+  signature = "Cypro",
+  definition = function(object, 
+                        fset = "all_features", 
+                        n_dims = 2,
+                        alpha_by = NULL,
+                        color_by = NULL,
+                        shape_by = NULL,
+                        size_by = NULL,
+                        pt_alpha = 0.9,
+                        pt_color = "black",
+                        pt_fill = "black",
+                        pt_shape = 19,
+                        pt_size = 1,
+                        color_aes = "color",
+                        clrp = "milo",
+                        clrp_adjust = NULL,
+                        clrsp = "inferno",
+                        ...){
+    
+    dimred_obj <- getDimRed(object, fset = fset)
+    
+    plotPCA(
+      object = dimred_obj, 
+      n_dims = n_dims, 
+      alpha_by = alpha_by, 
+      color_by = color_by, 
+      shape_by = shape_by, 
+      size_by = size_by, 
+      pt_alpha = pt_alpha, 
+      pt_color = pt_color, 
+      pt_fill = pt_fill, 
+      pt_shape = pt_shape, 
+      pt_size = pt_size, 
+      color_aes = color_aes, 
+      clrp = clrp, 
+      clrp_adjust = clrp_adjust, 
+      clrsp = clrsp, 
+      ...
+    )
+    
+  }
+)
 
-#' @rdname getPcaConv
+#' @rdname plotPCA
 #' @export
-getUmapConv <- function(object, variable_set, phase = NULL){
-  
-  get_dim_red_obj(object = object, 
-                  phase = phase, 
-                  variable_set = variable_set,
-                  method_dim_red = "umap")
-  
-}
+setMethod(
+  f = "plotPCA", 
+  signature = "CyproTimeLapseMP",
+  definition = function(object,
+                        phase,
+                        fset = "all_features", 
+                        n_dims = 2,
+                        alpha_by = NULL,
+                        color_by = NULL,
+                        shape_by = NULL,
+                        size_by = NULL,
+                        pt_alpha = 0.9,
+                        pt_color = "black",
+                        pt_fill = "black",
+                        pt_shape = 19,
+                        pt_size = 1,
+                        color_aes = "color",
+                        clrp = "milo",
+                        clrp_adjust = NULL,
+                        clrsp = "inferno",
+                        ...){
+    
+    dimred_obj <- getDimRed(object, fset = fset, phase = phase)
+    
+    plotPCA(
+      object = dimred_obj, 
+      n_dims = n_dims, 
+      alpha_by = alpha_by, 
+      color_by = color_by, 
+      shape_by = shape_by, 
+      size_by = size_by, 
+      pt_alpha = pt_alpha, 
+      pt_color = pt_color, 
+      pt_fill = pt_fill, 
+      pt_shape = pt_shape, 
+      pt_size = pt_size, 
+      color_aes = color_aes, 
+      clrp = clrp, 
+      clrp_adjust = clrp_adjust, 
+      clrsp = clrsp, 
+      ...
+    )
+    
+  }
+)
 
-#' @rdname getPcaConv
+#' @rdname plotTSNE
 #' @export
-getUmapObject <- getUmapConv
+setMethod(
+  f = "plotTSNE", 
+  signature = "Cypro",
+  definition = function(object, 
+                        fset = "all_features", 
+                        n_dims = 2,
+                        alpha_by = NULL,
+                        color_by = NULL,
+                        shape_by = NULL,
+                        size_by = NULL,
+                        pt_alpha = 0.9,
+                        pt_color = "black",
+                        pt_fill = "black",
+                        pt_shape = 19,
+                        pt_size = 1,
+                        color_aes = "color",
+                        clrp = "milo",
+                        clrp_adjust = NULL,
+                        clrsp = "inferno",
+                        ...){
+    
+    dimred_obj <- getDimRed(object, fset = fset)
+    
+    plotTSNE(
+      object = dimred_obj, 
+      n_dims = n_dims, 
+      alpha_by = alpha_by, 
+      color_by = color_by, 
+      shape_by = shape_by, 
+      size_by = size_by, 
+      pt_alpha = pt_alpha, 
+      pt_color = pt_color, 
+      pt_fill = pt_fill, 
+      pt_shape = pt_shape, 
+      pt_size = pt_size, 
+      color_aes = color_aes, 
+      clrp = clrp, 
+      clrp_adjust = clrp_adjust, 
+      clrsp = clrsp, 
+      ...
+    )
+    
+  }
+)
 
-
-
-# plot --------------------------------------------------------------------
-
-
-#' @title Plot dimensional reduction results 
-#' 
-#' @description Visualizes dimensional reduction in a scatterplot.
-#'
-#' @inherit argument_dummy params
-#' @param color_by Character value or NULL. If character, denotes either the numeric- or grouping variable whoose values
-#' are displayed by color. If set to NULL the color is specified by the argument \code{pt_clr}.
-#' @param color_aes Character value. Only relevant if \code{color_by} is specified. 
-#' Denotes the aesthetic with which colors are displayed. Either \emph{'color'} or \emph{'fill'}. Depending on that as well as the input for argument
-#' \code{pt_shape} the design of the geometric objects (points) varies according to the rules 
-#' of the ggplot2-framework.
-#'
-#' @inherit ggplot_family return
+#' @rdname plotTSNE
 #' @export
-#'
-plotPca <- function(object,
-                    variable_set, 
-                     phase = NULL, 
-                     color_by = NULL, 
-                     color_aes = "fill",
-                     pt_clrp = NULL, 
-                     pt_clrsp = NULL,
-                     pt_alpha = NULL, 
-                     pt_clr = NULL,
-                     pt_fill = NULL,
-                     pt_size = NULL, 
-                     clrp_adjust = NULL, 
-                    add_ons = list(ggplot2::labs(fill = NULL, color = NULL)), 
-                    ...){
-  
-  plot_dim_red(
-    object = object, 
-    variable_set = variable_set, 
-    phase = phase, 
-    method_dim_red = "pca",
-    color_by = color_by, 
-    color_aes = color_aes, 
-    pt_clrp = pt_clrp, 
-    pt_clrsp = pt_clrsp, 
-    pt_alpha = pt_alpha, 
-    pt_clr = pt_clr, 
-    pt_fill = pt_fill, 
-    pt_size = pt_size, 
-    clrp_adjust = clrp_adjust, 
-    add_ons = add_ons, 
-    ...
-  )
-  
-}
+setMethod(
+  f = "plotTSNE", 
+  signature = "CyproTimeLapseMP",
+  definition = function(object,
+                        phase,
+                        fset = "all_features", 
+                        n_dims = 2,
+                        alpha_by = NULL,
+                        color_by = NULL,
+                        shape_by = NULL,
+                        size_by = NULL,
+                        pt_alpha = 0.9,
+                        pt_color = "black",
+                        pt_fill = "black",
+                        pt_shape = 19,
+                        pt_size = 1,
+                        color_aes = "color",
+                        clrp = "milo",
+                        clrp_adjust = NULL,
+                        clrsp = "inferno",
+                        ...){
+    
+    dimred_obj <- getDimRed(object, fset = fset, phase = phase)
+    
+    plotTSNE(
+      object = dimred_obj, 
+      n_dims = n_dims, 
+      alpha_by = alpha_by, 
+      color_by = color_by, 
+      shape_by = shape_by, 
+      size_by = size_by, 
+      pt_alpha = pt_alpha, 
+      pt_color = pt_color, 
+      pt_fill = pt_fill, 
+      pt_shape = pt_shape, 
+      pt_size = pt_size, 
+      color_aes = color_aes, 
+      clrp = clrp, 
+      clrp_adjust = clrp_adjust, 
+      clrsp = clrsp, 
+      ...
+    )
+    
+  }
+)
 
-
-#' @rdname plotPca
+#' @rdname plotUMAP
 #' @export
-plotTsne <- function(object,
-                     variable_set,
-                    phase = NULL, 
-                    color_by = NULL, 
-                    color_aes = "fill",
-                    pt_clrp = NULL, 
-                    pt_clrsp = NULL,
-                    pt_alpha = NULL, 
-                    pt_clr = NULL,
-                    pt_fill = NULL,
-                    pt_size = NULL, 
-                    clrp_adjust = NULL, 
-                    add_ons = list(ggplot2::labs(fill = NULL, color = NULL)), 
-                    ...){
-  
-  plot_dim_red(
-    object = object, 
-    variable_set = variable_set, 
-    phase = phase, 
-    method_dim_red = "tsne",
-    color_by = color_by, 
-    color_aes = color_aes, 
-    pt_clrp = pt_clrp, 
-    pt_clrsp = pt_clrsp, 
-    pt_alpha = pt_alpha, 
-    pt_clr = pt_clr, 
-    pt_fill = pt_fill, 
-    pt_size = pt_size, 
-    clrp_adjust = clrp_adjust, 
-    add_ons = add_ons, 
-    ...
-  )
-  
-}
+setMethod(
+  f = "plotUMAP", 
+  signature = "Cypro",
+  definition = function(object, 
+                        fset = "all_features", 
+                        alpha_by = NULL,
+                        color_by = NULL,
+                        shape_by = NULL,
+                        size_by = NULL,
+                        pt_alpha = 0.9,
+                        pt_color = "black",
+                        pt_fill = "black",
+                        pt_shape = 19,
+                        pt_size = 1,
+                        color_aes = "color",
+                        clrp = "milo",
+                        clrp_adjust = NULL,
+                        clrsp = "inferno",
+                        ...){
+    
+    dimred_obj <- getDimRed(object, fset = fset)
+    
+    plotUMAP(
+      object = dimred_obj, 
+      alpha_by = alpha_by, 
+      color_by = color_by, 
+      shape_by = shape_by, 
+      size_by = size_by, 
+      pt_alpha = pt_alpha, 
+      pt_color = pt_color, 
+      pt_fill = pt_fill, 
+      pt_shape = pt_shape, 
+      pt_size = pt_size, 
+      color_aes = color_aes, 
+      clrp = clrp, 
+      clrp_adjust = clrp_adjust, 
+      clrsp = clrsp, 
+      ...
+    )
+    
+  }
+)
 
-
-#' @rdname plotPca
+#' @rdname plotUMAP
 #' @export
-plotUmap <- function(object,
-                    variable_set,
-                    phase = NULL, 
-                    color_by = NULL, 
-                    color_aes = "fill",
-                    pt_clrp = NULL, 
-                    pt_clrsp = NULL,
-                    pt_alpha = NULL, 
-                    pt_clr = NULL,
-                    pt_fill = NULL,
-                    pt_size = NULL, 
-                    clrp_adjust = NULL,
-                    add_ons = list(ggplot2::labs(fill = NULL, color = NULL)), 
-                    ...){
-  
-  plot_dim_red(
-    object = object, 
-    variable_set = variable_set, 
-    phase = phase, 
-    method_dim_red = "umap",
-    color_by = color_by, 
-    color_aes = color_aes, 
-    pt_clrp = pt_clrp, 
-    pt_clrsp = pt_clrsp, 
-    pt_alpha = pt_alpha, 
-    pt_clr = pt_clr, 
-    pt_fill = pt_fill, 
-    pt_size = pt_size, 
-    clrp_adjust = clrp_adjust,
-    add_ons = add_ons, 
-    ...
-  )
-  
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+setMethod(
+  f = "plotUMAP", 
+  signature = "CyproTimeLapseMP",
+  definition = function(object,
+                        phase,
+                        fset = "all_features", 
+                        alpha_by = NULL,
+                        color_by = NULL,
+                        shape_by = NULL,
+                        size_by = NULL,
+                        pt_alpha = 0.9,
+                        pt_color = "black",
+                        pt_fill = "black",
+                        pt_shape = 19,
+                        pt_size = 1,
+                        color_aes = "color",
+                        clrp = "milo",
+                        clrp_adjust = NULL,
+                        clrsp = "inferno",
+                        ...){
+    
+    dimred_obj <- getDimRed(object, fset = fset, phase = phase)
+    
+    plotUMAP(
+      object = dimred_obj, 
+      alpha_by = alpha_by, 
+      color_by = color_by, 
+      shape_by = shape_by, 
+      size_by = size_by, 
+      pt_alpha = pt_alpha, 
+      pt_color = pt_color, 
+      pt_fill = pt_fill, 
+      pt_shape = pt_shape, 
+      pt_size = pt_size, 
+      color_aes = color_aes, 
+      clrp = clrp, 
+      clrp_adjust = clrp_adjust, 
+      clrsp = clrsp, 
+      ...
+    )
+    
+  }
+)

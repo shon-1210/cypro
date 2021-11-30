@@ -102,10 +102,14 @@ dim_red_df <- function(dim_red_df){}
 #' the overall trend of the data. Use the \code{smooth_*} arguments to additionally adjust they way
 #' the trend is plotted. 
 #' @param display_title Logical value. If set to TRUE an informative title is displayed.
+#' 
 #' @param features Character vector. Denotes the features of interest. \emph{Features} are numeric
 #' variables in the cell data (slot @@cdata) of the \code{Cypro} object.
 #' 
 #' Use \code{getFeatureNames()} to obtain all valid input options.
+#' 
+#' @param fset Character value. The feature set of interest. Obtain all added feature set names 
+#' with \code{getFeatureSetNames()}.
 #' 
 #' @param stat_features Character vector. Denotes the stat features of interest. \emph{Stat features}
 #' are the summarized features by cell ID in the statistics data.frame of slot @@cdata.

@@ -691,15 +691,15 @@ setGeneric(name = "addAnalysisAspects", def = function(object, ...){
 setMethod(
   f = "addAnalysisAspects", 
   signature = "Cypro", 
-  definition = function(object, fset_name, variables_numeric){
+  definition = function(object, name, variables_numeric){
     
-    object@analysis$clustering[[fset_name]] <- 
+    object@analysis$clustering[[name]] <- 
       methods::new(Class = "Clustering", variables_numeric = variables_numeric, key_name = "cell_id")
     
-    object@analysis$correlation[[fset_name]] <- 
+    object@analysis$correlation[[name]] <- 
       methods::new(Class = "Correlation", variables_numeric = variables_numeric, key_name = "cell_id")
     
-    object@analysis$dimred[[fset_name]] <- 
+    object@analysis$dimred[[name]] <- 
       methods::new(Class = "DimRed", variables_numeric = variables_numeric, key_name = "cell_id")
     
     return(object)
@@ -712,17 +712,17 @@ setMethod(
 setMethod(
   f = "addAnalysisAspects", 
   signature = "CyproTimeLapseMP", 
-  definition = function(object, fset_name, variables_numeric){
+  definition = function(object, name, variables_numeric){
     
     for(p in getPhaseNames(object)){
       
-      object@analysis$clustering[[fset_name]][[p]] <- 
+      object@analysis$clustering[[name]][[p]] <- 
         methods::new(Class = "Clustering", variables_numeric = variables_numeric, key_name = "cell_id")
       
-      object@analysis$correlation[[fset_name]][[p]] <- 
+      object@analysis$correlation[[name]][[p]] <- 
         methods::new(Class = "Correlation", variables_numeric = variables_numeric, key_name = "cell_id")
       
-      object@analysis$dimred[[fset_name]][[p]] <- 
+      object@analysis$dimred[[name]][[p]] <- 
         methods::new(Class = "DimRed", variables_numeric = variables_numeric, key_name = "cell_id")
       
     }
@@ -739,7 +739,6 @@ setMethod(
 #' @description With this function defined sets of cell features are set. See
 #' details for more. 
 #' 
-#' @param fset_name Character value. The name of the feature set.
 #' @inherit argument_dummy params
 #' 
 #' @details The features specified of argument \code{features} or \code{stat_features}
@@ -768,14 +767,14 @@ setGeneric(name = "addFeatureSet", def = function(object, ...){
 setMethod(
   f = "addFeatureSet", 
   signature = "CyproScreening", 
-  definition = function(object, fset_name, features, force = FALSE, verbose = TRUE){
+  definition = function(object, name, features, force = FALSE, verbose = TRUE){
     
-    is_value(x = fset_name, mode = "character")
+    is_value(x = name, mode = "character")
     
     is_vec(x = features, mode = "character", min.length = 2)
     
     check_none_of(
-      input = fset_name, 
+      input = name, 
       against = getFeatureSetNames(object), 
       force = force, 
       ref.against = "defined feature sets"
@@ -786,14 +785,14 @@ setMethod(
       against = getFeatureNames(object)
     )
     
-    object@feature_sets[[fset_name]] <- features
+    object@feature_sets[[name]] <- features
     
-    object <- addAnalysisAspects(object, fset_name = fset_name, variables_numeric = features)
+    object <- addAnalysisAspects(object, name = name, variables_numeric = features)
     
     n_features <- base::length(features)
     
     give_feedback(
-      msg = glue::glue("Setting new feature set named '{fset_name}' with {n_features} features."), 
+      msg = glue::glue("Setting new feature set named '{name}' with {n_features} features."), 
       verbose = verbose
     )
     
@@ -807,14 +806,14 @@ setMethod(
 setMethod(
   f = "addFeatureSet", 
   signature = "CyproTimeLapse", 
-  definition = function(object, fset_name, stat_features, force = FALSE, verbose = TRUE){
+  definition = function(object, name, stat_features, force = FALSE, verbose = TRUE){
     
-    is_value(x = fset_name, mode = "character")
+    is_value(x = name, mode = "character")
     
     is_vec(x = stat_features, mode = "character", min.length = 2)
     
     check_none_of(
-      input = fset_name, 
+      input = name, 
       against = getFeatureSetNames(object), 
       force = force
     )
@@ -824,14 +823,14 @@ setMethod(
       against = getFeatureNames(object)
     )
     
-    object@feature_sets[[fset_name]] <- stat_features
+    object@feature_sets[[name]] <- stat_features
     
-    object <- addAnalysisAspects(object, fset_name = fset_name, variables_numeric = features)
+    object <- addAnalysisAspects(object, name = name, variables_numeric = features)
     
     n_features <- base::length(stat_features)
     
     give_feedback(
-      msg = glue::glue("Setting new feature set named '{fset_name}' with {n_features} features."), 
+      msg = glue::glue("Setting new feature set named '{name}' with {n_features} features."), 
       verbose = verbose
     )
     
@@ -845,14 +844,14 @@ setMethod(
 setMethod(
   f = "addFeatureSet", 
   signature = "CyproTimeLapseMP", 
-  definition = function(object, fset_name, stat_features, force = FALSE, verbose = TRUE){
+  definition = function(object, name, stat_features, force = FALSE, verbose = TRUE){
     
-    is_value(x = fset_name, mode = "character")
+    is_value(x = name, mode = "character")
     
     is_vec(x = stat_features, mode = "character", min.length = 2)
     
     check_none_of(
-      input = fset_name, 
+      input = name, 
       against = getFeatureSetNames(object), 
       force = force
     )
@@ -862,14 +861,14 @@ setMethod(
       against = getFeatureNames(object)
     )
     
-    object@feature_sets[[fset_name]] <- stat_features
+    object@feature_sets[[name]] <- stat_features
     
-    object <- addAnalysisAspects(object, fset_name = fset_name, variables_numeric = features)
+    object <- addAnalysisAspects(object, name = name, variables_numeric = features)
     
     n_features <- base::length(stat_features)
     
     give_feedback(
-      msg = glue::glue("Setting new feature set named '{fset_name}' with {n_featurs} featueres."), 
+      msg = glue::glue("Setting new feature set named '{name}' with {n_featurs} featueres."), 
       verbose = verbose
     )
     

@@ -93,6 +93,9 @@ variables in the cell data (slot @cdata) of the \code{Cypro} object.
 
 Use \code{getFeatureNames()} to obtain all valid input options.}
 
+\item{fset}{Character value. The feature set of interest. Obtain all added feature set names
+with \code{getFeatureSetNames()}.}
+
 \item{stat_features}{Character vector. Denotes the stat features of interest. \emph{Stat features}
 are the summarized features by cell ID in the statistics data.frame of slot @cdata.
 

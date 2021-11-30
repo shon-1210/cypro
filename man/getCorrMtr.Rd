@@ -39,6 +39,16 @@ input options.}
 \item{across}{Character value. Specifies the discrete variable in the data.frame
 across which the variables of interest are to be analyzed or displayed.}
 
+\item{across_subset}{Character vector, list of character vectors or NULL (see details for
+more). Specifies the particular groups of interest the grouping variable specified in argument
+\code{across} contains.
+
+If set to NULL all of them are chosen. You can prefix groups you are NOT interested in
+with a \emph{'-'}. (Saves writing if there are more groups you are interested in
+than groups you are not interested in.)
+
+Use \code{getGroupNames()} to obtain all valid input options.}
+
 \item{type}{Character value. Denotes how the underlying correlation matrix is
 handled. Three options:
 
@@ -51,6 +61,13 @@ handled. Three options:
 \item{diagonal}{Logical value.  Indicates if the diagonal values of the
 matrices are kept ( = TRUE) or set to NA (= FALSE). Ignored if \code{type}
 = \emph{'complete'}.}
+
+\item{phase}{Character or numeric. If character, the ordinal value referring to the phase of interest (e.g. \emph{'first'}, \emph{'second'} etc.).
+referring to the phase of interest or \emph{'all'}. If numeric, the number referring to the phase.
+
+If set to NULL takes the phase denoted as default with \code{adjustDefault()}.
+
+Ignored if the experiment design contains only one phase.}
 }
 \description{
 Extracts correlation results in form of correlation

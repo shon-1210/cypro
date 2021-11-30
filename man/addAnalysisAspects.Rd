@@ -8,9 +8,9 @@
 \usage{
 addAnalysisAspects(object, ...)
 
-\S4method{addAnalysisAspects}{Cypro}(object, fset_name, variables_numeric)
+\S4method{addAnalysisAspects}{Cypro}(object, name, variables_numeric)
 
-\S4method{addAnalysisAspects}{CyproTimeLapseMP}(object, fset_name, variables_numeric)
+\S4method{addAnalysisAspects}{CyproTimeLapseMP}(object, name, variables_numeric)
 }
 \arguments{
 \item{object}{Any object for whose class a method has been defined.}

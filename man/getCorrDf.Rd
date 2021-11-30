@@ -49,6 +49,16 @@ input options.}
 \item{across}{Character value. Specifies the discrete variable in the data.frame
 across which the variables of interest are to be analyzed or displayed.}
 
+\item{across_subset}{Character vector, list of character vectors or NULL (see details for
+more). Specifies the particular groups of interest the grouping variable specified in argument
+\code{across} contains.
+
+If set to NULL all of them are chosen. You can prefix groups you are NOT interested in
+with a \emph{'-'}. (Saves writing if there are more groups you are interested in
+than groups you are not interested in.)
+
+Use \code{getGroupNames()} to obtain all valid input options.}
+
 \item{pval_threshold}{Numeric value or NULL. If numeric, denotes the maximum p-value to be considered as
 significant. Must no be higher than 0.05.}
 
@@ -78,6 +88,13 @@ are combined in variable \emph{var_pair} of the output data.frame.}
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
+
+\item{phase}{Character or numeric. If character, the ordinal value referring to the phase of interest (e.g. \emph{'first'}, \emph{'second'} etc.).
+referring to the phase of interest or \emph{'all'}. If numeric, the number referring to the phase.
+
+If set to NULL takes the phase denoted as default with \code{adjustDefault()}.
+
+Ignored if the experiment design contains only one phase.}
 }
 \value{
 A data.frame of class \code{corr_df} with the following columns:

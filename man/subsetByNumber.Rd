@@ -13,7 +13,7 @@ subsetByNumber(object, ...)
   across = c("cell_line", "condition"),
   n_by_group = NULL,
   n_total = NULL,
-  weighted = NULL,
+  weighted = TRUE,
   reasoning = NA_character_,
   seed = NULL,
   verbose = TRUE

@@ -239,7 +239,7 @@ setGeneric(name = "setAnalysisAspect", def = function(object, ...){
 setMethod(
   f = "setAnalysisAspect",
   signature = "Cypro", 
-  definition = function(object, analysis_aspect, fset_name){
+  definition = function(object, analysis_aspect, fset){
     
     aspect <- 
       base::class(analysis_aspect) %>% 
@@ -249,7 +249,7 @@ setMethod(
     analysis_aspect@data <- base::data.frame()
     analysis_aspect@data_scaled <- base::data.frame()
     
-    object@analysis[[aspect]][[fset_name]] <- analysis_aspect
+    object@analysis[[aspect]][[fset]] <- analysis_aspect
     
     return(object)
     
@@ -261,7 +261,7 @@ setMethod(
 setMethod(
   f = "setAnalysisAspect",
   signature = "CyproTimeLapseMP", 
-  definition = function(object, analysis_aspect, fset_name, phase){
+  definition = function(object, analysis_aspect, fset, phase){
     
     aspect <- 
       base::class(analysis_aspect) %>% 
@@ -271,7 +271,7 @@ setMethod(
     analysis_aspect@data <- base::data.frame()
     analysis_aspect@data_scaled <- base::data.frame()
     
-    object@analysis[[aspect]][[fset_name]][[phase]] <- analysis_aspect
+    object@analysis[[aspect]][[fset]][[phase]] <- analysis_aspect
     
     return(object)
     
@@ -302,7 +302,25 @@ setMethod(
   signature = "Cypro", 
   definition = function(object, ...){
     
-    object@analysis <- cypro_analysis_list
+    feature_sets <- getFeatureSetNames(object)
+    
+    object@analysis <- 
+      purrr::imap(cypro_analysis_list, .f = function(x, aspect){
+        
+        purrr::map(.x = feature_sets, .f = function(fset){
+          
+          fnames <- getFeatureSet(object, fset = fset)
+          
+          methods::new(
+            Class = analysis_aspects[[aspect]], 
+            key_name = "cell_id",
+            variables_numeric = fnames, 
+            variables_grouping = getGroupingVariableNames(object)
+          )
+          
+        }) %>% 
+          purrr::set_names(nm = feature_sets)
+      })
     
     return(object)
     

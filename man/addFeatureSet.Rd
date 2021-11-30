@@ -9,16 +9,14 @@
 \usage{
 addFeatureSet(object, ...)
 
-\S4method{addFeatureSet}{CyproScreening}(object, fset_name, features, force = FALSE, verbose = TRUE)
+\S4method{addFeatureSet}{CyproScreening}(object, name, features, force = FALSE, verbose = TRUE)
 
-\S4method{addFeatureSet}{CyproTimeLapse}(object, fset_name, stat_features, force = FALSE, verbose = TRUE)
+\S4method{addFeatureSet}{CyproTimeLapse}(object, name, stat_features, force = FALSE, verbose = TRUE)
 
-\S4method{addFeatureSet}{CyproTimeLapseMP}(object, fset_name, stat_features, force = FALSE, verbose = TRUE)
+\S4method{addFeatureSet}{CyproTimeLapseMP}(object, name, stat_features, force = FALSE, verbose = TRUE)
 }
 \arguments{
 \item{object}{Any object for whose class a method has been defined.}
-
-\item{fset_name}{Character value. The name of the feature set.}
 
 \item{features}{Character vector. Denotes the features of interest. \emph{Features} are numeric
 variables in the cell data (slot @cdata) of the \code{Cypro} object.

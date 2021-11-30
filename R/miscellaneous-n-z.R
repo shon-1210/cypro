@@ -566,7 +566,7 @@ setMethod(f = "processData", signature = "CyproScreening", definition = function
   
   object <- scaleData(object)
   
-  # set analysis aspects
+  # outlier detection
   df <- getFeatureDf(object, with_everything = TRUE)
   
   outlier_object <- initiateOutlierDetection(data = df, key_name = "cell_id")
@@ -574,6 +574,10 @@ setMethod(f = "processData", signature = "CyproScreening", definition = function
   object <- setOutlierDetection(object, outlier_object = outlier_object)
   
   # set analysis aspect list 
+  fnames <- getFeatureNames(object) %>% vselect(-any_of(non_data_variables))
+  
+  object <- addFeatureSet(object, name = "all_features", features = fnames)
+  
   object <- setAnalysisList(object)
   
   object <- setProgress(object, processData = TRUE)
@@ -608,6 +612,14 @@ setMethod(f = "processData", signature = "CyproTimeLapse", definition = function
   
   object <- setOutlierDetection(object, outlier_object = outlier_object)
   
+  # set analysis list
+  
+  fnames <- getStatFeatureNames(object) %>% vselect(-any_of(non_data_variables))
+  
+  object <- addFeatureSet(object, name = "all_features", stat_features = fnames)
+  
+  object <- setAnalysisList(object)
+  
   cypro_object_ready(object = object, verbose = verbose)
   
   return(object)
@@ -629,6 +641,22 @@ setMethod(f = "processData", signature = "CyproTimeLapseMP", definition = functi
   object <- summarizeModuleVariables(object, verbose = verbose)
   
   object <- setProgress(object, processData = TRUE)
+  
+  # set outlier detection 
+  
+  df <- getStatsDf(object, with_everything = TRUE)
+  
+  outlier_object <- initiateOutlierDetection(data = df, key_name = "cell_id")
+  
+  object <- setOutlierDetection(object, outlier_object = outlier_object)
+  
+  # set analysis list
+  
+  fnames <- getStatFeatureNames(object) %>% vselect(-any_of(non_data_variables))
+  
+  object <- addFeatureSet(object, name = "all_features", stat_features = fnames)
+  
+  object <- setAnalysisList(object)
   
   cypro_object_ready(object = object, verbose = verbose)
   

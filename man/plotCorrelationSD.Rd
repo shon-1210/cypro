@@ -24,6 +24,9 @@ method of interest. Use \code{validMethodsCorrelation()} to obtain all valid
 input options.}
 
 \item{across}{Character vector (!). Denotes all grouping variables of interest.}
+
+\item{relevel}{Logical value. If set to TRUE the input order of \code{across.subset} and
+\code{variables} determines the order in which the groups of interest are displayed.}
 }
 \value{
 

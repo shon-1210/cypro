@@ -7,9 +7,9 @@
 \alias{getFeatureSetNames,Cypro-method}
 \title{Obtain a feature set}
 \usage{
-getFeatureSet(object, feature_set)
+getFeatureSet(object, ...)
 
-\S4method{getFeatureSet}{Cypro}(object)
+\S4method{getFeatureSet}{Cypro}(object, fset)
 
 \S4method{getFeatureSets}{Cypro}(object)
 
@@ -18,7 +18,8 @@ getFeatureSet(object, feature_set)
 \arguments{
 \item{object}{Any object for whose class a method has been defined.}
 
-\item{feature_set}{Character value. The name of the feature set of interest.}
+\item{fset}{Character value. The feature set of interest. Obtain all added feature set names
+with \code{getFeatureSetNames()}.}
 }
 \value{
 A character vector.

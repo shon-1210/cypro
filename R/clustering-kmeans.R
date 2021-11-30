@@ -1,114 +1,230 @@
 
 
 
+# c -----------------------------------------------------------------------
 
-
-
-
-
-#' @title Compute cluster with kmeans
-#' 
-#' @description Performs kmeans clustering for every combination of \code{method_kmeans} and 
-#' \code{k} and saves the results in the cypro object. 
-#'
-#' @inherit argument_dummy params
-#' @param k Numeric vector. For every value the kmeans cluster assignment is calculated via 
-#' \code{stats::kmeans()}. 
-#' 
-#' @details As this function iterates over all valid combinations of \code{k} and \code{method_kmeans}
-#' both inputs can be specified as vectors. 
-#' 
-#' @inherit updated_object return
-#' 
+#' @rdname computeClusteringKmeans
 #' @export
-#'
-
-computeKmeansCluster <- function(object,
-                                 variable_set,
-                                 k,
-                                 phase = NULL, 
-                                 method_kmeans = NULL, 
-                                 verbose = NULL){
-  
-  check_object(object)
-  assign_default(object)
-  
-  confuns::is_vec(k, mode = "numeric")
-  
-  phase <- check_phase(object, phase, max_phases = 1)
-  
-  cluster_object <-
-    getKmeansConv(object, variable_set = variable_set, phase = phase)
-  
-  cluster_object <- 
-    confuns::perform_kmeans_clustering(
-      kmeans.obj = cluster_object, 
-      centers = k, 
-      methods.kmeans = method_kmeans, 
-      verbose = verbose, 
-      verbose.pb = verbose
-    )
-  
-  object <- 
-    setClusterConv(
-      object = object, 
-      cluster_object = cluster_object, 
-      method = "kmeans", 
-      phase = phase, 
-      variable_set = variable_set
+setMethod(
+  f = "computeClusteringKmeans", 
+  signature = "Cypro", 
+  definition = function(object, 
+                        ks, 
+                        methods_kmeans = "Lloyd", 
+                        fset = "all_features",
+                        verbose = TRUE){
+    
+    
+    clust_obj <- getClustering(object, fset = fset)
+    
+    clust_obj <- 
+      computeClusteringKmeans(
+        object = clust_obj, 
+        ks = ks, 
+        methods_kmeans = methods_kmeans, 
+        verbose = verbose
       )
-  
-  base::return(object)
-  
-}
+    
+    object <- setAnalysisAspect(object, analysis_aspect = clust_obj, fset = fset)
+    
+    return(object)
+    
+  }
+)
 
-
-
-# plotting ----------------------------------------------------------------
-
-
-#' @title Plot a scree plot
-#' 
-#' @description Visualizes the within-group sum of squares of every calculated kmeans
-#' clustering. 
-#'
-#' @inherit argument_dummy params
-#' @param clr Character value. Denotes the color of the columns.
-#' 
-#' @details If \code{method_kmeans} is a vector a subplot for all valid input values 
-#' is displayed via \code{ggplot2::facet_wrap()}. 
-#'
-#' @inherit ggplot_family return
+#' @rdname computeClusteringKmeans
 #' @export
-#'
-plotScreeplot <- function(object, 
-                          variable_set, 
-                          phase = NULL, 
-                          method_kmeans = NULL,
-                          k = 2:10, 
-                          clr = "steelblue",
-                          display_cols = TRUE, 
-                          display_line = TRUE, 
-                          display_points = TRUE){
+setMethod(
+  f = "computeClusteringKmeans", 
+  signature = "CyproTimeLapseMP", 
+  definition = function(object, 
+                        phase,
+                        ks, 
+                        methods_kmeans = "Hartigan-Wong", 
+                        fset = "all_features",
+                        verbose = TRUE){
+    
+    
+    clust_obj <- getClustering(object, fset = fset, phase = phase)
+    
+    clust_obj <- 
+      computeClusteringKmeans(
+        object = clust_obj, 
+        ks = ks, 
+        methods_kmeans = methods_kmeans, 
+        verbose = verbose
+      )
+    
+    object <- setAnalysisAspect(object, analysis_aspect = clust_obj, fset = fset, phase = phase)
+    
+    return(object)
+    
+  }
+)
+
+#' @rdname getClusterVarsKmeans
+#' @export
+setMethod(
+  f = "getClusterVarsKmeans", 
+  signature = "Cypro", 
+  definition = function(object, 
+                        ks, 
+                        fset = "all_features",
+                        methods_kmeans = "Hartigan-Wong", 
+                        prefix = "", 
+                        naming = "{method_kmeans}_k{k}"){
+    
+    clust_obj <- getClustering(object, fset = fset)
+    
+    out <- 
+      getClusterVarsKmeans(
+        object = clust_obj, 
+        ks = ks, 
+        methods_kmeans = methods_kmeans, 
+        prefix = prefix, 
+        naming = naming
+      )
+    
+    return(out)
+    
+  })
   
-  check_object(object)
-  assign_default(object)
+  #' @rdname getClusterVarsKmeans
+  #' @export
+  setMethod(
+    f = "getClusterVarsKmeans", 
+    signature = "CyproTimeLapseMP", 
+    definition = function(object,
+                          phase,
+                          ks, 
+                          fset = "all_features",
+                          methods_kmeans = "Hartigan-Wong", 
+                          prefix = "", 
+                          naming = "{method_kmeans}_k{k}"){
+      
+      clust_obj <- getClustering(object, fset = fset, phase = phase)
+      
+      out <- 
+        getClusterVarsKmeans(
+          object = clust_obj, 
+          ks = ks, 
+          methods_kmeans = methods_kmeans, 
+          prefix = prefix, 
+          naming = naming
+        )
+      
+      return(out)
+      
+    } 
   
-  phase <- check_phase(object, phase = phase, max_phases = 1)
-  
-  cluster_object <- 
-    getKmeansConv(object, variable_set = variable_set, phase = phase, with_data = FALSE)
-  
-  confuns::plot_screeplot(
-    kmeans.obj = cluster_object, 
-    methods.kmeans = method_kmeans, 
-    clr = clr, 
-    display.cols = display_cols, 
-    display.line = display_line, 
-    display.points = display_points
-  )
-  
-}
+)
+
+#' @rdname getKmeans
+#' @export
+setMethod(
+  f = "getKmeans", 
+  signature = "Cypro", 
+  definition = function(object, 
+                        fset = "all_features",
+                        method_kmeans = "Hartigan-Wong", 
+                        stop_if_null = TRUE){
+    
+    clust_obj < getClustering(object, fset = fset)
+    
+    out <- 
+      getKmeans(
+        object = clust_obj, 
+        method_kmeans = method_kmeans, 
+        stop_if_null = stop_if_null
+      )
+    
+    return(out)
+    
+  }
+)
+
+#' @rdname getKmeans
+#' @export
+setMethod(
+  f = "getKmeans", 
+  signature = "CyproTimeLapseMP", 
+  definition = function(object, 
+                        phase,
+                        fset = "all_features",
+                        method_kmeans = "Hartigan-Wong", 
+                        stop_if_null = TRUE){
+    
+    clust_obj < getClustering(object, fset = fset, phase = phase)
+    
+    out <- 
+      getKmeans(
+        object = clust_obj, 
+        method_kmeans = method_kmeans, 
+        stop_if_null = stop_if_null
+      )
+    
+    return(out)
+    
+  }
+)
 
 
 
+#' @rdname plotScreeplot
+#' @export
+setMethod(
+  f = "plotScreeplot", 
+  signature = "Cypro", 
+  definition = function(object, 
+                        ks,
+                        fset = "all_features",
+                        methods_kmeans = "Hartigan-Wong",
+                        color = "steelblue",
+                        display_cols = TRUE,
+                        display_line = TRUE,
+                        display_points = TRUE){
+    
+    
+    clust_obj <- getClustering(object, fset = fset)
+    
+    plotScreeplot(
+      object = clust_obj, 
+      methods_kmeans = methods_kmeans, 
+      color = color, 
+      display_cols = display_cols, 
+      display_line = display_line, 
+      display_points = display_points
+    )
+    
+  }
+)
+
+#' @rdname plotScreeplot
+#' @export
+setMethod(
+  f = "plotScreeplot", 
+  signature = "Cypro", 
+  definition = function(object, 
+                        phase,
+                        ks,
+                        fset = "all_features",
+                        methods_kmeans = "Hartigan-Wong",
+                        color = "steelblue",
+                        display_cols = TRUE,
+                        display_line = TRUE,
+                        display_points = TRUE){
+    
+    clust_obj <- getClustering(object, fset = fset, phase = phase)
+    
+    plotScreeplot(
+      object = clust_obj, 
+      ks = ks,
+      methods_kmeans = methods_kmeans, 
+      color = color, 
+      display_cols = display_cols, 
+      display_line = display_line, 
+      display_points = display_points
+    )
+    
+  }
+)

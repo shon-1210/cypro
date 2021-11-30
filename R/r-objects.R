@@ -17,10 +17,19 @@ additional_variables_descr <- c(
     will be discarded during the loading process."
 )
 
+analysis_aspects <- 
+  list(
+    "clustering" = "Clustering", 
+    "correlation" = "Correlation",
+    "dimred" = "DimRed" 
+    )
+
 analysis_methods <- list(
   dim_red = c("pca", "tsne", "umap"), 
   clustering = c("hclust", "kmeans", "pam")
 )
+
+
 
 analysis_module_descr <-
   list(

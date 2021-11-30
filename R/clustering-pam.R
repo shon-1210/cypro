@@ -1,221 +1,346 @@
 
 
-
-
-
-
-#' @title Compute cluster with partitioning around medoids (PAM)
-#'
-#' @description Performs partitioning around medoids for every combination of 
-#' \code{method_pam} and \code{k} and saves the results in the cypro object. 
-#'
-#' @inherit argument_dummy params 
-#' @param k Numeric vector. Denotes the numbers of clusters the pam-algorithm 
-#' is supposed to assign return. Values must be bigger than 2. 
-#' @param ... Additional arguments given to \code{cluster::pam()}.
-#' 
-#' @details As this function iterates over all valid combinations of \code{method_pam}
-#' and \code{k} both inputs can be specified as vectors.
-#'
-#' @inherit updated_object return
+#' @rdname computeClusteringPam
 #' @export
-#'
-computePamCluster <- function(object,
-                              variable_set,
-                              k,
-                              phase = NULL, 
-                              method_pam = NULL, 
-                              verbose = NULL, 
-                              ...){
-  
-  check_object(object)
-  assign_default(object)
-  
-  confuns::is_vec(k, mode = "numeric")
-  
-  phase <- check_phase(object, phase = phase, max_phases = 1)
-  
-  cluster_object <-
-    getPamConv(object, variable_set = variable_set, phase = phase)
-  
-  cluster_object <- 
-    confuns::perform_pam_clustering(
-      pam.obj = cluster_object, 
-      k = k, 
-      metric.pam = method_pam, 
-      verbose = verbose, 
-      verbose.pb = FALSE, 
-      ...
-    )
-  
-  object <- 
-    setClusterConv(
-      object = object, 
-      cluster_object = cluster_object, 
-      method = "pam", 
-      phase = phase, 
-      variable_set = variable_set
-    )
-  
-  base::return(object)
-  
-}
-
-
-
-
-# get ---------------------------------------------------------------------
-
-
-
-
-
-
-
-
-
-
-# plotting ----------------------------------------------------------------
-
-#' @title Plot pam cluster quality
-#' 
-#' @description Visualizes the cluster quality of different partitioning 
-#' around medoids results. 
-#'
-#' @inherit argument_dummy params
-#' @param k Numeric vector. The k-values of interest. 
-#' 
-#' @details Specify \code{method_pam} as a character value.
-#'
-#' @inherit ggplot_family return
-#' @export
-#'
-plotAvgSilhouetteWidths <- function(object,
-                                    variable_set,
-                                    k, 
-                                    method_pam = NULL, 
-                                    phase = NULL, 
-                                    clr = "steelblue", 
-                                    display_cols = TRUE, 
-                                    display_line = TRUE, 
-                                    display_points = TRUE){
-  
-  check_object(object)
-  assign_default(object)
-  
-  phase <- check_phase(object, phase, max_phases = 1)
-  
-  confuns::is_vec(k, mode = "numeric", min.length = 2)
-  
-  cluster_object <-
-    getPamConv(
-      object = object,
-      variable_set = variable_set,
-      phase = phase,
-      with_data = FALSE
+setMethod(
+  f = "computeClusteringPam", 
+  signature = "Cypro", 
+  definition = function(object, 
+                        ks, 
+                        methods_pam = "euclidean",
+                        fset = "all_features",
+                        verbose = TRUE){
+    
+    clust_obj <- getClustering(object, fset = fset)
+    
+    clust_obj <- 
+      computeClusteringPam(
+        object = clust_obj, 
+        ks = ks, 
+        methods_pam = methods_pam, 
+        verbose = verbose
       )
-  
-  confuns::plot_avg_silhouette_widths(
-    pam.obj = cluster_object, 
-    metric.pam = method_pam, 
-    k = k, 
-    display.cols = display_cols, 
-    display.line = display_line, 
-    display.points = display_points
-  )
-  
-}
+    
+    object <- setAnalysisAspect(object, analysis_aspect = clust_obj, fset = fset)
+    
+    return(object)
+    
+  }
+)
 
-#' @rdname plotAvgSilhouetteWidths
+#' @rdname computeClusteringPam
 #' @export
-plotSilhouetteWidths <- function(object, 
-                                 variable_set, 
-                                 k, 
-                                 method_pam = NULL, 
-                                 phase = NULL, 
-                                 clrp = NULL, 
-                                 ncol = NULL, 
-                                 nrow = NULL, 
-                                 verbose = NULL){
-  
-  check_object(object)
-  assign_default(object)
-  
-  phase <- check_phase(object, phase, max_phases = 1)
-  
-  confuns::is_vec(k, mode = "numeric")
-  
-  cluster_object <-
-    getPamConv(
-      object = object,
-      variable_set = variable_set,
-      phase = phase,
-      with_data = FALSE
-    )
-  
-  confuns::plot_silhouette_widths(
-    pam.obj = cluster_object, 
-    metric.pam = method_pam, 
-    k = k, 
-    clrp = clrp, 
-    ncol = ncol, 
-    nrow = nrow, 
-    verbose = verbose
-  )
-  
-  
-}
+setMethod(
+  f = "computeClusteringPam", 
+  signature = "CyproTimeLapseMP", 
+  definition = function(object,
+                        phase,
+                        ks, 
+                        methods_pam = "euclidean",
+                        fset = "all_features",
+                        verbose = TRUE){
+    
+    clust_obj <- getClustering(object, fset = fset, phase = phase)
+    
+    clust_obj <- 
+      computeClusteringPam(
+        object = clust_obj, 
+        ks = ks, 
+        methods_pam = methods_pam, 
+        verbose = verbose
+      )
+    
+    object <- setAnalysisAspect(object, analysis_aspect = clust_obj, fset = fset, phase = phase)
+    
+    return(object)
+    
+  }
+)
 
 
-
-
-#' @title Plot medoid results
-#' 
-#' @description Visualizes the values of the observations that were identified 
-#' as the medoids giving insight in the overall qualities that constitute the 
-#' clusters. 
-#'
-#' @inherit argument_dummy params
-#'
-#' @inherit ggplot_family return
+#' @rdname getClusterVarsPam
 #' @export
-#'
-plotPamMedoids <- function(object, 
-                           variable_set,
-                           k, 
-                           facet_by = "cluster",
-                           color_by = "variables",
-                           method_pam = NULL, 
-                           phase = NULL, 
-                           clrp = NULL, 
-                           verbose = NULL, 
-                           ...){
-  
-  check_object(object)
-  assign_default(object)
-  
-  phase <- check_phase(object, phase, max_phases = 1)
-  
-  confuns::is_value(k, mode = "numeric")
-  
-  cluster_object <-
-    getPamConv(
-      object = object,
-      variable_set = variable_set,
-      phase = phase,
-      with_data = FALSE
-    )
-  
-  confuns::plot_medoid_barchart(
-    pam.obj = cluster_object, 
-    metric.pam = method_pam,
-    k = k, 
-    verbose = verbose, 
-    facet.by = facet_by, 
-    clr.by = color_by, 
-    ...
-  )
-  
-}
+setMethod(
+  f = "getClusterVarsPam", 
+  signature = "Cypro", 
+  definition = function(object, 
+                        ks, 
+                        methods_pam = "euclidean",
+                        fset = "all_features",
+                        prefix = "", 
+                        naming = "{method_pam}_k{k}"){
+    
+    clust_obj <- getClusterin(object, fset = fset)
+    
+    out <- 
+      getClusterVarsPam(
+        object = clust_obj, 
+        ks = ks, 
+        methods_pam = methods_pam, 
+        prefix = prefix, 
+        naming = naming
+      )
+    
+    return(out)
+    
+  }
+)
 
+#' @rdname getClusterVarsPam
+#' @export
+setMethod(
+  f = "getClusterVarsPam", 
+  signature = "CyproTimeLapseMP", 
+  definition = function(object, 
+                        phase,
+                        ks, 
+                        methods_pam = "euclidean",
+                        fset = "all_features",
+                        prefix = "", 
+                        naming = "{method_pam}_k{k}"){
+    
+    clust_obj <- getClusterin(object, fset = fset, phase = phase)
+    
+    out <- 
+      getClusterVarsPam(
+        object = clust_obj, 
+        ks = ks, 
+        methods_pam = methods_pam, 
+        prefix = prefix, 
+        naming = naming
+      )
+    
+    return(out)
+    
+  }
+)
+
+
+#' @rdname getPam
+#' @export
+setMethod(
+  f = "getPam", 
+  signature = "Cypro",
+  definition = function(object, 
+                        k, 
+                        method_pam = "euclidean",
+                        fset = "all_features",
+                        stop_if_null = TRUE){
+    
+    clust_obj <- getClustering(object, fset = fset)
+    
+    out <- 
+      getPam(
+        object = clust_obj, 
+        k = k, 
+        method_pam = method_pam, 
+        stop_if_null = stop_if_null
+      )
+    
+    return(out)
+    
+  }
+)
+
+#' @rdname getPam
+#' @export
+setMethod(
+  f = "getPam", 
+  signature = "CyproTimeLapseMP",
+  definition = function(object, 
+                        phase,
+                        k, 
+                        method_pam = "euclidean",
+                        fset = "all_features",
+                        stop_if_null = TRUE){
+    
+    clust_obj <- getClustering(object, fset = fset, phase = phase)
+    
+    out <- 
+      getPam(
+        object = clust_obj, 
+        k = k, 
+        method_pam = method_pam, 
+        stop_if_null = stop_if_null
+      )
+    
+    return(out)
+    
+  }
+)
+
+
+#' @rdname getSilWidthsDf
+#' @export
+setMethod(
+  f = "getSilWidthsDf", 
+  signature = "Cypro",
+  definition = function(object, 
+                        ks, 
+                        method_pam = "euclidean",
+                        fset = "all_features"){
+    
+    clust_obj <- getClustering(object, fset = fset)
+    
+    out <- 
+      getSilWidthsDf(
+        object = clust_obj, 
+        ks = ks, 
+        method_pam = method_pam
+      )
+    
+    return(out)
+    
+  }
+)
+
+#' @rdname getSilWidthsDf
+#' @export
+setMethod(
+  f = "getSilWidthsDf", 
+  signature = "CyproTimeLapseMP",
+  definition = function(object, 
+                        phase,
+                        ks, 
+                        method_pam = "euclidean",
+                        fset = "all_features"){
+    
+    clust_obj <- getClustering(object, fset = fset, phase = phase)
+    
+    out <- 
+      getSilWidthsDf(
+        object = clust_obj, 
+        ks = ks, 
+        method_pam = method_pam
+      )
+    
+    return(out)
+    
+  }
+)
+
+
+#' @rdname plotAvgSilWidths
+#' @export
+setMethod(
+  f = "plotAvgSilWidths", 
+  signature = "Cypro", 
+  definition = function(object,
+                        ks,
+                        methods_pam = "euclidean",
+                        fset = "all_features",
+                        color = "steelblue",
+                        display_cols = TRUE,
+                        display_points = TRUE,
+                        display_line = TRUE,
+                        ncol = NULL,
+                        nrow = NULL){
+    
+    clust_obj <- getClustering(object, fset = fset)
+    
+    plotAvgSilWidths(
+      object = clust_obj,
+      ks = ks, 
+      methods_pam = methods_pam, 
+      color = color, 
+      display_cols = display_cols, 
+      display_points = display_points, 
+      display_line, 
+      ncol = ncol, 
+      nrow = nrow
+    )
+  }
+)
+
+#' @rdname plotAvgSilWidths
+#' @export
+setMethod(
+  f = "plotAvgSilWidths", 
+  signature = "CyproTimeLapseMP", 
+  definition = function(object,
+                        phase,
+                        ks,
+                        methods_pam = "euclidean",
+                        fset = "all_features",
+                        color = "steelblue",
+                        display_cols = TRUE,
+                        display_points = TRUE,
+                        display_line = TRUE,
+                        ncol = NULL,
+                        nrow = NULL){
+    
+    clust_obj <- getClustering(object, fset = fset, phase = phase)
+    
+    plotAvgSilWidths(
+      object = clust_obj,
+      ks = ks, 
+      methods_pam = methods_pam, 
+      color = color, 
+      display_cols = display_cols, 
+      display_points = display_points, 
+      display_line, 
+      ncol = ncol, 
+      nrow = nrow
+    )
+  }
+)
+
+#' @rdname plotSilWidths
+#' @export
+setMethod(
+  f = "plotSilWidths",
+  signature = "Cypro",
+  definition = function(object, 
+                        ks,
+                        method_pam = "euclidean",
+                        fset = "all_features",
+                        clrp = "milo",
+                        ncol = NULL,
+                        nrow = NULL,
+                        verbose = TRUE){
+    
+    clust_obj <- getClustering(object, fset = fset)
+    
+    plotSilWidths(
+      object = clust_obj, 
+      ks = ks, 
+      method_pam = method_pam, 
+      clrp = clrp, 
+      ncol = ncol, 
+      nrow = nrow, 
+      verbose = verbose
+    )
+    
+  }
+)
+
+#' @rdname plotSilWidths
+#' @export
+setMethod(
+  f = "plotSilWidths",
+  signature = "CyproTimeLapseMP",
+  definition = function(object,
+                        phase,
+                        ks,
+                        method_pam = "euclidean",
+                        fset = "all_features",
+                        clrp = "milo",
+                        ncol = NULL,
+                        nrow = NULL,
+                        verbose = TRUE){
+    
+    clust_obj <- getClustering(object, fset = fset, phase = phase)
+    
+    plotSilWidths(
+      object = clust_obj, 
+      ks = ks, 
+      method_pam = method_pam, 
+      clrp = clrp, 
+      ncol = ncol, 
+      nrow = nrow, 
+      verbose = verbose
+    )
+    
+  }
+)
 
