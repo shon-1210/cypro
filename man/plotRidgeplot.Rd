@@ -64,6 +64,11 @@ plotRidgeplot(object, ...)
 \item{...}{Additional arguments given to the respective \code{ggplot2::geom_<plot_type>()}
 function. E.g. \code{plotViolinplot()} relies on \code{ggplot2::geom_violin()}.}
 
+\item{features}{Character vector. Denotes the features of interest. \emph{Features} are numeric
+variables in the cell data (slot @cdata) of the \code{Cypro} object.
+
+Use \code{getFeatureNames()} to obtain all valid input options.}
+
 \item{across}{Character value, character vector or NULL (see details for more).
 Specifies the grouping variable of interest.
 

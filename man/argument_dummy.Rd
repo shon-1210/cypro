@@ -88,6 +88,16 @@ the trend is plotted.}
 
 \item{display_title}{Logical value. If set to TRUE an informative title is displayed.}
 
+\item{features}{Character vector. Denotes the features of interest. \emph{Features} are numeric
+variables in the cell data (slot @cdata) of the \code{Cypro} object.
+
+Use \code{getFeatureNames()} to obtain all valid input options.}
+
+\item{stat_features}{Character vector. Denotes the stat features of interest. \emph{Stat features}
+are the summarized features by cell ID in the statistics data.frame of slot @cdata.
+
+Use \code{getStatFeatureNames()} to obtain all valid input options.}
+
 \item{feature_set}{Character value. The name of the feature set of interest.}
 
 \item{force}{Logical value. Needs to be set to TRUE if you want to overwrite an already existing

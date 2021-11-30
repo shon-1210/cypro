@@ -14,6 +14,10 @@ they can be joined via \code{dplyr::left_join()}.
 \section{Slots}{
 
 \describe{
+\item{\code{scaled}}{matrix. Contains scaled data. In case of screening experiments it's
+the data from slot @features. In case of time lapse experiments it's the scaled data
+from slot @features_stats.}
+
 \item{\code{well_plate}}{data.frame. Contains data variables that give
 information about a cells well plate belonging: \emph{well_plate_name,
 well_plate_index, well} and \emph{well_roi}.}

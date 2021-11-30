@@ -6,46 +6,6 @@ NULL
 
 
 
-# Well plate information --------------------------------------------------
-
-valid_well_plates <- c("2x3", "3x4", "4x6", "6x8", "8x12")
-
-well_plate_info <- 
-  data.frame(
-    type = valid_well_plates, 
-    rows = c(2,3,4,6,8), 
-    cols = c(3,4,6,8,12)
-  )
-
-# -----
-
-# Regular expressions -----------------------------------------------------
-
-well_regex <- "[A-Z]{1}\\d{1,2}"
-well_roi_regex <- "[A-Z]{1}\\d{1,2}_\\d{1}"
-file_regex <- "[A-Z]{1}\\d{1,2}_\\d{1}\\.(csv|xls|xlsx)$"
-
-
-
-
-# -----
-
-# Column names ------------------------------------------------------------
-
-non_data_track_variables <- c("frame_added", "frame_itvl", "frame_num", "frame_time",
-                              "x_coords", "y_coords")
-
-original_ct_variables <- c("y-coordinate [pixel]", "x-coordinate [pixel]", "Frame number", "Cell ID",
-                           "Distance from origin", "Distance from last point", "Instantaneous speed",
-                           "Angle from origin", "Angle from last point")
-
-short_ct_variables <- c("well_roi", "condition", "cell_line", "cell_id", "x_coords",
-                        "y_coords", "frame", "dfo", "dflp", "speed", "afo", "aflp")
-
-# -----
-
-
-
 
 # a -----------------------------------------------------------------------
 
@@ -125,6 +85,12 @@ colors_information_status = c("Complete" = "forestgreen",
 
 current_version <- list(major = 0, minor = 3, patch = 0)
 
+cypro_analysis_list <- 
+  list(
+    clustering = list(), 
+    correlation = list(),
+    dimred = list()
+  )
 
 cypro_classes <- c("Cypro", "CyproScreening", "CyproTimeLapse", "CyproTimeLapseMP")
 
@@ -416,6 +382,41 @@ base::attr(object_class, which = "package") <- "cypro"
 
 # p -----------------------------------------------------------------------
 
+pretty_exp_types <- 
+  list("one_time_imaging" = "One Time Imaging", 
+       "time_lapse" = "Time Lapse", 
+       "time_lapse_smrd" = "Time Lapse (summarized)"
+  )
+
+pretty_grouping_variables_list <-
+  list("Cell Line &\n Condition" = "cl_condition", 
+       "Condition" = "condition", 
+       "Cell Line" = "cell_line")
+
+pretty_grouping_variables_vec <-
+  purrr::imap_chr(.x = pretty_grouping_variables_list, 
+                  .f = ~ .x)
+
+pretty_linetypes <- c("Solid" = "solid", 
+                      "Twodash" = "twodash", 
+                      "Longdash" = "longdash", 
+                      "Dotted" = "dotted", 
+                      "Dotdash" = "dotdash")
+
+pretty_plottypes <- c("Violinplot" = "violinplot", 
+                      "Ridgeplot" = "ridgeplot", 
+                      "Densityplot" = "density",
+                      "Boxplot" = "boxplot"
+)
+
+pretty_stattests <- c("T-test" = "t.test", 
+                      "Wilcox" = "wilcox.test", 
+                      "ANOVA" = "anova", 
+                      "Kruskal" = "kruskal.test")
+
+pretty_stattests_pairwise <- c("None" = "none", pretty_stattests[1:2])
+pretty_stattests_groupwise <- c("None" = "none", pretty_stattests[3:4])
+
 protected_vars <- c("cell_id", "cell_line", "condition",
                     "well_plate_name", "well_plate_index", "well",  "well_roi", 
                     "x_coords", "y_coords", 
@@ -425,16 +426,26 @@ protected_vars <- c("cell_id", "cell_line", "condition",
 if(exists(x = "cypro_modules")){
   
   protected_vars_modules <- 
-    purrr::map(.x = cypro_modules, .f = function(module){
+    purrr::map(cypro_modules, .f = ~purrr::map(.x = .x, .f = function(module){
       
       var_names <- 
-        c(base::names(module$variables),
-          base::names(module$variables_to_summarize)
+        c(base::names(module@variables_computable),
+          base::names(module@variables_optional), 
+          base::names(module@variables_required)
         )
+      
+      if("variables_summary" %in% methods::slotNames(module)){
+        
+        var_names <- c(var_names, base::names(module@variables_summary))
+        
+      }
       
       return(var_names)
       
-    }) %>% 
+    })
+    
+    )%>% 
+    purrr::flatten() %>% 
     purrr::flatten_chr() %>% 
     base::unique()
   
@@ -454,8 +465,8 @@ rgx_file <- "\\.(csv|txt|xls|xlsx)$"
 rgx_roi <- "[0-9]{0,1}[1-9]{1,2}"
 rgx_roi_cypro <- "[1-9]{1,2}"
 
-rgx_well <- "[A-Z]{1}0{0,1}[1-9]{1,2}[0-9]{0,1}" # fits both naming conventions A1 & A01
-rgx_well_cypro <- "[A-Z]{1}[1-9]{1,2}[0-9]{0,1}" # fits only cypro naming convention A1
+rgx_well <- "[A-Z]{1}0{0,1}[1-9]{1,2}[0-9]{0,1}" # matches both naming conventions A1 & A01
+rgx_well_cypro <- "[A-Z]{1}[1-9]{1,2}[0-9]{0,1}" # matches only cypro naming convention A1
 
 rgx_well_file <- stringr::str_c(rgx_well, rgx_file, sep = "")
 
@@ -508,6 +519,8 @@ testable_plottypes <- c("boxplot", "violinplot")
 
 # v -----------------------------------------------------------------------
 
+valid_well_plates <- c("2x3", "3x4", "4x6", "6x8", "8x12")
+
 # var_names_dfs documented below vars_*_df
 
 vars_cypro_df <- 
@@ -525,9 +538,9 @@ vars_tracks_df <-
 vars_well_plate_df <- 
   list(
     well_plate_name = "factor", 
-    well_plate_index = "integer",
+    well_plate_index = "factor",
     well = "factor", 
-    roi = "integer", 
+    roi = "factor", 
     well_roi = "factor"
   )
 
@@ -580,6 +593,12 @@ variable_relevance_descr <-
 
 # w -----------------------------------------------------------------------
 
+well_plate_info <- 
+  data.frame(
+    type = valid_well_plates, 
+    rows = c(2,3,4,6,8), 
+    cols = c(3,4,6,8,12)
+  )
 
 well_plate_vars <- c("well_plate_name", "well_plate_index", "well", "roi", "well_roi")
 
@@ -596,83 +615,11 @@ well_plate_vars <- c("well_plate_name", "well_plate_index", "well", "roi", "well
 
 
 
-# Pretty names ------------------------------------------------------------
-
-pretty_exp_types <- 
-  list("one_time_imaging" = "One Time Imaging", 
-       "time_lapse" = "Time Lapse", 
-       "time_lapse_smrd" = "Time Lapse (summarized)"
-       )
-
-pretty_grouping_variables_list <-
-  list("Cell Line &\n Condition" = "cl_condition", 
-       "Condition" = "condition", 
-       "Cell Line" = "cell_line")
-
-pretty_grouping_variables_vec <-
-  purrr::imap_chr(.x = pretty_grouping_variables_list, 
-                  .f = ~ .x)
-
-pretty_linetypes <- c("Solid" = "solid", 
-                      "Twodash" = "twodash", 
-                      "Longdash" = "longdash", 
-                      "Dotted" = "dotted", 
-                      "Dotdash" = "dotdash")
-
-pretty_plottypes <- c("Violinplot" = "violinplot", 
-                      "Ridgeplot" = "ridgeplot", 
-                      "Densityplot" = "density",
-                      "Boxplot" = "boxplot"
-                      )
-
-pretty_phases <- c("Before treatment" = "before_tmt",
-                   "After first treatment" = "first_tmt", 
-                   "Entire timespan" = "all")
-
-pretty_stattests <- c("T-test" = "t.test", 
-                      "Wilcox" = "wilcox.test", 
-                      "ANOVA" = "anova", 
-                      "Kruskal" = "kruskal.test")
-
-pretty_stattests_pairwise <- c("None" = "none", pretty_stattests[1:2])
-pretty_stattests_groupwise <- c("None" = "none", pretty_stattests[3:4])
-
-pretty_stat_variables_list <-
-  list("Total Distance" = "total_dist" ,
-       "Max. distance from origin" = "max_dist_fo", 
-       "Avg. distance from origin" = "avg_dist_fo",
-       "Max. distance from last point" = "max_dist_flp", 
-       "Avg. distance from last point" = "avg_dist_flp", 
-       "Max. speed" = "max_speed", 
-       "Avg. speed" = "avg_speed", 
-       "Migration efficiancy" = "mgr_eff")
-
-pretty_stat_variables_vec <-
-  purrr::imap_chr(.x = pretty_stat_variables_list, 
-                  .f = ~ .x) 
-
-pretty_wp_variables_list <- 
-  list("WP Name" = "well_plate_name", 
-       "WP Index" = "well_plate_index", 
-       "Well" = "well", 
-       "Well-Image" = "well_roi")
-
-pretty_wp_variables_vec <- 
-  purrr::imap_chr(.x = pretty_wp_variables_list, 
-                  .f = ~ .x)
 
 
-pretty_names_vec <- 
-  c(pretty_stat_variables_vec,
-    pretty_grouping_variables_vec, 
-    pretty_wp_variables_vec)
 
-pretty_names_list <- 
-  c(pretty_stat_variables_list,
-    pretty_grouping_variables_list, 
-    pretty_wp_variables_list)
 
-# -----
+
 
 
 
@@ -682,11 +629,9 @@ ct_warnings <- list(
   
   # renaming
   "how_to_name_input" = "Input needs to be named like this: 'new_group_name' = 'old_group_name'",
-
   
   # statistical tests
   "stat_test_requirements" = "In order to perform statistical tests please choose 'boxplot' or 'violinplot' as input for argument 'plot_type' and specify only one variable as input for argument 'variables'."
-  
   
 )
 

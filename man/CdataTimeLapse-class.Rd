@@ -29,5 +29,8 @@ in form of numeric data variables. In addition to the \emph{cell_id}-variable th
 variables (\emph{frame_num, frame_time} and \emph{frame_itvl} indicate the point of time during which
 the observation was made. The variable \emph{frame_added} indicates whether the
 observation was actually missing due to imaging artifacts and was added artificially by imputation.}
+
+\item{\code{scaled}}{data.frame. Contains scaled data. In case of time lapse experiments it's
+the data from slot @features_stats.}
 }}
 

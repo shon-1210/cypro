@@ -19,35 +19,11 @@ plotCorrelationSD(
 \arguments{
 \item{object}{Any object for whose class a method has been defined.}
 
-\item{variable_set}{Character value. Denotes the variable set of interest. Use \code{getVariableSetNames()}
-to obtain all names of currently stored variable sets in your object.}
-
-\item{method_corr}{Character value. Denotes the correlation method of interest. Either \code{'pearson'}
-or \code{'spearman'}.}
-
-\item{phase}{Character or numeric. If character, the ordinal value referring to the phase of interest (e.g. \emph{'first'}, \emph{'second'} etc.).
-referring to the phase of interest or \emph{'all'}. If numeric, the number referring to the phase.
-
-If set to NULL takes the phase denoted as default with \code{adjustDefault()}.
-
-Ignored if the experiment design contains only one phase.}
+\item{method_corr}{Character value. Specifies the correlation
+method of interest. Use \code{validMethodsCorrelation()} to obtain all valid
+input options.}
 
 \item{across}{Character vector (!). Denotes all grouping variables of interest.}
-
-\item{relevel}{Logical value. If set to TRUE the input order of \code{across_subset}
-determines the order in which the groups of interest are displayed. Groups that
-are not included are dropped which affects the choice of color.}
-
-\item{variables_subset}{Character vector or NULL. Specifies the numeric variables you
-want to be included in the correlation plot.
-
-If set to NULL all of them are chosen. You can prefix variables you do NOT want to influence the clustering
-with a \emph{'-'}. (Saves writing if there are more variables you are interested in
-than variables you are not interested in.)}
-
-\item{signif_level}{Numeric value or NULL. If numeric, specifies the minimum significance level a correlation pair
-must feature in order to be displayed. Insignificant correlation values are crossed out. Argument \code{shape_size} denotes
-the size of the crosses.}
 }
 \value{
 

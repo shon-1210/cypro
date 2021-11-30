@@ -8,7 +8,7 @@
 \usage{
 getTrackVariableNames(object, ...)
 
-\S4method{getTrackVariableNames}{CyproTimeLapse}(object, ...)
+\S4method{getTrackVariableNames}{CyproTimeLapse}(object, only_numeric = TRUE, ...)
 
 \S4method{getTrackVariableNames}{CyproTimeLapseMP}(object, phase = NULL, ...)
 }

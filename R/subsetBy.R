@@ -54,17 +54,10 @@ setMethod(
   signature = "CyproScreening", 
   definition = function(object, 
                         cell_ids, 
-                        reasoning = NULL,
+                        reasoning = NA_character_,
                         prev_subset = NULL, 
                         verbose = TRUE, 
                         ...){
-    
-    cypro_object_is_being_subsetted(
-      object = object,
-      verbose = verbose,
-      by = "cell ID",
-      prev_subset = prev_subset
-    )
     
     object <- 
       subset_by_cell_id_hlpr(
@@ -92,13 +85,6 @@ setMethod(
                         verbose = TRUE, 
                         ...){
     
-    cypro_object_is_being_subsetted(
-      object = object,
-      verbose = verbose,
-      by = "cell ID",
-      prev_subset = prev_subset
-      )
-    
     object <- 
       subset_by_cell_id_hlpr(
         object = object, 
@@ -121,7 +107,7 @@ subset_by_cell_id_hlpr <- function(object,
   
   cypro_object_is_being_subsetted(
     object = object,
-    by = "cell_id",
+    by = "cell ID",
     prev_subset = prev_subset,
     verbose = verbose
   )
@@ -175,9 +161,11 @@ subset_by_cell_id_hlpr <- function(object,
   # create new name
   parent_name <- object@experiment
   
+  nth <- base::as.integer(nSubsets(object) + 1)
+  
   new_name <-
-    stringr::str_remove(parent_name, pattern = "Subset\\d$") %>% 
-    stringr::str_c(., "_Subset", nSubsets(object) + 1)
+    stringr::str_remove(parent_name, pattern = "_Subset\\d$") %>% 
+    stringr::str_c(., "_Subset", nth)
   
  # save subset information 
  if(isOfClass(prev_subset, valid_class = "CyproSubset")){
@@ -190,13 +178,15 @@ subset_by_cell_id_hlpr <- function(object,
     subset_object@new_name <- new_name
     subset_object@parent_name <- object@experiment
     
+    subset_object@nth <- nth
     subset_object@reasoning <- reasoning
     
   } else {
     
     subset_object <- 
       CyproSubsetByCellID(
-        new_name = new_name, 
+        new_name = new_name,
+        nth = nth,
         parent_name = parent_name,
         reasoning = reasoning, 
         ids_discarded = discarded_cell_ids,
@@ -583,6 +573,7 @@ subset_by_number_hlpr <- function(object,
   
   prev_subset <- 
     CyproSubsetByNumber(
+      across = across,
       n_by_group = base::ifelse(test = base::is.numeric(n_by_group), yes = n_by_group, no = NA_integer_),
       n_total = base::ifelse(test = base::is.numeric(n_total), yes = n_total, no = NA_integer_), 
       weighted = base::ifelse(test = base::is.numeric(n_total), yes = weighted, no = NA),

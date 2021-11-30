@@ -5,6 +5,8 @@ NULL
 NULL
 #' @include S4-method-skeletons.R
 NULL
+#' @include imported-generics.R
+NULL
 
 
 
@@ -15,6 +17,162 @@ get_phase <- function(df){
   base::attr(x = df, which = "phase")
   
 }
+
+
+
+# O -----------------------------------------------------------------------
+
+#' @title Obtain object of class \code{OutlierDetection}
+#' 
+#' @description Extracts the complete \code{OutlierDetection} S4-object from 
+#' slot @@quality_checks.
+#'
+#' @inherit argument_dummy params
+#' @param ... 
+#'
+#' @return An object of S4-class \code{OutlierDetection}.
+#' @export
+#'
+setGeneric(name = "getOutlierDetection", def = function(object, ...){
+  
+  standardGeneric(f = "getOutlierDetection")
+  
+})
+
+#' @rdname getOutlierDetection
+#' @export
+setMethod(f = "getOutlierDetection", signature = "Cypro", definition = function(object, ...){
+  
+  outlier_obj <- object@quality_checks[["outliers"]]
+  
+  df <- 
+    getFeatureDf(object, with_everything = TRUE) %>% 
+    dplyr::select(-dplyr::any_of(non_data_variables))
+  
+  outlier_obj@data <- df
+  
+  outlier_obj@variables_grouping <-
+    dplyr::select(df, -cell_id) %>% 
+    dplyr::select_if(.predicate = ~ base::is.character(.x) | base::is.factor(.x)) %>% 
+    base::colnames()
+  
+  outlier_obj@variables_numeric <- 
+    dplyr::select(df, -cell_id) %>% 
+    dplyr::select_if(.predicate = base::is.numeric) %>% 
+    base::colnames()
+  
+  return(outlier_obj)
+  
+})
+
+
+
+#' @title Obtain outlier cell IDs
+#' 
+#' @description Extracts the cell IDs that were identified as outliers. See 
+#' details for more.
+#' 
+#' @inherit argument_dummy params
+#' @inherit detectOutliers params
+#' 
+#' @return Character vector or named list of character vectors.
+#' 
+#' @details The class of the return value depends on the input for argument 
+#' \code{across}. If \code{across} = NULL, a character vector of cell IDs
+#' is returned. If \code{across} is a character, a list of character vectors 
+#' is returned. Each character vector in the list represents the results for 
+#' one of the group the grouping variable denoted in \code{across} contains. 
+#' 
+#' Depending on the input for argument \code{method} additional arguments 
+#' can be specified to refine the output. 
+#' 
+#' \itemize{
+#'  \item{\code{method} = \emph{'IQR'}: }{Input for argument \code{features} determines
+#'  the numeric features for which outlier detection has been conducted. If NULL, all 
+#'  are considered. If character, only cell IDs that were identified as outliers within 
+#'  the specified features/variables are included in the return value.}
+#'  }
+#'  
+#' @seealso \code{getOutlierResults()}
+#' 
+#' @export
+setGeneric(name = "getOutlierIDs", def = getGeneric(f = "getOutlierIDs", package = "confuns"))
+
+
+#' @importMethodsFrom confuns getOutlierIDs
+#' @export
+setMethod(
+  f = "getOutlierIDs",
+  signature = "OutlierDetection",
+  definition = getMethod(f = "getOutlierIDs",
+                         signature = "OutlierDetection", 
+                         where = asNamespace(ns = "confuns"))
+)
+
+#' @rdname getOutlierIDs
+#' @export
+setMethod(
+  f = "getOutlierIDs",
+  signature = "Cypro",
+  definition = function(object, method = "IQR", features = NULL, across = NULL, across_subset = NULL, ...){
+    
+    outlier_obj <- getOutlierDetection(object)
+    
+    out <- 
+      getOutlierIDs(
+        object = outlier_obj, 
+        method = method, 
+        variables = features,
+        across = across, 
+        across_subset = across_subset,
+        flatten = flatten, 
+        ...
+      )
+    
+    return(out)
+    
+  })
+
+
+
+#' @inherit confuns::getOutlierResults title description details return 
+#' @inherit argument_dummy params
+#' @export
+setGeneric(name = "getOutlierResults", def = getGeneric(f = "getOutlierResults", package = "confuns"))
+
+#' @rdname getOutlierResults
+#' @export
+setMethod(
+  f = "getOutlierResults", 
+  signature = "Cypro", 
+  definition = function(object, method = "IQR", across = NULL, verbose = TRUE, ...){
+    
+    outlier_obj <- getOutlierDetection(object)
+    
+    out  <- 
+      getOutlierResults(
+        object = outlier_obj, 
+        method = method,
+        across = across, 
+        verbose = verbose, 
+        ...
+      )
+    
+    return(out)
+    
+  }
+)
+
+#' @rdname getOutlierResults
+#' @importMethodsFrom confuns getOutlierResults
+#' @export
+setMethod(
+  f = "getOutlierResults",
+  signature = "OutlierDetection",
+  definition = getMethod(f = "getOutlierResults",
+                         signature = "OutlierDetection",
+                         where = asNamespace(ns = "confuns"))
+)
 
 
 # P -----------------------------------------------------------------------
@@ -120,6 +278,106 @@ setMethod(f = "getPhaseNames", signature = "CyproTimeLapseMP", definition = func
 
 # S -----------------------------------------------------------------------
 
+
+#' @rdname getScaledDf
+#' @export
+setMethod(
+  f = "getScaledDf",
+  signature = "Cypro",
+  definition = function(object,
+                        with_cluster = FALSE,
+                        with_meta = FALSE, 
+                        with_well_plate = FALSE,
+                        with_everything = FALSE,
+                        ...){
+  
+  sdf <- tibble::as_tibble(object@cdata@scaled)
+  
+  cdata <- getCdata(object)
+  
+  sdf <- 
+    joinWith(
+      object = cdata, 
+      df = sdf, 
+      with_cluster = with_cluster, 
+      with_meta = with_meta, 
+      with_well_plate = with_well_plate, 
+      with_everything = with_everything
+    )
+  
+  return(sdf)
+  
+})
+
+#' @rdname getScaledDf
+#' @export
+setMethod(
+  f = "getScaledDf", 
+  signature = "CyproTimeLapseMP", 
+  definition = function(object,
+                        phase,
+                        with_cluster = FALSE,
+                        with_meta = FALSE, 
+                        with_well_plate = FALSE,
+                        with_everything = FALSE,
+                        ...){
+  
+  phase <- check_phase(object, phase = phase, max_phases = 1)
+  
+  sdf <- object@cdata@scaled[[phase]] %>% tibble::as_tibble()
+  
+  cdata <- getCdata(object)
+  
+  sdf <- 
+    joinWith(
+      object = cdata, 
+      df = sdf, 
+      phase = phase,
+      with_cluster = with_cluster, 
+      with_meta = with_meta, 
+      with_well_plate = with_well_plate, 
+      with_everything = with_everything
+    )
+  
+  return(sdf)
+  
+})
+
+#' @rdname getScaledMtr
+#' @export
+setMethod(
+  f = "getScaledMtr", 
+  signature = "Cypro",
+  definition = function(object, ...){
+    
+    mtr <- 
+      getScaledDf(object) %>% 
+      tibble::column_to_rownames(var = "cell_id") %>% 
+      base::as.matrix()
+    
+    return(mtr)
+    
+  }
+)
+
+#' @rdname getScaledMtr
+#' @export
+setMethod(
+  f = "getScaledMtr", 
+  signature = "CyproTimeLapseMP",
+  definition = function(object, phase, ...){
+    
+    mtr <- 
+      getScaledDf(object, phase = phase) %>% 
+      tibble::column_to_rownames(var = "cell_id") %>% 
+      base::as.matrix()
+    
+    return(mtr)
+    
+  }
+)
+
+
 #' @title Extract stats data.frame 
 #' 
 #' @description Obtain summarized numeric cell features of time lapse experiments in form of a data.frame.
@@ -147,6 +405,7 @@ setMethod(f = "getStatsDf", signature = "CdataTimeLapse", definition = function(
                                                                                 with_cluster = FALSE, 
                                                                                 with_meta = FALSE, 
                                                                                 with_well_plate = FALSE, 
+                                                                                with_everything = NULL, 
                                                                                 ...){
   
   df <- 
@@ -159,6 +418,7 @@ setMethod(f = "getStatsDf", signature = "CdataTimeLapse", definition = function(
       with_cluster = with_cluster, 
       with_meta = with_meta, 
       with_well_plate = with_well_plate, 
+      with_everything = with_everything,
       ...
     )
   
@@ -168,14 +428,33 @@ setMethod(f = "getStatsDf", signature = "CdataTimeLapse", definition = function(
 
 #' @rdname getStatsDf
 #' @export
-setMethod(f = "getStatsDf", signature = "CdataTimeLapseMP", definition = function(object, phase, ...){
+setMethod(f = "getStatsDf", signature = "CdataTimeLapseMP", definition = function(object,
+                                                                                  phase,
+                                                                                  with_cluster = FALSE, 
+                                                                                  with_meta = FALSE, 
+                                                                                  with_well_plate = FALSE, 
+                                                                                  with_everyting = NULL,
+                                                                                  ...){
   
   confuns::check_one_of(
     input = phase, 
     against = base::names(object@features_stats[[phase]])
   )
   
-  return(object@features_stats)
+  df <- object@features_stats[[phase]]
+  
+  df <- 
+    joinWith(
+      object = object, 
+      df = df, 
+      with_cluster = with_cluster, 
+      with_meta = with_meta, 
+      with_well_plate = with_well_plate, 
+      with_everything = with_everything,
+      ...
+    )
+  
+  return(df)
   
 })
 
@@ -185,14 +464,27 @@ setMethod(f = "getStatsDf", signature = "CyproTimeLapse", definition = function(
                                                                                 with_cluster = FALSE, 
                                                                                 with_meta = FALSE, 
                                                                                 with_well_plate = FALSE, 
+                                                                                with_everyting = NULL,
+                                                                                with_non_data = TRUE,
                                                                                 ...){
   
-  getCdata(object) %>% 
+  df <- 
+    getCdata(object) %>% 
     getStatsDf(
       with_meta = with_meta, 
       with_cluster = with_cluster, 
-      with_well_plate = with_well_plate
+      with_well_plate = with_well_plate, 
+      with_everything = with_everything,
+      ...
     )
+  
+  if(base::isFALSE(with_non_data)){
+    
+    df <- dplyr::select(df, -dplyr::any_of(non_data_variables))
+    
+  }
+  
+  return(df)
   
 })
 
@@ -203,6 +495,8 @@ setMethod(f = "getStatsDf", signature = "CyproTimeLapseMP", definition = functio
                                                                                   with_cluster = FALSE, 
                                                                                   with_meta = FALSE, 
                                                                                   with_well_plate = FALSE, 
+                                                                                  with_everything = FALSE,
+                                                                                  with_non_data = TRUE,
                                                                                   ...){
   
   phase <- check_phase(object, phase = phase, max_phases = 1)
@@ -215,8 +509,15 @@ setMethod(f = "getStatsDf", signature = "CyproTimeLapseMP", definition = functio
       df = cdata@features_stats[[phase]], 
       with_cluster = with_cluster, 
       with_meta = with_meta, 
-      with_well_plate = with_well_plate
+      with_well_plate = with_well_plate,
+      with_everything = with_everything,
     )
+  
+  if(base::isFALSE(with_non_data)){
+    
+    stats_df <- dplyr::select(stats_df, -dplyr::any_of(non_data_variables))
+    
+  }
   
   return(stats_df)
   
@@ -385,11 +686,7 @@ setMethod(f = "getSubsetList", signature = "Cypro", definition = function(object
 #' @export
 #'
 
-setGeneric(name = "getTracksDf", def = function(object, 
-                                                with_cluster = FALSE,
-                                                with_meta = FALSE, 
-                                                with_well_plate = FALSE,
-                                                ...){
+setGeneric(name = "getTracksDf", def = function(object, ...){
   
   standardGeneric(f = "getTracksDf")
   
@@ -401,10 +698,17 @@ setMethod(f = "getTracksDf", signature = "CdataTimeLapse", definition = function
                                                                                  with_cluster = FALSE,
                                                                                  with_meta = FALSE, 
                                                                                  with_well_plate = FALSE,
+                                                                                 with_everything = FALSE,
+                                                                                 only_numeric = TRUE,
                                                                                  ...){
   
-  df <- 
-    tibble::as_tibble(object@features_tracks)
+  df <-  tibble::as_tibble(object@features_tracks)
+  
+  if(base::isTRUE(only_numeric)){
+    
+    df <- dplyr::select(df, dplyr::any_of(non_data_track_variables), where(base::is.numeric))
+    
+  }
   
   df <- 
     joinWith(
@@ -412,7 +716,8 @@ setMethod(f = "getTracksDf", signature = "CdataTimeLapse", definition = function
       df = df, 
       with_cluster = with_cluster, 
       with_meta = with_meta, 
-      with_well_plate = with_well_plate, 
+      with_well_plate = with_well_plate,
+      with_everything = with_everything,
       ...
     )
   
@@ -426,14 +731,21 @@ setMethod(f = "getTracksDf", signature = "CyproTimeLapse", definition = function
                                                                                  with_cluster = FALSE,
                                                                                  with_meta = FALSE, 
                                                                                  with_well_plate = FALSE,
+                                                                                 with_everything = FALSE,
+                                                                                 only_numeric = TRUE,
                                                                                  ...){
   
-  getCdata(object) %>% 
-    getTracksDf(
-      with_meta = with_meta, 
-      with_cluster = with_cluster, 
-      with_well_plate = with_well_plate
-    )
+  df <- 
+    getCdata(object) %>% 
+      getTracksDf(
+        with_meta = with_meta, 
+        with_cluster = with_cluster, 
+        with_well_plate = with_well_plate,
+        with_everything = with_everything,
+        only_numeric = only_numeric
+      )
+  
+  return(df)
   
 })
 
@@ -444,23 +756,41 @@ setMethod(f = "getTracksDf", signature = "CyproTimeLapseMP", definition = functi
                                                                                    with_cluster = FALSE,
                                                                                    with_meta = FALSE, 
                                                                                    with_well_plate = FALSE,
+                                                                                   with_everything = FALSE,
+                                                                                   only_numeric = TRUE,
                                                                                    ...){
   
   phase <- check_phase(object, phase = phase, max_phases = 1)
   
   cdata <- getCdata(object)
   
-  out <- 
+  if(base::length(phase) > 1){
+    
+    df <- purrr::map_df(.x = phase, .f = ~ cdata@features_tracks[[.x]])
+    
+  } else {
+  
+    df <- cdata@features_tracks[[phase]]  
+    
+  }
+  
+  if(base::isTRUE(only_numeric)){
+    
+    df <- dplyr::select(df, dplyr::any_of(non_data_track_variables), where(base::is.numeric))
+    
+  }
+  
+  df <- 
     joinWith(
       object = cdata, 
-      df = cdata@features_tracks[[phase]], 
+      df = df, 
       with_cluster = with_cluster, 
       with_meta = with_meta, 
-      with_well_plate = with_well_plate
+      with_well_plate = with_well_plate, 
+      with_everything = with_everything
     )
   
-  return(out)
-  
+  return(df)
   
 })
 
@@ -488,13 +818,13 @@ setGeneric(name = "getTrackVariableNames", def = function(object, ...){
 setMethod(
   f = "getTrackVariableNames",
   signature = "CyproTimeLapse",
-  definition = function(object, ...){
+  definition = function(object, only_numeric = TRUE, ...){
     
     check_object(object)
     
     res <- 
-      getTracksDf(object, with_grouping = FALSE) %>% 
-      dplyr::select(-cell_id) %>% 
+      getTracksDf(object, only_numeric = only_numeric)%>% 
+      dplyr::select(-cell_id, -dplyr::any_of(vselect(non_data_track_variables, starts_with("frame")))) %>% 
       base::colnames() %>% 
       confuns::vselect(input = ., ...)
     
@@ -516,8 +846,8 @@ setMethod(
     phase <- check_phase(object, phase = phase, max_phases = 1)
     
     res <- 
-      getTracksDf(object, phase = phase, with_grouping = FALSE) %>% 
-      dplyr::select(-cell_id) %>% 
+      getTracksDf(object, phase = phase, only_numeric = only_numeric)%>% 
+      dplyr::select(-cell_id, -dplyr::any_of(vselect(non_data_track_variables, starts_with("frame")))) %>% 
       base::colnames() %>% 
       confuns::vselect(input = ., ...)
     

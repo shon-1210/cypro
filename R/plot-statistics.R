@@ -967,8 +967,8 @@ setMethod(
       getGroupingDf(object) %>% 
       dplyr::select(-cell_id)
     
-    confuns::plot_barplot(
-      df = stat_df,
+    plot_barchart(
+      df = df,
       variables = grouping_variables,
       across = across,
       across.subset = across_subset,
@@ -1008,8 +1008,8 @@ setMethod(
       getGroupingDf(object, phase = phase) %>% 
       dplyr::select(-cell_id)
     
-    confuns::plot_barplot(
-      df = stat_df,
+    plot_barchart(
+      df = df,
       variables = grouping_variables,
       across = across,
       across.subset = across_subset,

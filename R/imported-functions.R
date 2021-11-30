@@ -3,6 +3,8 @@
 
 # confuns -----------------------------------------------------------------
 
+#' @importClassesFrom confuns OutlierDetection
+NULL
 
 # a -----------------------------------------------------------------------
 
@@ -22,7 +24,11 @@ adapt_reference <- confuns::adapt_reference
 
 adjust_ggplot_params <- confuns::adjust_ggplot_params
 
+are_values <- confuns::are_values
+
 # c -----------------------------------------------------------------------
+
+check_none_of <- confuns::check_none_of
 
 check_one_of <- confuns::check_one_of
 
@@ -37,12 +43,16 @@ give_feedback <- confuns::give_feedback
 
 # i -----------------------------------------------------------------------
 
+initiateOutlierDetection <- confuns::initiateOutlierDetection
+
 is_value <- confuns::is_value
 
 is_vec <- confuns::is_vec
 
 
 # m -----------------------------------------------------------------------
+
+make_capital_letters <- confuns::make_capital_letters
 
 make_pretty_df <- confuns::make_pretty_df
 

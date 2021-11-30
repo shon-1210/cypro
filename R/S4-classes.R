@@ -115,7 +115,9 @@ AnalysisModuleTimeLapse <- setClass(Class = "AnalysisModuleTimeLapse",
 #' slot. Contains the experiment data in form of data.frames. All data.frames 
 #' are functionally connected by their common data variable \emph{cell_id} with which 
 #' they can be joined via \code{dplyr::left_join()}. 
-#'
+#' @slot scaled matrix. Contains scaled data. In case of screening experiments it's
+#' the data from slot @@features. In case of time lapse experiments it's the scaled data
+#' from slot @@features_stats.
 #' @slot well_plate data.frame. Contains data variables that give 
 #' information about a cells well plate belonging: \emph{well_plate_name, 
 #' well_plate_index, well} and \emph{well_roi}.
@@ -141,12 +143,15 @@ Cdata <- setClass(Class = "Cdata",
 #' @slot meta data.frame. Contains data variables that group cells according 
 #' to the experiment design: \emph{cell_line} and \emph{condition}. Additional 
 #' grouping variables can be added via \code{addMetaVariables()}. 
+#' @slot scaled data.frame. Contains scaled data. In case of screening experiments it's
+#' the data from slot @@features.
 #'
 CdataScreening <- setClass(Class = "CdataScreening", 
                            slots = list(
                              cluster = "data.frame",
                              features = "data.frame",
-                             meta = "data.frame"
+                             meta = "data.frame",
+                             scaled = "data.frame"
                            ), 
                            contains = "Cdata")
 
@@ -169,6 +174,8 @@ CdataScreening <- setClass(Class = "CdataScreening",
 #' variables (\emph{frame_num, frame_time} and \emph{frame_itvl} indicate the point of time during which
 #' the observation was made. The variable \emph{frame_added} indicates whether the
 #' observation was actually missing due to imaging artifacts and was added artificially by imputation. 
+#' @slot scaled data.frame. Contains scaled data. In case of time lapse experiments it's
+#' the data from slot @@features_stats.
 #' 
 
 CdataTimeLapse <- setClass(Class = "CdataTimeLapse", 
@@ -176,7 +183,8 @@ CdataTimeLapse <- setClass(Class = "CdataTimeLapse",
                              cluster = "data.frame", 
                              meta = "data.frame",
                              features_stats = "data.frame",
-                             features_tracks = "data.frame"
+                             features_tracks = "data.frame",
+                             scaled = "data.frame"
                              
                            ),
                            contains = "Cdata")
@@ -197,13 +205,16 @@ CdataTimeLapse <- setClass(Class = "CdataTimeLapse",
 #' of S4-class \code{CdataTimeLapse} for every phase of the experiment.
 #' @slot features_tracks list. Contains data.frames as described in slot @@features_tracks
 #' of S4-class \code{CdataTimeLapse} for every phase of the experiment.
+#' @slot scaled list. Contains scaled data for every phase. In case of time lapse experiments it's
+#' the data from slot @@features_stats.
 #' 
 CdataTimeLapseMP <- setClass(Class = "CdataTimeLapseMP", 
                              slots = list(
                                cluster = "list",
                                meta = "list",
                                features_stats = "list", 
-                               features_tracks = "list"
+                               features_tracks = "list",
+                               scaled = "list"
                              ),
                              contains = "Cdata")
 
@@ -813,8 +824,6 @@ setMethod(f = "show", signature = "cypro", definition = function(object){
     
   }
   
-  
-  
   # cell lines  -------------------------------------------------------------
   
   summary_list$cell_lines <- 
@@ -882,6 +891,7 @@ setMethod(f = "show", signature = "Cypro", definition = function(object){
 #' object after the subsetting.
 #' @slot new_name character. The content of slot @@experiment of the new \code{Cypro}
 #' object.
+#' @slot nth integer. 
 #' @slot parent_name character. The content of slot @@experiment of the \code{Cypro}
 #' object that underwent subsetting.
 #' @slot reasoning character. Character string of length one that describes in 
@@ -894,6 +904,7 @@ setMethod(f = "show", signature = "Cypro", definition = function(object){
 CyproSubset <- setClass(Class = "CyproSubset", 
                         slots = list(
                           new_name = "character",
+                          nth = "integer",
                           parent_name = "character",
                           reasoning = "character"
                         )

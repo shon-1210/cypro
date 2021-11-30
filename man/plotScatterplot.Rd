@@ -4,108 +4,13 @@
 \alias{plotScatterplot}
 \title{Plot a scatterplot}
 \usage{
-plotScatterplot(
-  object,
-  variable_x,
-  variable_y,
-  phase = NULL,
-  across = NULL,
-  across_subset = NULL,
-  relevel = TRUE,
-  ncol = NULL,
-  nrow = NULL,
-  color_aes = NULL,
-  color_by = NULL,
-  scales = "fixed",
-  space = "fixed",
-  pt_alpha = 0.9,
-  pt_clr = NULL,
-  pt_clrp = NULL,
-  pt_fill = NULL,
-  pt_shape = NULL,
-  pt_size = NULL,
-  display_smooth = FALSE,
-  smooth_alpha = NULL,
-  smooth_clr = NULL,
-  smooth_method = NULL,
-  smooth_se = NULL,
-  smooth_size = NULL,
-  display_corr = FALSE,
-  corr_method = "pearson",
-  corr_pmin = 5e-05,
-  corr_pos_x = NULL,
-  corr_pos_y = NULL,
-  corr_text_sep = "\\n",
-  corr_text_size = 1,
-  ...
-)
+plotScatterplot(object, ...)
 }
 \arguments{
 \item{object}{Any object for whose class a method has been defined.}
 
 \item{variable_x, variable_y}{Character values. The numeric variables to be plotted on the x-axis and
 y-axis. Use \code{getNumericVariableNames()} to obtain all valid input options.}
-
-\item{phase}{Character or numeric. If character, the ordinal value referring to the phase of interest (e.g. \emph{'first'}, \emph{'second'} etc.).
-referring to the phase of interest or \emph{'all'}. If numeric, the number referring to the phase.
-
-If set to NULL takes the phase denoted as default with \code{adjustDefault()}.
-
-Ignored if the experiment design contains only one phase.}
-
-\item{across}{Character value, character vector or NULL (see details for more).
-Specifies the grouping variable of interest.
-
-Use \code{getGroupingVariableNames()} to obtain all variable names that group the
-cells of your experiment in a certain manner.}
-
-\item{across_subset}{Character vector, list of character vectors or NULL (see details for
-more). Specifies the particular groups of interest the grouping variable specified in argument
-\code{across} contains.
-
-If set to NULL all of them are chosen. You can prefix groups you are NOT interested in
-with a \emph{'-'}. (Saves writing if there are more groups you are interested in
-than groups you are not interested in.)
-
-Use \code{getGroupNames()} to obtain all valid input options.}
-
-\item{relevel}{Logical value. If set to TRUE the input order of \code{across_subset}
-determines the order in which the groups of interest are displayed. Groups that
-are not included are dropped which affects the choice of color.}
-
-\item{ncol}{Given to \code{ggplot2::facet_wrap()}. Affects the way the subplots
-are displayed.}
-
-\item{nrow}{Given to \code{ggplot2::facet_wrap()}. Affects the way the subplots
-are displayed.}
-
-\item{scales}{Given to \code{ggplot2::facet_wrap()}. Affects the way the subplots
-are displayed.}
-
-\item{space}{Given to \code{ggplot2::facet_wrap()}. Affects the way the subplots
-are displayed.}
-
-\item{pt_alpha}{Numeric value. Specifies the degree of transparency of all points.}
-
-\item{pt_clr}{Character value. Specifies the color of all points.}
-
-\item{pt_clrp}{The color palette to be used if the specified variable displayed by
-color is categorical/discrete. Run \code{validColorPalettes()} to see valid input.}
-
-\item{pt_size}{Numeric value. Specifies the size of all points.}
-
-\item{display_smooth}{Logical value. If set to TRUE a smoothed line is displayed to emphasize
-the overall trend of the data. Use the \code{smooth_*} arguments to additionally adjust they way
-the trend is plotted.}
-
-\item{smooth_clr}{Character value. Denotes the color of the smoothed line.}
-
-\item{smooth_method}{Character value. Denotes the model type used to display the line. Defaults to
-\emph{'lm'} (linear model). Given to argument \code{method} of function \code{ggplot2::geom_smooth()}.}
-
-\item{smooth_se}{Logical. If set to TRUE the standard error will be displayed.}
-
-\item{smooth_size}{Numeric value. Denotes the size of the smoothed line.}
 
 \item{display_corr}{Logical value. If set to TRUE the correlation of the x- and y-variable is calculated
 and displayed on the plot (or each subplot if \code{across} is specified.)}

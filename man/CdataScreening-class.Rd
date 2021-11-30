@@ -23,5 +23,8 @@ in form of numeric data variables.}
 \item{\code{meta}}{data.frame. Contains data variables that group cells according
 to the experiment design: \emph{cell_line} and \emph{condition}. Additional
 grouping variables can be added via \code{addMetaVariables()}.}
+
+\item{\code{scaled}}{data.frame. Contains scaled data. In case of screening experiments it's
+the data from slot @features.}
 }}
 

@@ -15,16 +15,27 @@ getStatsDf(object, ...)
   with_cluster = FALSE,
   with_meta = FALSE,
   with_well_plate = FALSE,
+  with_everything = NULL,
   ...
 )
 
-\S4method{getStatsDf}{CdataTimeLapseMP}(object, phase, ...)
+\S4method{getStatsDf}{CdataTimeLapseMP}(
+  object,
+  phase,
+  with_cluster = FALSE,
+  with_meta = FALSE,
+  with_well_plate = FALSE,
+  with_everyting = NULL,
+  ...
+)
 
 \S4method{getStatsDf}{CyproTimeLapse}(
   object,
   with_cluster = FALSE,
   with_meta = FALSE,
   with_well_plate = FALSE,
+  with_everyting = NULL,
+  with_non_data = TRUE,
   ...
 )
 
@@ -34,6 +45,8 @@ getStatsDf(object, ...)
   with_cluster = FALSE,
   with_meta = FALSE,
   with_well_plate = FALSE,
+  with_everything = FALSE,
+  with_non_data = TRUE,
   ...
 )
 }

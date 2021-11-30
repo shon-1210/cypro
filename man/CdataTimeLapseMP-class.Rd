@@ -25,5 +25,8 @@ of S4-class \code{CdataTimeLapse} for every phase of the experiment.}
 
 \item{\code{features_tracks}}{list. Contains data.frames as described in slot @features_tracks
 of S4-class \code{CdataTimeLapse} for every phase of the experiment.}
+
+\item{\code{scaled}}{list. Contains scaled data for every phase. In case of time lapse experiments it's
+the data from slot @features_stats.}
 }}
 

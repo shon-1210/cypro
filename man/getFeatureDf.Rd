@@ -13,6 +13,7 @@ getFeatureDf(object, ...)
   with_cluster = FALSE,
   with_meta = FALSE,
   with_well_plate = FALSE,
+  with_everything = FALSE,
   ...
 )
 
@@ -21,6 +22,8 @@ getFeatureDf(object, ...)
   with_cluster = NULL,
   with_meta = NULL,
   with_well_plate = NULL,
+  with_everything = NULL,
+  with_non_data = TRUE,
   ...
 )
 }

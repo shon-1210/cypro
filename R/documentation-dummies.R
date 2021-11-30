@@ -50,7 +50,6 @@ dim_red_df <- function(dim_red_df){}
 
 #' @title argument_dummy
 #' 
-#' 
 #' @inherit check_phase params
 #' @param across Character value, character vector or NULL (see details for more).
 #' Specifies the grouping variable of interest.
@@ -103,6 +102,16 @@ dim_red_df <- function(dim_red_df){}
 #' the overall trend of the data. Use the \code{smooth_*} arguments to additionally adjust they way
 #' the trend is plotted. 
 #' @param display_title Logical value. If set to TRUE an informative title is displayed.
+#' @param features Character vector. Denotes the features of interest. \emph{Features} are numeric
+#' variables in the cell data (slot @@cdata) of the \code{Cypro} object.
+#' 
+#' Use \code{getFeatureNames()} to obtain all valid input options.
+#' 
+#' @param stat_features Character vector. Denotes the stat features of interest. \emph{Stat features}
+#' are the summarized features by cell ID in the statistics data.frame of slot @@cdata.
+#' 
+#' Use \code{getStatFeatureNames()} to obtain all valid input options.
+#' 
 #' @param feature_set Character value. The name of the feature set of interest.
 #' @param force Logical value. Needs to be set to TRUE if you want to overwrite an already existing 
 #' set up or already existing results. 
@@ -211,17 +220,12 @@ dim_red_df <- function(dim_red_df){}
 #' (Warning messages will always be printed.)
 argument_dummy <- function(object, phase, pt_alpha, pt_clr, pt_clrp, pt_clrsp, pt_size){}
 
-
-
-
 #' Title
 #'
 #' @return
 #' @export
 #'
 ggplot_family <- function(){}
-
-
 
 #' Title
 #'

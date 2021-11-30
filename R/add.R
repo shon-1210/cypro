@@ -673,6 +673,210 @@ add_helper <- function(shiny_tag, content, title = "What do I have to do here?",
 # A -----------------------------------------------------------------------
 
 
+#' @title Add analysis aspects
+#' 
+#' @description Adds new analysis aspects for a new feature set. 
+#' 
+#' @inherit argument_dummy params
+#' 
+#' @return The input object.
+setGeneric(name = "addAnalysisAspects", def = function(object, ...){
+  
+  standardGeneric(f = "addAnalysisAspects")
+  
+})
+
+#' @rdname addAnalysisAspects
+#' @export
+setMethod(
+  f = "addAnalysisAspects", 
+  signature = "Cypro", 
+  definition = function(object, fset_name, variables_numeric){
+    
+    object@analysis$clustering[[fset_name]] <- 
+      methods::new(Class = "Clustering", variables_numeric = variables_numeric, key_name = "cell_id")
+    
+    object@analysis$correlation[[fset_name]] <- 
+      methods::new(Class = "Correlation", variables_numeric = variables_numeric, key_name = "cell_id")
+    
+    object@analysis$dimred[[fset_name]] <- 
+      methods::new(Class = "DimRed", variables_numeric = variables_numeric, key_name = "cell_id")
+    
+    return(object)
+    
+  }
+)
+
+#' @rdname addAnalysisAspects
+#' @export
+setMethod(
+  f = "addAnalysisAspects", 
+  signature = "CyproTimeLapseMP", 
+  definition = function(object, fset_name, variables_numeric){
+    
+    for(p in getPhaseNames(object)){
+      
+      object@analysis$clustering[[fset_name]][[p]] <- 
+        methods::new(Class = "Clustering", variables_numeric = variables_numeric, key_name = "cell_id")
+      
+      object@analysis$correlation[[fset_name]][[p]] <- 
+        methods::new(Class = "Correlation", variables_numeric = variables_numeric, key_name = "cell_id")
+      
+      object@analysis$dimred[[fset_name]][[p]] <- 
+        methods::new(Class = "DimRed", variables_numeric = variables_numeric, key_name = "cell_id")
+      
+    }
+    
+    return(object)
+    
+  }
+)
+
+# F -----------------------------------------------------------------------
+
+#' @title Add feature set
+#' 
+#' @description With this function defined sets of cell features are set. See
+#' details for more. 
+#' 
+#' @param fset_name Character value. The name of the feature set.
+#' @inherit argument_dummy params
+#' 
+#' @details The features specified of argument \code{features} or \code{stat_features}
+#' are stored as a new feature set. Based on that clustering, correlation, etc. 
+#' can be conducted. 
+#' 
+#' @section Concept:
+#' The concept of \emph{feature sets} is used in \code{cypro} to facilitate
+#' the analysis of data sets that contain an abundance of features as is often obtained
+#' by high content screening. It allows to conveniently analyze the data from several points of
+#' view as machine learning results (clustering, correlation, dimensional reduction, etc.)
+#' are stored by feature set. E.g. you can cluster cells according to feature set \emph{area_shape}
+#' that you might have defined as a set of features that only measure shape related properties 
+#' of the cell and do the same for a feature set \emph{migration}. 
+#'
+#' @seealso \code{getFeatureSet()}, \code{getFeautureSets()}, \code{getFeatureSetNames()} 
+
+setGeneric(name = "addFeatureSet", def = function(object, ...){
+  
+  standardGeneric(f = "addFeatureSet")
+  
+})
+
+#' @rdname addFeatureSet
+#' @export
+setMethod(
+  f = "addFeatureSet", 
+  signature = "CyproScreening", 
+  definition = function(object, fset_name, features, force = FALSE, verbose = TRUE){
+    
+    is_value(x = fset_name, mode = "character")
+    
+    is_vec(x = features, mode = "character", min.length = 2)
+    
+    check_none_of(
+      input = fset_name, 
+      against = getFeatureSetNames(object), 
+      force = force, 
+      ref.against = "defined feature sets"
+    )
+    
+    check_one_of(
+      input = features, 
+      against = getFeatureNames(object)
+    )
+    
+    object@feature_sets[[fset_name]] <- features
+    
+    object <- addAnalysisAspects(object, fset_name = fset_name, variables_numeric = features)
+    
+    n_features <- base::length(features)
+    
+    give_feedback(
+      msg = glue::glue("Setting new feature set named '{fset_name}' with {n_features} features."), 
+      verbose = verbose
+    )
+    
+    return(object)
+    
+  }
+)
+
+#' @rdname addFeatureSet
+#' @export
+setMethod(
+  f = "addFeatureSet", 
+  signature = "CyproTimeLapse", 
+  definition = function(object, fset_name, stat_features, force = FALSE, verbose = TRUE){
+    
+    is_value(x = fset_name, mode = "character")
+    
+    is_vec(x = stat_features, mode = "character", min.length = 2)
+    
+    check_none_of(
+      input = fset_name, 
+      against = getFeatureSetNames(object), 
+      force = force
+    )
+    
+    check_one_of(
+      input = stat_features, 
+      against = getFeatureNames(object)
+    )
+    
+    object@feature_sets[[fset_name]] <- stat_features
+    
+    object <- addAnalysisAspects(object, fset_name = fset_name, variables_numeric = features)
+    
+    n_features <- base::length(stat_features)
+    
+    give_feedback(
+      msg = glue::glue("Setting new feature set named '{fset_name}' with {n_features} features."), 
+      verbose = verbose
+    )
+    
+    return(object)
+    
+  }
+)
+
+#' @rdname addFeatureSet
+#' @export
+setMethod(
+  f = "addFeatureSet", 
+  signature = "CyproTimeLapseMP", 
+  definition = function(object, fset_name, stat_features, force = FALSE, verbose = TRUE){
+    
+    is_value(x = fset_name, mode = "character")
+    
+    is_vec(x = stat_features, mode = "character", min.length = 2)
+    
+    check_none_of(
+      input = fset_name, 
+      against = getFeatureSetNames(object), 
+      force = force
+    )
+    
+    check_one_of(
+      input = stat_features, 
+      against = getFeatureNames(object)
+    )
+    
+    object@feature_sets[[fset_name]] <- stat_features
+    
+    object <- addAnalysisAspects(object, fset_name = fset_name, variables_numeric = features)
+    
+    n_features <- base::length(stat_features)
+    
+    give_feedback(
+      msg = glue::glue("Setting new feature set named '{fset_name}' with {n_featurs} featueres."), 
+      verbose = verbose
+    )
+    
+    return(object)
+    
+  }
+)
 
 # R -----------------------------------------------------------------------
 

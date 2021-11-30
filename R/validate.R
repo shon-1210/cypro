@@ -11,6 +11,31 @@ validate_experiment_name <- function(exp_name, stop_if_false = FALSE){
   
 }
 
+
+# g -----------------------------------------------------------------------
+
+validate_grouping_variables <- function(df, grouping_variables){
+  
+  gv_n_distinct <- 
+    dplyr::select(df, cell_id, frame_num, dplyr::all_of(grouping_variables)) %>% 
+    dplyr::group_by(cell_id) %>% 
+    dplyr::summarise_all(.funs = dplyr::n_distinct) %>% 
+    dplyr::select(-cell_id)
+  
+  out <- list()
+  
+  out$invalid_grouping_vars <- 
+    purrr::keep(.x = gv_n_distinct, .p = ~ !base::all(.x == 1)) %>% 
+    base::names()
+  
+  out$valid <- 
+    purrr::keep(.x = gv_n_distinct, .p = ~ base::all(.x == 1)) %>% 
+    base::names()
+  
+  return(out)
+  
+}
+
 # n -----------------------------------------------------------------------
 
 validate_no_overlap_directories <- function(directories, fdb_if_false = FALSE, fdb_fn = "stop", in_shiny = FALSE){

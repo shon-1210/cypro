@@ -4,41 +4,10 @@
 \alias{computeDistanceMatrices}
 \title{Compute distance matrices}
 \usage{
-computeDistanceMatrices(
-  object,
-  variable_set,
-  phase = NULL,
-  method_dist = NULL,
-  force = FALSE,
-  p = 2,
-  verbose = NULL
-)
+computeDistanceMatrices(object, ...)
 }
 \arguments{
 \item{object}{Any object for whose class a method has been defined.}
-
-\item{variable_set}{Character value. Denotes the variable set of interest. Use \code{getVariableSetNames()}
-to obtain all names of currently stored variable sets in your object.}
-
-\item{phase}{Character or numeric. If character, the ordinal value referring to the phase of interest (e.g. \emph{'first'}, \emph{'second'} etc.).
-referring to the phase of interest or \emph{'all'}. If numeric, the number referring to the phase.
-
-If set to NULL takes the phase denoted as default with \code{adjustDefault()}.
-
-Ignored if the experiment design contains only one phase.}
-
-\item{method_dist}{Character vector (or value see details for more.) Denotes the distance method(s)
-of interest (e.g. \emph{'euclidean'} or \emph{'manhattan'}).
-
-Use \code{validDistanceMethods()} to obtain all valid input options.}
-
-\item{force}{Logical value. Needs to be set to TRUE if you want to overwrite an already existing
-set up or already existing results.}
-
-\item{verbose}{Logical. If set to TRUE informative messages regarding
-the computational progress will be printed.
-
-(Warning messages will always be printed.)}
 }
 \value{
 An updated version of the input \code{cypro}-object.

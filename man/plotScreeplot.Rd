@@ -4,46 +4,12 @@
 \alias{plotScreeplot}
 \title{Plot a scree plot}
 \usage{
-plotScreeplot(
-  object,
-  variable_set,
-  phase = NULL,
-  method_kmeans = NULL,
-  k = 2:10,
-  clr = "steelblue",
-  display_cols = TRUE,
-  display_line = TRUE,
-  display_points = TRUE
-)
+plotScreeplot(object, ...)
 }
 \arguments{
 \item{object}{Any object for whose class a method has been defined.}
 
-\item{variable_set}{Character value. Denotes the variable set of interest. Use \code{getVariableSetNames()}
-to obtain all names of currently stored variable sets in your object.}
-
-\item{phase}{Character or numeric. If character, the ordinal value referring to the phase of interest (e.g. \emph{'first'}, \emph{'second'} etc.).
-referring to the phase of interest or \emph{'all'}. If numeric, the number referring to the phase.
-
-If set to NULL takes the phase denoted as default with \code{adjustDefault()}.
-
-Ignored if the experiment design contains only one phase.}
-
-\item{method_kmeans}{Character vector (or value see details for more.) Denotes the algorithms of interest. Defaults
-to \emph{'Hartigan-Wong'}.
-
-Use \code{validKmeansMethods()} to obtain all valid input options.}
-
 \item{clr}{Character value. Denotes the color of the columns.}
-
-\item{display_cols}{Logical value. If set to TRUE columns are used additionally
-to display the results.}
-
-\item{display_line}{Logical value. If set to TRUE a line is used additionally
-to display the results.}
-
-\item{display_points}{Logical value. If set to TRUE points are used additionally
-to display the results.}
 }
 \value{
 

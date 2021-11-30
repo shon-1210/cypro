@@ -25,6 +25,8 @@ object after the subsetting.
 \item{\code{new_name}}{character. The content of slot @experiment of the new \code{Cypro}
 object.}
 
+\item{\code{nth}}{integer.}
+
 \item{\code{parent_name}}{character. The content of slot @experiment of the \code{Cypro}
 object that underwent subsetting.}
 

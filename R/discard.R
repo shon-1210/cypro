@@ -411,6 +411,63 @@ keepTrackVariables <- function(object, track_variables, verbose = NULL){
 
 
 
+# C -----------------------------------------------------------------------
+
+
+#' @title Discard cells from object
+#' 
+#' @description Discards the cells specified in \code{cell_ids} from the object. 
+#' 
+#' @inherit subsetByCellID params
+#' 
+#' @details This is done by an inverse application of \code{subsetByCellID()}. From 
+#' all valid cell IDs obtained via \code{getCellIDs()} only those are kept 
+#' that are \bold{not} in the input vector of \code{cell_ids}. 
+#'
+#' @return The input object.
+#' 
+#' @seealso \code{subsetByCellID()}
+#' 
+#' @export
+#'
+setGeneric(name = "discardCellIDs", def = function(object, ...){
+  
+  standardGeneric(f = "discardCellIDs")
+  
+})
+
+#' @rdname discardCellIDs
+#' @export
+setMethod(f = "discardCellIDs", signature = "Cypro", definition = function(object, 
+                                                                           cell_ids, 
+                                                                           reasoning = NA_character_, 
+                                                                           verbose = TRUE){
+  
+  all_ids <- getCellIDs(object)
+  
+  remove_ids <- cell_ids[cell_ids %in% all_ids]
+  
+  n_ids <- base::length(remove_ids)
+  
+  give_feedback(
+    msg = glue::glue("Discarding {n_ids} cells from cypro object. "), 
+    verbose = verbose
+  )
+  
+  keep_ids <- all_ids[!all_ids %in% remove_ids]
+  
+  object <- 
+    subsetByCellID(
+      object = object, 
+      cell_ids = keep_ids, 
+      reasoning = reasoning, 
+      verbose = verbose
+    )
+  
+  return(object)
+  
+})
+
 
 # D -----------------------------------------------------------------------
 
@@ -471,6 +528,59 @@ setMethod(f = "discardDataFiles", signature = "Cypro", definition = function(obj
 
 
 
+#' @title Discard outlier IDs
+#' 
+#' @description Discards cell IDs that were identified as outliers. 
+#' 
+#' @inherit argument_dummy params
+#' 
+#' @return The input object. 
+#' 
+#' @export
+
+setGeneric(name = "discardOutliers", def = function(object, ...){
+  
+  standardGeneric(f = "discardOutliers")
+  
+})
+
+#' @rdname discardOutliers
+#' @export
+setMethod(f = "discardOutliers", signature = "Cypro", definition = function(object, 
+                                                                            method,
+                                                                            features = NULL, 
+                                                                            across = NULL, 
+                                                                            across_subset = NULL, 
+                                                                            verbose = TRUE){
+  
+  
+  cell_ids <-
+    getOutlierIDs(
+      object = object, 
+      method = method, 
+      features = features, 
+      across = across, 
+      across_subset = across_subset
+      )
+  
+  if(base::is.character(across)){
+    
+    cell_ids <- purrr::flatten_chr(cell_ids) %>% base::unique()
+    
+  }
+  
+  object <- 
+    discardCellIDs(
+      object = object,
+      cell_ids = cell_ids,
+      reasoning = "Outlier removal."
+      )
+  
+  return(object)
+  
+})
+
+
 # S -----------------------------------------------------------------------
 
 
@@ -495,7 +605,7 @@ setMethod(f = "discardStorageDirectory", signature = "Cypro", definition = funct
   object@information$storage_directory <- NULL
   
   give_feedback(
-    msg = "Discarded storge directory. Make sure to set a new one with 'setStorageDirectory()'.",
+    msg = "Discarded storage directory. Make sure to set a new one with 'setStorageDirectory()'.",
     verbose = verbose
   )
   

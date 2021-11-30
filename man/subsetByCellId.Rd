@@ -11,7 +11,7 @@ subsetByCellID(object, ...)
 \S4method{subsetByCellID}{CyproScreening}(
   object,
   cell_ids,
-  reasoning = NULL,
+  reasoning = NA_character_,
   prev_subset = NULL,
   verbose = TRUE,
   ...

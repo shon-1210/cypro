@@ -7,19 +7,15 @@
 \alias{getTracksDf,CyproTimeLapseMP-method}
 \title{Extract track data.frame}
 \usage{
-getTracksDf(
-  object,
-  with_cluster = FALSE,
-  with_meta = FALSE,
-  with_well_plate = FALSE,
-  ...
-)
+getTracksDf(object, ...)
 
 \S4method{getTracksDf}{CdataTimeLapse}(
   object,
   with_cluster = FALSE,
   with_meta = FALSE,
   with_well_plate = FALSE,
+  with_everything = FALSE,
+  only_numeric = TRUE,
   ...
 )
 
@@ -28,6 +24,8 @@ getTracksDf(
   with_cluster = FALSE,
   with_meta = FALSE,
   with_well_plate = FALSE,
+  with_everything = FALSE,
+  only_numeric = TRUE,
   ...
 )
 
@@ -37,6 +35,8 @@ getTracksDf(
   with_cluster = FALSE,
   with_meta = FALSE,
   with_well_plate = FALSE,
+  with_everything = FALSE,
+  only_numeric = TRUE,
   ...
 )
 }

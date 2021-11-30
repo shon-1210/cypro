@@ -82,6 +82,104 @@ setMethod(
   
 })
 
+#' @title Obtain analysis aspect
+#' 
+#' @description Extracts S4 object of class \code{AnalysisAspect} as described in 
+#' package \code{confuns}.
+#' 
+#' @param aspect Character value. The analysis aspect.
+#' @inherit argument_dummy params
+#' 
+#' @return An object of class \code{AnalysisAspect}.
+#' 
+setGeneric(name = "getAnalysisAspect", def = function(object, ...){
+  
+  standardGeneric(f = "getAnalysisAspect")
+  
+})
+
+#' @rdname getAnylsisAspect
+#' @export
+setMethod(
+  f = "getAnalysisAspect", 
+  signature = "CyproScreening", 
+  definition = function(object, aspect, fset_name){
+    
+    out <- object@analysis[[aspect]][[fset_name]]
+    
+    out@data <- 
+      getFeatureDf(object, with_everything = TRUE) 
+    
+    out@data_scaled <- 
+      getScaledDf(object) %>% 
+      dplyr::select(cell_id, dplyr::all_of(out@variables_numeric))
+    
+    out@variables_grouping <- getGroupingVariableNames(object)
+    
+    out@variables_logical <- 
+      dplyr::select_if(out@data, .predicate = base::is.logical) %>% 
+      base::colnames()
+    
+    return(out)
+    
+  }
+)
+
+#' @rdname getAnylsisAspect
+#' @export
+setMethod(
+  f = "getAnalysisAspect", 
+  signature = "CyproTimeLapse", 
+  definition = function(object, aspect, fset_name){
+    
+    out <- object@analysis[[aspect]][[fset_name]]
+    
+    out@data <- 
+      getStatsDf(object, with_everything = TRUE) 
+    
+    out@data_scaled <- 
+      getScaledDf(object) %>% 
+      dplyr::select(cell_id, dplyr::all_of(out@variables_numeric))
+    
+    out@variables_grouping <- getGroupingVariableNames(object)
+    
+    out@variables_logical <- 
+      dplyr::select_if(out@data, .predicate = base::is.logical) %>% 
+      base::colnames()
+    
+    return(out)
+    
+  }
+)
+
+#' @rdname getAnylsisAspect
+#' @export
+setMethod(
+  f = "getAnalysisAspect", 
+  signature = "CyproTimeLapse", 
+  definition = function(object, aspect, fset_name, phase){
+    
+    phase <- check_phase(object, phase = phase, max_phases = 1)
+    
+    out <- object@analysis[[aspect]][[fset_name]][[phase]]
+    
+    out@data <- 
+      getStatsDf(object, with_everything = TRUE, phase = phase) 
+    
+    out@data_scaled <- 
+      getScaledDf(object) %>% 
+      dplyr::select(cell_id, dplyr::all_of(out@variables_numeric))
+    
+    out@variables_grouping <- getGroupingVariableNames(object, phase = phase)
+    
+    out@variables_logical <- 
+      dplyr::select_if(out@data, .predicate = base::is.logical) %>% 
+      base::colnames()
+    
+    return(out)
+    
+  }
+)
 
 # C -----------------------------------------------------------------------
 
@@ -314,6 +412,61 @@ setMethod(f = "getClusterDf",
           })
 
 
+#' @title Obtain \code{Clustering} object
+#' 
+#' @description Extracts \code{Clustering} object of the respective
+#' feature set. 
+#' 
+#' @inherit argument_dummy params
+#' 
+#' @return Object of class \code{Clustering}.
+#' 
+#' @export
+#' 
+setGeneric(name = "getClustering", def = function(object, ...){
+  
+  standardGeneric(f = "getClustering")
+  
+})
+
+#' @rdname getClustering
+#' @export
+setMethod(
+  f = "getClustering", 
+  signature = "Cypro",
+  definition = function(object, fset_name = "all_features"){
+    
+    check_one_of(
+      input = fset_name, 
+      against = getFeatureSetNames(object)
+    )
+    
+    out <- getAnalysisAspect(object, aspect = "clustering", fset_name = fset_name)
+    
+    return(Out)
+    
+  }
+)
+
+#' @rdname getClustering
+#' @export
+setMethod(
+  f = "getClustering", 
+  signature = "CyproTimeLapseMP",
+  definition = function(object, fset_name = "all_features", phase = NULL){
+    
+    check_one_of(
+      input = fset_name, 
+      against = getFeatureSetNames(object)
+    )
+    
+    out <- getAnalysisAspect(object, aspect = "clustering", fset_name = fset_name, phase = phase)
+    
+    return(Out)
+    
+  }
+)
+
 
 #' @title Extract cluster variable names of cell data
 #' 
@@ -382,7 +535,60 @@ setMethod(
 )
 
 
+#' @title Obtain \code{Correlation} object
+#' 
+#' @description Extracts \code{Correlation} object of the respective
+#' feature set. 
+#' 
+#' @inherit argument_dummy params
+#' 
+#' @return Object of class \code{Correlation}.
+#' 
+#' @export
+#' 
+setGeneric(name = "getCorrelation", def = function(object, ...){
+  
+  standardGeneric(f = "getCorrelation")
+  
+})
 
+#' @rdname getCorrelation
+#' @export
+setMethod(
+  f = "getCorrelation", 
+  signature = "Cypro",
+  definition = function(object, fset_name = "all_features"){
+    
+    check_one_of(
+      input = fset_name, 
+      against = getFeatureSetNames(object)
+    )
+    
+    out <- getAnalysisAspect(object, aspect = "correlation", fset_name = fset_name)
+    
+    return(out)
+    
+  }
+)
+
+#' @rdname getCorrelation
+#' @export
+setMethod(
+  f = "getCorrelation", 
+  signature = "CyproTimeLapseMP",
+  definition = function(object, fset_name = "all_features", phase = NULL){
+    
+    check_one_of(
+      input = fset_name, 
+      against = getFeatureSetNames(object)
+    )
+    
+    out <- getAnalysisAspect(object, aspect = "correlation", fset_name = fset_name, phase = phase)
+    
+    return(out)
+    
+  }
+)
 
 
 # D -----------------------------------------------------------------------
@@ -498,6 +704,61 @@ setMethod(f = "getDefaultInstructions", signature = "Cypro", definition = functi
   
 })
 
+
+#' @title Obtain \code{DimRed} object
+#' 
+#' @description Extracts \code{DimRed} object of the respective
+#' feature set. 
+#' 
+#' @inherit argument_dummy params
+#' 
+#' @return Object of class \code{DimRed}.
+#' 
+#' @export
+#' 
+setGeneric(name = "getDimRed", def = function(object, ...){
+  
+  standardGeneric(f = "getDimRed")
+  
+})
+
+#' @rdname getDimRed
+#' @export
+setMethod(
+  f = "getDimRed", 
+  signature = "Cypro",
+  definition = function(object, fset_name = "all_features"){
+    
+    check_one_of(
+      input = fset_name, 
+      against = getFeatureSetNames(object)
+    )
+    
+    out <- getAnalysisAspect(object, aspect = "dimred", fset_name = fset_name)
+    
+    return(Out)
+    
+  }
+)
+
+#' @rdname getDimRed
+#' @export
+setMethod(
+  f = "getDimRed", 
+  signature = "CyproTimeLapseMP",
+  definition = function(object, fset_name = "all_features", phase = NULL){
+    
+    check_one_of(
+      input = fset_name, 
+      against = getFeatureSetNames(object)
+    )
+    
+    out <- getAnalysisAspect(object, aspect = "dimred", fset_name = fset_name, phase = phase)
+    
+    return(Out)
+    
+  }
+)
 
 # E -----------------------------------------------------------------------
 
@@ -663,6 +924,7 @@ setMethod(
                         with_cluster = FALSE,
                         with_meta = FALSE,
                         with_well_plate = FALSE,
+                        with_everything = FALSE,
                         ...){
   
   df <- 
@@ -672,6 +934,7 @@ setMethod(
       with_cluster = with_cluster, 
       with_meta = with_meta, 
       with_well_plate = with_well_plate, 
+      with_everything = with_everything,
       ...
     )
   
@@ -688,6 +951,8 @@ setMethod(
                         with_cluster = NULL,
                         with_meta = NULL,
                         with_well_plate = NULL,
+                        with_everything = NULL,
+                        with_non_data = TRUE,
                         ...){
     
     cdata <- getCdata(object)
@@ -699,8 +964,16 @@ setMethod(
         with_cluster = with_cluster, 
         with_meta = with_meta, 
         with_well_plate = with_well_plate, 
+        with_everything = with_everything,
         ...
-      )
+      ) 
+    
+    if(base::isFALSE(with_non_data)){
+      
+      df <- 
+        dplyr::select(df, -dplyr:any_of(x = non_data_variables))
+      
+    }
     
     return(df)  
     
@@ -1799,9 +2072,9 @@ setMethod(f = "getMetaDf", signature = "CyproTimeLapseMP", definition = function
   
   cdata_object <- getCdata(object)
   
-  meta_df <- getMetaDf(cdata_object, phase = phase)
+  df <- getMetaDf(cdata_object, phase = phase)
   
-  return(meta_df)
+  return(df)
   
 })
 
@@ -1809,10 +2082,7 @@ setMethod(f = "getMetaDf", signature = "CyproTimeLapseMP", definition = function
 #' @export
 setMethod(f = "getMetaDf", signature = "Cdata", definition = function(object, ...){
   
-  meta_df <- object@meta
-  wp_df <- object@well_plate
-  
-  df <- dplyr::left_join(x = meta_df, y = wp_df, by = "cell_id")
+  df <- object@meta
   
   return(df)
   
@@ -1827,10 +2097,7 @@ setMethod(f = "getMetaDf", signature = "CdataTimeLapseMP", definition = function
     against = base::names(object@meta)
   )
   
-  meta_df <- object@meta[[phase]]
-  wp_df <- object@well_plate
-  
-  df <- dplyr::left_join(x = meta_df, y = wp_df, by = "cell_id")
+  df <- object@meta[[phase]]
   
   return(df)
   
