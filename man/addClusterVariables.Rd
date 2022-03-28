@@ -2,38 +2,58 @@
 % Please edit documentation in R/add.R
 \name{addClusterVariables}
 \alias{addClusterVariables}
-\alias{addMetaVariables}
-\title{Add discrete/categorical variables that group the cells}
+\alias{addClusterVariables,Cypro-method}
+\alias{addClusterVariables,CyproTimeLapseMP-method}
+\title{Add cluster variables}
 \usage{
-addClusterVariables(
+addClusterVariables(object, ...)
+
+\S4method{addClusterVariables}{Cypro}(
   object,
   input_df,
   variable_names,
-  phase = NULL,
-  overwrite = FALSE,
-  by = "cell_id",
+  key = "cell_id",
+  force = FALSE,
   verbose = TRUE
 )
 
-addMetaVariables(
+\S4method{addClusterVariables}{CyproTimeLapseMP}(
   object,
+  phase,
   input_df,
   variable_names,
-  phase = NULL,
-  overwrite = FALSE,
-  with_well_plate = FALSE,
-  by = "cell_id",
+  key = "cell_id",
+  verbose = TRUE
+)
+
+\S4method{addClusterVariables}{CyproTimeLapseMP}(
+  object,
+  phase,
+  input_df,
+  variable_names,
+  key = "cell_id",
   verbose = TRUE
 )
 }
 \arguments{
 \item{object}{Any object for whose class a method has been defined.}
 
-\item{input_df}{A data.frame that contains the variables denoted in argument \code{variable_names}
-as well as a character variable named according to input of argument \code{by} that is used to match
-and join both data.frames.}
+\item{input_df}{Data.frame that contains the cluster variables that are supposed
+to be added.}
 
-\item{variable_names}{Character vector. The name of the variables that are to be joined.}
+\item{variable_names}{Character vector. The names of the variables that are
+supposed to be added.}
+
+\item{key}{Character value. The key variable by which the variables are added.
+Defaults to \code{cell_id}.}
+
+\item{force}{Logical value. Needs to be set to TRUE if you want to overwrite an already existing
+set up or already existing results.}
+
+\item{verbose}{Logical. If set to TRUE informative messages regarding
+the computational progress will be printed.
+
+(Warning messages will always be printed.)}
 
 \item{phase}{Character or numeric. If character, the ordinal value referring to the phase of interest (e.g. \emph{'first'}, \emph{'second'} etc.).
 referring to the phase of interest or \emph{'all'}. If numeric, the number referring to the phase.
@@ -41,35 +61,8 @@ referring to the phase of interest or \emph{'all'}. If numeric, the number refer
 If set to NULL takes the phase denoted as default with \code{adjustDefault()}.
 
 Ignored if the experiment design contains only one phase.}
-
-\item{overwrite}{Logical value. Must be set to TRUE in case of overlapping
-variable names.
-
-(Note that overwriting stat variables leads to all analysis progress of affected
-variable sets being discarded.)}
-
-\item{by}{Character value. Denotes the variable by which the new informational
-variables specified in argument \code{variable_names} are supposed to be joined.
-In case of \code{addClusterVariables()} and \code{addMetaVariables()} this does not
-have to be \emph{'cell_id'}.
-
-E.g. if you want to add additional grouping options that refer to the conditions such
-as \emph{'mechanism_of_action'} again grouping the conditions you can specify
-\code{by} = \emph{'condition'}.}
-
-\item{verbose}{Logical. If set to TRUE informative messages regarding
-the computational progress will be printed.
-
-(Warning messages will always be printed.)}
-
-\item{with_well_plate}{Logical values. Denoting
-if the respective grouping information should be joined to the output data.frame
-or not.}
-}
-\value{
-An updated cypro object that contains the data added.
 }
 \description{
-Allows to join new discrete/categorical variables that can be referred
-to via the \code{across}-argument of many functions.
+Add cluster variables to cluster data.frame of the \code{Cypro}
+object.
 }

@@ -21,8 +21,8 @@ setGeneric(name = "setOutlierDetection", def = function(object, ...){
 
 #' @rdname setOutlierDetection
 #' @export
-setMethod(f = "setOutlierDetection", signature = "Cypro", definition = function(object, outlier_object){
-  
+setMethod(f = "setOutlierDetection", signature = "Cypro", definition = function(object, outlier_object = NULL){
+
   outlier_object@data <- data.frame()
   
   object@quality_checks[["outliers"]] <- outlier_object

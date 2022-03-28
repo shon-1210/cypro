@@ -8,7 +8,7 @@ hlpr_add_data_to_cluster_object <- function(object, cluster_object, with_data, p
   
   if(base::isFALSE(with_data)){
     
-    base::return(cluster_object)
+    return(cluster_object)
     
   } else {
     
@@ -31,7 +31,7 @@ hlpr_add_data_to_cluster_object <- function(object, cluster_object, with_data, p
     
   }
   
-  base::return(cluster_object)
+  return(cluster_object)
   
 }
 
@@ -71,6 +71,7 @@ hlpr_add_vset_suffix <- function(cluster_df, variable_set){
 
 
 
+
 #' @title Assemble a directory
 #' 
 #' @description Assembles a single character string direction from the 
@@ -87,12 +88,12 @@ hlpr_assemble_directory <- function(input_list){
     stringr::str_remove(pattern = "\\)")
   
   path <-
-    purrr::map_chr(.x = input_list$path, ~ base::return(.x)) %>% 
+    purrr::map_chr(.x = input_list$path, ~ return(.x)) %>% 
     purrr::discard(.p = ~ .x == "") %>% 
     stringr::str_c(collapse = "/") %>% 
     stringr::str_c(root, ., sep = "/")
   
-  base::return(path)
+  return(path)
   
 }
 
@@ -118,7 +119,7 @@ hlpr_assemble_df <- function(track_df, wp_data, wp_index, wp_name){
     ) %>% 
     dplyr::left_join(x = ., y = well_info_df, by = "well")
   
-  base::return(result_df)
+  return(result_df)
   
 }
 
@@ -152,7 +153,7 @@ hlpr_caption_add_on <- function(object, phase){
     
   }
   
-  base::return(list(add_on))
+  return(list(add_on))
   
 }
 
@@ -215,11 +216,11 @@ hlpr_create_track_list <- function(phase, track_df){ # deprecated
     
     dplyr::group_by(.data = filtered_df, cell_id) %>% 
       dplyr::mutate(dfo = compute_distances_from_origin(x_coords, y_coords)) %>% 
-      base::return()
+      return()
     
   } else {
     
-    base::return(filtered_df)
+    return(filtered_df)
     
   }
   
@@ -272,7 +273,7 @@ hlpr_glue_phase <- function(object, phase, empty_space = TRUE, string = "for"){ 
     
   }
   
-  base::return(string)
+  return(string)
   
 }
 
@@ -334,7 +335,7 @@ hlpr_merge_conditions <- function(track_df, phase, across, verbose = TRUE){
     
   }
   
-  base::return(track_df)
+  return(track_df)
   
 }
 
@@ -352,7 +353,7 @@ hlpr_merge_condition_by_id <- function(condition){
   
   res <- base::rep(merged_conditions, n_obs)
   
-  base::return(res)
+  return(res)
   
   
 }
@@ -425,7 +426,7 @@ hlpr_rename_df_cols <- function(df,
       dplyr::select(df, dplyr::all_of(x = c(base::unname(denoted_columns), additional_columns))) %>% 
       dplyr::rename(!!denoted_columns)
     
-  base::return(df)
+  return(df)
 
   
 }
@@ -448,7 +449,7 @@ hlpr_order_input <- function(order_input){
     
   }
   
-  base::return(order)
+  return(order)
   
 }
 
@@ -578,7 +579,7 @@ hlpr_process_tracks <- function(df, phase, object, verbose){
     dplyr::select(track_df, cell_id, dplyr::starts_with("frame"), where(base::is.numeric)) %>% 
     dplyr::ungroup()
   
-  base::return(track_df_numeric)
+  return(track_df_numeric)
   
 } 
 
@@ -593,7 +594,7 @@ hlpr_split_subset <- function(subset_input){
   
   return_list$keep <-  stringr::str_subset(subset_input, pattern = "^-", negate = TRUE)
   
-  base::return(return_list)
+  return(return_list)
   
 }
 
@@ -618,7 +619,7 @@ hlpr_select <- function(df, variables_subset){
     
   }
   
-  base::return(df)
+  return(df)
   
 }
 
@@ -658,7 +659,7 @@ hlpr_phase_vertical_line <- function(object, phase, display_vline, vline_clr, vl
     
   }
   
-  base::return(add_on)
+  return(add_on)
   
 }
 
@@ -675,7 +676,7 @@ hlpr_wp_directories <- function(wp_list){
   
   if(base::is.null(dir)){dir <- "No directory assigned"}
   
-  base::return(dir)
+  return(dir)
   
 }
 
@@ -708,7 +709,7 @@ hlpr_wp_exp_file_number <- function(wp_list){
   
   n_rois_per_well <- wp_list$wp_df$rois_per_well %>% base::unique()
   
-  base::return(n_wells * n_rois_per_well)
+  return(n_wells * n_rois_per_well)
     
 }
 
@@ -736,7 +737,7 @@ hlpr_select_stats <- function(object, phase = "first_tmt", var_classes, ...){
       dplyr::all_of(x = c("cell_id", variables_to_select))
     )
   
-  base::return(stat_df)
+  return(stat_df)
   
 }
 
@@ -760,7 +761,7 @@ hlpr_subset_across <- function(data, across, across_subset){
   
   if(base::is.null(across_subset)){
     
-    base::return(data)
+    return(data)
     
   } else {
     
@@ -785,7 +786,7 @@ hlpr_subset_across <- function(data, across, across_subset){
       
     }
     
-    base::return(data)
+    return(data)
     
   }
   

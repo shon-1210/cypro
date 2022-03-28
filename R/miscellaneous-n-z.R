@@ -566,17 +566,12 @@ setMethod(f = "processData", signature = "CyproScreening", definition = function
   
   object <- scaleData(object)
   
-  # outlier detection
-  df <- getFeatureDf(object, with_everything = TRUE)
-  
-  outlier_object <- initiateOutlierDetection(data = df, key_name = "cell_id")
-  
-  object <- setOutlierDetection(object, outlier_object = outlier_object)
-  
-  # set analysis aspect list 
-  fnames <- getFeatureNames(object) %>% vselect(-any_of(non_data_variables))
-  
-  object <- addFeatureSet(object, name = "all_features", features = fnames)
+  object <- 
+    addFeatureSet(
+      object = object,
+      name = "all_features",
+      features = getFeatureNames(object) %>% vselect(-any_of(non_data_variables))
+      )
   
   object <- setAnalysisList(object)
   
@@ -604,19 +599,12 @@ setMethod(f = "processData", signature = "CyproTimeLapse", definition = function
   
   object <- setProgress(object, processData = TRUE)
   
-  # set outlier detection 
-  
-  df <- getStatsDf(object, with_everything = TRUE)
-  
-  outlier_object <- initiateOutlierDetection(data = df, key_name = "cell_id")
-  
-  object <- setOutlierDetection(object, outlier_object = outlier_object)
-  
-  # set analysis list
-  
-  fnames <- getStatFeatureNames(object) %>% vselect(-any_of(non_data_variables))
-  
-  object <- addFeatureSet(object, name = "all_features", stat_features = fnames)
+  object <- 
+    addFeatureSet(
+      object = object,
+      name = "all_features",
+      features = getStatVariableNames(object) %>% vselect(-any_of(non_data_variables))
+    )
   
   object <- setAnalysisList(object)
   
@@ -641,20 +629,13 @@ setMethod(f = "processData", signature = "CyproTimeLapseMP", definition = functi
   object <- summarizeModuleVariables(object, verbose = verbose)
   
   object <- setProgress(object, processData = TRUE)
-  
-  # set outlier detection 
-  
-  df <- getStatsDf(object, with_everything = TRUE)
-  
-  outlier_object <- initiateOutlierDetection(data = df, key_name = "cell_id")
-  
-  object <- setOutlierDetection(object, outlier_object = outlier_object)
-  
-  # set analysis list
-  
-  fnames <- getStatFeatureNames(object) %>% vselect(-any_of(non_data_variables))
-  
-  object <- addFeatureSet(object, name = "all_features", stat_features = fnames)
+
+  object <- 
+    addFeatureSet(
+      object = object,
+      name = "all_features",
+      features = getStatVariableNames(object) %>% vselect(-any_of(non_data_variables))
+    )
   
   object <- setAnalysisList(object)
   
@@ -973,7 +954,10 @@ setMethod(
 
 #' @rdname transferData
 #' @export
-setMethod(f = "transferData", signature = "CyproTimeLapse", definition = function(object, verbose = TRUE){
+setMethod(
+  f = "transferData",
+  signature = "CyproTimeLapse",
+  definition = function(object, verbose = TRUE){
   
   df <- getMergedDf(object, verbose = verbose) 
   
@@ -987,7 +971,10 @@ setMethod(f = "transferData", signature = "CyproTimeLapse", definition = functio
 
 #' @rdname transferData
 #' @export
-setMethod(f = "transferData", signature = "CyproTimeLapseMP", definition = function(object, verbose = TRUE){
+setMethod(
+  f = "transferData",
+  signature = "CyproTimeLapseMP",
+  definition = function(object, verbose = TRUE){
   
   df <- getMergedDf(object, verbose = verbose)
   

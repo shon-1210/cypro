@@ -28,6 +28,8 @@ are_values <- confuns::are_values
 
 # c -----------------------------------------------------------------------
 
+check_data_frame <- confuns::check_data_frame
+
 check_none_of <- confuns::check_none_of
 
 check_one_of <- confuns::check_one_of
@@ -42,8 +44,6 @@ give_feedback <- confuns::give_feedback
 
 
 # i -----------------------------------------------------------------------
-
-initiateOutlierDetection <- confuns::initiateOutlierDetection
 
 is_value <- confuns::is_value
 
@@ -67,6 +67,7 @@ plot_boxplot <- confuns::plot_boxplot
 plot_density <- confuns::plot_density
 plot_histogram <- confuns::plot_histogram
 plot_ridgeplot <- confuns::plot_ridgeplot 
+plot_scatterplot <- confuns::plot_scatterplot
 plot_violinplot <- confuns::plot_violinplot
 
 

@@ -10,7 +10,7 @@ setMethod(
   signature = "Cypro", 
   definition = function(object, 
                         ks, 
-                        methods_kmeans = "Lloyd", 
+                        methods_kmeans = "Hartigan-Wong", 
                         fset = "all_features",
                         verbose = TRUE){
     

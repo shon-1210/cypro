@@ -1,3 +1,8 @@
+#' @include imported-generics.R
+NULL
+
+
+
 # a -----------------------------------------------------------------------
 
 
@@ -151,11 +156,6 @@ deselectWells.layout_df <- function(df, wells = NULL){
   
 }
 
-
-#' @inherit confuns::detectOutliers title description params
-#' @export
-setGeneric(name = "detectOutliers", def = getGeneric(f = "detectOutliers", package = "confuns"))
-
 #' @rdname detectOutliers
 #' @export
 setMethod(
@@ -176,7 +176,12 @@ setMethod(
     outlier_object <- getOutlierDetection(object)
     
     outlier_object <-
-      detectOutliers(object = outlier_object, method = method, across = across, verbose = verbose)
+      detectOutliers(
+        object = outlier_object,
+        method = method,
+        across = across,
+        verbose = verbose
+        )
     
     object <- setOutlierDetection(object, outlier_object = outlier_object)
     
@@ -378,8 +383,6 @@ initiateEmptyCyproObject <- function(...){
   base::return(object)
   
 }
-
-
 
 # j -----------------------------------------------------------------------
 

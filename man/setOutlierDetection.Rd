@@ -7,7 +7,7 @@
 \usage{
 setOutlierDetection(object, ...)
 
-\S4method{setOutlierDetection}{Cypro}(object, outlier_object)
+\S4method{setOutlierDetection}{Cypro}(object, outlier_object = NULL)
 }
 \arguments{
 \item{object}{Any object for whose class a method has been defined.}

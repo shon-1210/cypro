@@ -26,7 +26,9 @@ setImageDirectories <- function(object,
   
 }
 
-
+HALLMARK <- msigdb_download("Homo sapiens", "H", "")
+names(HALLMARK) <- clean_genesets(names(HALLMARK))
+head(names(HALLMARK))
 
 
 

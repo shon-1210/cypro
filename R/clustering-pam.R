@@ -70,7 +70,7 @@ setMethod(
                         prefix = "", 
                         naming = "{method_pam}_k{k}"){
     
-    clust_obj <- getClusterin(object, fset = fset)
+    clust_obj <- getClustering(object, fset = fset)
     
     out <- 
       getClusterVarsPam(
@@ -99,7 +99,7 @@ setMethod(
                         prefix = "", 
                         naming = "{method_pam}_k{k}"){
     
-    clust_obj <- getClusterin(object, fset = fset, phase = phase)
+    clust_obj <- getClustering(object, fset = fset, phase = phase)
     
     out <- 
       getClusterVarsPam(

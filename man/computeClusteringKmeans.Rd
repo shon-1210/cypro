@@ -11,7 +11,7 @@ computeClusteringKmeans(object, ...)
 \S4method{computeClusteringKmeans}{Cypro}(
   object,
   ks,
-  methods_kmeans = "Lloyd",
+  methods_kmeans = "Hartigan-Wong",
   fset = "all_features",
   verbose = TRUE
 )

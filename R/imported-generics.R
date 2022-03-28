@@ -2,6 +2,28 @@
 
 # a -----------------------------------------------------------------------
 
+#' @inherit confuns::addClusterVarsHclust title description details params return
+#' @export
+setGeneric(
+  name = "addClusterVarsHclust",
+  def = getGeneric(f = "addClusterVarsHclust", package = "confuns")
+  )
+
+#' @inherit confuns::addClusterVarsKmeans title description details params return
+#' @export
+setGeneric(
+  name = "addClusterVarsKmeans", 
+  def = getGeneric(f = "addClusterVarsKmeans", package = "confuns")
+)
+
+#' @inherit confuns::addClusterVarsPam title description details params return
+#' @export
+setGeneric(
+  name = "addClusterVarsPam", 
+  def = getGeneric(f = "addClusterVarsPam", package = "confuns")
+)
+
+
 #' @inherit confuns::agglomerateHierarchicalTrees title description details params return
 #' @inherit argument_dummy params
 #' @export
@@ -75,6 +97,14 @@ setGeneric(
   name = "computeUMAP",
   def = getGeneric(f = "computeUMAP", package = "confuns")
 )
+
+
+
+# d -----------------------------------------------------------------------
+
+#' @inherit confuns::detectOutliers title description params
+#' @export
+setGeneric(name = "detectOutliers", def = getGeneric(f = "detectOutliers", package = "confuns"))
 
 
 # g -----------------------------------------------------------------------
@@ -247,6 +277,43 @@ setGeneric(
   def = getGeneric(f = "getMtr", package = "confuns")
 )
 
+
+#' @title Obtain outlier cell IDs
+#' 
+#' @description Extracts the cell IDs that were identified as outliers. See 
+#' details for more.
+#' 
+#' @inherit argument_dummy params
+#' @inherit detectOutliers params
+#' 
+#' @return Character vector or named list of character vectors.
+#' 
+#' @details The class of the return value depends on the input for argument 
+#' \code{across}. If \code{across} = NULL, a character vector of cell IDs
+#' is returned. If \code{across} is a character, a list of character vectors 
+#' is returned. Each character vector in the list represents the results for 
+#' one of the group the grouping variable denoted in \code{across} contains. 
+#' 
+#' Depending on the input for argument \code{method} additional arguments 
+#' can be specified to refine the output. 
+#' 
+#' \itemize{
+#'  \item{\code{method} = \emph{'IQR'}: }{Input for argument \code{features} determines
+#'  the numeric features for which outlier detection has been conducted. If NULL, all 
+#'  are considered. If character, only cell IDs that were identified as outliers within 
+#'  the specified features/variables are included in the return value.}
+#'  }
+#'  
+#' @seealso \code{getOutlierResults()}
+#' 
+#' @export
+setGeneric(name = "getOutlierIDs", def = getGeneric(f = "getOutlierIDs", package = "confuns"))
+
+#' @inherit confuns::getOutlierResults title description details return 
+#' @inherit argument_dummy params
+#' @export
+setGeneric(name = "getOutlierResults", def = getGeneric(f = "getOutlierResults", package = "confuns"))
+
 #' @inherit confuns::getPam title description details params return
 #' @inherit argument_dummy params
 #' @export
@@ -305,6 +372,11 @@ setGeneric(
   name = "getSilWidthsDf",
   def = getGeneric(f = "getSilWidthsDf", package = "confuns")
 )
+
+
+
+# i -----------------------------------------------------------------------
+
 
 
 # p -----------------------------------------------------------------------

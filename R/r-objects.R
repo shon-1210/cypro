@@ -4,9 +4,6 @@
 NULL
 
 
-
-
-
 # a -----------------------------------------------------------------------
 
 additional_variables_descr <- c(
@@ -550,7 +547,9 @@ vars_well_plate_df <-
     well_plate_index = "factor",
     well = "factor", 
     roi = "factor", 
-    well_roi = "factor"
+    well_roi = "factor", 
+    indexed_well = "factor",
+    indexed_well_roi = "factor"
   )
 
 var_names_dfs <- 
