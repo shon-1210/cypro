@@ -71,6 +71,7 @@ Collate:
     'miscellaneous.R'
     'mutate-data-frames.R'
     'n-functions.R'
+    'normalization.R'
     'object-initiation.R'
     'outlier-detection.R'
     'plot-family-statistics.R'
