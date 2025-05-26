@@ -96,8 +96,6 @@ to the group and the respective named element denotes the color with which to
 represent the group.}
 }
 \value{
-
-
 A ggplot.
 }
 \description{

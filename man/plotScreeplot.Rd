@@ -46,8 +46,6 @@ to display the results.}
 to display the results.}
 }
 \value{
-
-
 A ggplot.
 }
 \description{

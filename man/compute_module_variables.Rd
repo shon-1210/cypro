@@ -30,9 +30,6 @@ Ignored if the experiment design contains only one phase.}
 \item{stat_df}{The already summarized stats data.frame complete_stats() is
 currently working with.}
 }
-\value{
-
-}
 \description{
 To be used within complete_tracks() and complete_stats() again
 within processData(). Checks which modules are used and which variables

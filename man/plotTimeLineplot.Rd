@@ -69,15 +69,6 @@ Ignored if the experiment design contains only one phase.}
 
 \item{linesize}{Numeric value. Denotes the size of the lines drawn.}
 
-\item{scales}{Given to \code{ggplot2::facet_wrap()}. Affects the way the subplots
-are displayed.}
-
-\item{nrow}{Given to \code{ggplot2::facet_wrap()}. Affects the way the subplots
-are displayed.}
-
-\item{ncol}{Given to \code{ggplot2::facet_wrap()}. Affects the way the subplots
-are displayed.}
-
 \item{smooth}{Logical. If set to TRUE the values are smoothed.}
 
 \item{smooth_method}{Character value. Denotes the model type used to display the line. Defaults to
@@ -109,8 +100,6 @@ the computational progress will be printed.
 (Warning messages will always be printed.)}
 }
 \value{
-
-
 A ggplot.
 }
 \description{

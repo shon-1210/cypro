@@ -12,10 +12,11 @@ subsetByFilter(object, new_name, ..., phase = NULL, verbose = NULL)
 \item{new_name}{Character value. Denotes the name of the output object. If set to NULL the name of the
 input object is taken and suffixed with \emph{'_subset'}.}
 
-\item{...}{<\code{\link[dplyr:dplyr_data_masking]{data-masking}}> Expressions that return a
-logical value, and are defined in terms of the variables in \code{.data}.
-If multiple expressions are included, they are combined with the \code{&} operator.
-Only rows for which all conditions evaluate to \code{TRUE} are kept.}
+\item{...}{<\code{\link[rlang:args_data_masking]{data-masking}}> Expressions that
+return a logical value, and are defined in terms of the variables in
+\code{.data}. If multiple expressions are included, they are combined with the
+\code{&} operator. Only rows for which all conditions evaluate to \code{TRUE} are
+kept.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

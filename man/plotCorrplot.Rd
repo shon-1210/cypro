@@ -114,16 +114,8 @@ it Specifies the maximum size possible.}
 \item{grid_clr}{Character value. Specifies the color of the grid.}
 
 \item{grid_size}{Numeric value. Specifies the thickness of the grid's lines.}
-
-\item{ncol}{Given to \code{ggplot2::facet_wrap()}. Affects the way the subplots
-are displayed.}
-
-\item{nrow}{Given to \code{ggplot2::facet_wrap()}. Affects the way the subplots
-are displayed.}
 }
 \value{
-
-
 A ggplot.
 }
 \description{

@@ -63,7 +63,7 @@ assemble_id_module_info_shiny <- function(input_list, object, example_df = NULL,
         confuns::lselect(
           lst = input_list,
           contains("vardenotation-") &
-          matches(pattern)
+            matches(pattern)
         ) %>% 
         purrr::flatten_chr()
       
@@ -82,7 +82,7 @@ assemble_id_module_info_shiny <- function(input_list, object, example_df = NULL,
     frame_num_var <- identification_module$variables$frame_num$name_in_example
     
     if(base::is.character(ed_vars)){
-    
+      
       ed_vars <- ed_vars %>% confuns::vselect(-none)  
       
     }
@@ -304,9 +304,27 @@ assemble_tracks_one_time_imaging_shiny <- function(stat_data_list, well_plate_li
 
 assemble_tracks_time_lapse_shiny <- function(track_data_list, well_plate_list, object){
   
+  ### START of updated block
+  
   df_list <- 
-    purrr::map(.x = track_data_list, ~ .x$successful) %>% 
-    purrr::map(.x = ., .f = ~ purrr::map_df(.x = .x, .f = ~ .x))
+    purrr::map(track_data_list, ~ .x$successful) %>%
+    purrr::map(~ 
+                 purrr::map(.x = .x, .f = ~ {
+                   # List of columns that should be numeric
+                   numeric_columns <- c("dflp", "dfo", "speed", "angle", "angle_from_origin", "angle_from_last_point")
+                   
+                   for (col in numeric_columns) {
+                     if (col %in% names(.x) && !is.numeric(.x[[col]])) {
+                       .x[[col]] <- suppressWarnings(as.numeric(.x[[col]]))
+                     }
+                   }
+                   
+                   .x
+                 }) %>% 
+                 dplyr::bind_rows()
+    )
+  
+  ### END of updated block
   
   all_data_list <- 
     list(df_list, well_plate_list, base::seq_along(df_list), base::names(df_list))
@@ -353,35 +371,35 @@ assemble_tracks_time_lapse_shiny <- function(track_data_list, well_plate_list, o
     
     track_list <- 
       purrr::map(.x = phase_info, .f = function(phase){
-                   
-                   phase_index <- phase$index
-                   phase_start <- phase$start
-                   phase_end <- phase$end
-                   
-                   phase_pattern <- stringr::str_c("^", phase_index, "\\.",sep = "")
-                   
-                   df <-
-                     dplyr::filter(final_df, frame_num >= {{phase_start}} & frame_num < {{phase_end}})
-                   
-                   condition_split <- 
-                     stringr::str_split_fixed(
-                       string = df$condition,
-                       pattern = " -> ", 
-                       n = base::length(phase_endings)
-                       ) 
-                   
-                   condition_vec <- 
-                     stringr::str_remove_all(
-                       string = base::as.character(condition_split[,phase_index]),
-                       pattern = phase_pattern
-                       )
-                   
-                   df$condition <- condition_vec
-                   df$cl_condition <- stringr::str_c(df$cell_line, df$condition, sep = " & ")
-                   
-                   base::return(df)
-                   
-                 }) %>% 
+        
+        phase_index <- phase$index
+        phase_start <- phase$start
+        phase_end <- phase$end
+        
+        phase_pattern <- stringr::str_c("^", phase_index, "\\.",sep = "")
+        
+        df <-
+          dplyr::filter(final_df, frame_num >= {{phase_start}} & frame_num < {{phase_end}})
+        
+        condition_split <- 
+          stringr::str_split_fixed(
+            string = df$condition,
+            pattern = " -> ", 
+            n = base::length(phase_endings)
+          ) 
+        
+        condition_vec <- 
+          stringr::str_remove_all(
+            string = base::as.character(condition_split[,phase_index]),
+            pattern = phase_pattern
+          )
+        
+        df$condition <- condition_vec
+        df$cl_condition <- stringr::str_c(df$cell_line, df$condition, sep = " & ")
+        
+        base::return(df)
+        
+      }) %>% 
       magrittr::set_names(value = base::names(phase_endings))
     
   } else { # if only one phase return list of one data.frame named "first"
@@ -475,7 +493,7 @@ evaluate_file_availability_shiny <- function(wp_list, recursive = TRUE, keep_fil
       purrr::map(
         .x = ignore_filetypes, 
         .f = ~ stringr::str_c(ambiguous_files, .x, sep = ".")
-        ) %>% 
+      ) %>% 
       purrr::flatten_chr()
     
   }
@@ -599,7 +617,7 @@ evaluate_file_availability_shiny <- function(wp_list, recursive = TRUE, keep_fil
           base::append(
             x = ambiguous_list[[aw]],
             value = ambiguous_directories[i]
-            )
+          )
         
       } 
       
@@ -660,8 +678,8 @@ evaluate_file_content_shiny <- function(var_name_well_plate = "none",
   
   df_clean <- 
     dplyr::rename(.data = df,
-      well := {{var_name_well}},
-      roi := {{var_name_roi}}
+                  well := {{var_name_well}},
+                  roi := {{var_name_roi}}
     ) %>% 
     dplyr::mutate(
       well_letter = stringr::str_extract(string = well, pattern = "^[A-Z]"), 
@@ -808,7 +826,7 @@ evaluate_file_content_shiny <- function(var_name_well_plate = "none",
       glue::glue(
         "Variable assignemnt resulted in no data found for any well. Please make sure to assign ",
         "the correct experiment design variables."
-        )
+      )
     
     shiny_fdb(ui = msg, type = "error")
     
@@ -901,7 +919,7 @@ load_data_files_shiny <- function(wp_list,
                 mitosis_module_used = mitosis_module_used) %>% 
     purrr::set_names(nm = well_roi_files)
   
-  # sort successfull and failed loading 
+  # sort successful and failed loading 
   output_data_list <- 
     list(
       "successful" = purrr::keep(.x = data_list, .p = base::is.data.frame), # data.frame has been returned
@@ -1013,11 +1031,11 @@ plot_well_plate_shiny <- function(wp_df,
     
     fill_add_on <-
       confuns::scale_color_add_on(
-      aes = "fill",
-      variable = wp_df[[aes_fill]],
-      clrp.adjust = c("unknown" = "lightgrey", "unknown & unknown" = "lightgrey"),
-      clrp = "milo",
-      guide = FALSE
+        aes = "fill",
+        variable = wp_df[[aes_fill]],
+        clrp.adjust = c("unknown" = "lightgrey", "unknown & unknown" = "lightgrey"),
+        clrp = "milo",
+        guide = FALSE
       ) 
     
   } else {
@@ -1212,13 +1230,13 @@ read_data_files_shiny <- function(directory,
                                   used_variable_names,
                                   assembled_module_info_lists,
                                   mitosis_module_used = FALSE){
-
+  
   amils <- assembled_module_info_lists
-
+  
   #assign("amils", value = amils, envir = .GlobalEnv)
   
   # 1. Checkpoint: Reading  -------------------------------------------------
-      
+  
   progress$set(value = progress_n)
   
   df <- 
@@ -1259,7 +1277,7 @@ read_data_files_shiny <- function(directory,
     return(df)
     
   } else if(base::is.data.frame(df)){
-
+    
     # 2. Checkpoint: Does data.frame contain data? ----------------------------
     
     # if not -> return info
@@ -1268,7 +1286,7 @@ read_data_files_shiny <- function(directory,
       return("Read in data.frame contains 0 rows.")
       
     } else {
-
+      
       # 3. Checkpoint: Is data of data.frame valid? -----------------------------
       
       feedback_messages <- NULL

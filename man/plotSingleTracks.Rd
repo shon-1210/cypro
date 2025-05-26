@@ -24,9 +24,6 @@ referring to the phase of interest or \emph{'all'}. If numeric, the number refer
 If set to NULL takes the phase denoted as default with \code{adjustDefault()}.
 
 Ignored if the experiment design contains only one phase.}
-
-\item{scales}{Given to \code{ggplot2::facet_wrap()}. Affects the way the subplots
-are displayed.}
 }
 \value{
 A ggplot.

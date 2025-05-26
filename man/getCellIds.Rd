@@ -9,10 +9,11 @@ getCellIds(object, ..., phase = NULL)
 \arguments{
 \item{object}{A valid cypro object.}
 
-\item{...}{<\code{\link[dplyr:dplyr_data_masking]{data-masking}}> Expressions that return a
-logical value, and are defined in terms of the variables in \code{.data}.
-If multiple expressions are included, they are combined with the \code{&} operator.
-Only rows for which all conditions evaluate to \code{TRUE} are kept.}
+\item{...}{<\code{\link[rlang:args_data_masking]{data-masking}}> Expressions that
+return a logical value, and are defined in terms of the variables in
+\code{.data}. If multiple expressions are included, they are combined with the
+\code{&} operator. Only rows for which all conditions evaluate to \code{TRUE} are
+kept.}
 
 \item{phase}{Character or numeric. If character, the ordinal value referring to the phase of interest (e.g. \emph{'first'}, \emph{'second'} etc.).
 referring to the phase of interest or \emph{'all'}. If numeric, the number referring to the phase.

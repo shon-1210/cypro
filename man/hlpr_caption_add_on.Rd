@@ -9,9 +9,6 @@ hlpr_caption_add_on(object, phase)
 \arguments{
 \item{object}{A valid cypro object.}
 }
-\value{
-
-}
 \description{
 Returns a \code{ggplot2::labs()}-add on in which the
 caption clarifies whether the plot refers to the times pan before the treatment,

@@ -60,20 +60,12 @@ to display the results.}
 groups of discrete variables. Run \code{validColorPalettes()} to obtain valid
 input options.}
 
-\item{ncol}{Given to \code{ggplot2::facet_wrap()}. Affects the way the subplots
-are displayed.}
-
-\item{nrow}{Given to \code{ggplot2::facet_wrap()}. Affects the way the subplots
-are displayed.}
-
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
 }
 \value{
-
-
 A ggplot.
 }
 \description{

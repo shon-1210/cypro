@@ -27,7 +27,8 @@
 #' 
 #' @return A cypro object that contains the data for the subsetted cells. 
 #' @export
-#'
+#' @importFrom dplyr select filter pull mutate case_when ungroup group_by summarise n distinct slice_sample
+
 subsetByCellId <- function(object,
                            new_name,
                            cell_ids,

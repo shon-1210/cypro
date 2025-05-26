@@ -23,7 +23,11 @@ any_of(x, ..., vars = NULL)
 }
 \arguments{
 \item{match}{A character vector. If length > 1, the union of the
-matches is taken.}
+matches is taken.
+
+For \code{starts_with()}, \code{ends_with()}, and \code{contains()} this is an exact
+match. For \code{matches()} this is a regular expression, and can be a
+stringr pattern.}
 
 \item{ignore.case}{If \code{TRUE}, the default, ignores case when matching
 names.}
@@ -38,10 +42,10 @@ established by functions like \code{select()} or \code{pivot_longer()}).}
 These \link[tidyselect:language]{selection helpers} match variables according
 to a given pattern.
 \itemize{
-\item \code{\link[tidyselect:starts_with]{starts_with()}}: Starts with a prefix.
-\item \code{\link[tidyselect:starts_with]{ends_with()}}: Ends with a suffix.
-\item \code{\link[tidyselect:starts_with]{contains()}}: Contains a literal string.
-\item \code{\link[tidyselect:starts_with]{matches()}}: Matches a regular expression.
-\item \code{\link[tidyselect:starts_with]{num_range()}}: Matches a numerical range like x01, x02, x03.
+\item \code{\link[tidyselect:starts_with]{starts_with()}}: Starts with an exact prefix.
+\item \code{\link[tidyselect:ends_with]{ends_with()}}: Ends with an exact suffix.
+\item \code{\link[tidyselect:contains]{contains()}}: Contains a literal string.
+\item \code{\link[tidyselect:matches]{matches()}}: Matches a regular expression.
+\item \code{\link[tidyselect:num_range]{num_range()}}: Matches a numerical range like x01, x02, x03.
 }
 }

@@ -13,9 +13,6 @@ get_dim_red_obj(object, variable_set, phase = NULL, method_dim_red)
 
 \item{method_dim_red}{}
 }
-\value{
-
-}
 \description{
 Title
 }

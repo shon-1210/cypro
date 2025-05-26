@@ -24,9 +24,6 @@ that contains the following variables:
 \item{\emph{frame_itvl}}{Character. The frame time combined with the intervals unit}
 }}
 }
-\value{
-
-}
 \description{
 Check track data.frame
 }

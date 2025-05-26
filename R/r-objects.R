@@ -101,8 +101,8 @@ default_list <-
   )
 
 default_character_values <- c("method_aggl", "method_corr", "method_dist", "method_kmeans", 
-                       "method_pam", "phase", "pt_clr", "pt_clrp", "pt_clrsp", "pt_fill", 
-                       "well_plate")
+                              "method_pam", "phase", "pt_clr", "pt_clrp", "pt_clrsp", "pt_fill", 
+                              "well_plate")
 
 default_logical_values <- c("make_pretty", "with_cluster", "with_meta", "with_well_plate")
 
@@ -150,8 +150,8 @@ helper_content <- list(
       "",
       "Denoting the correct number is important in so far as it limits the number 
       of files that is looked for later on."
-      ),
-
+    ),
+  
   
   # loadDataFile()
   well_plate_var = c(
@@ -169,63 +169,63 @@ helper_content <- list(
   
   # loadData()
   assign_folder = c(
-  "In the left lower corner you see a select option that contains the names of the
+    "In the left lower corner you see a select option that contains the names of the
   well plates you have set up in the module opened via 'designExperiment()'. 
   In order for cypro to read in the data every well plate needs to be assigned to
   a directory in which cypro finds the files to read in.",
-  "",
-  "Clicking on 'Assign Folder: Browse' opens a window that gives you access to the
+    "",
+    "Clicking on 'Assign Folder: Browse' opens a window that gives you access to the
   folders of your device. Select the one that contains the files of the respective
   well plate or that again contains (sub-)folders in which the files are stored.
   (If you want cypro to look in subfolders, too, make sure that 'Include Subfolders' is enabled.)",
-  "",
-  "After you have assigned the folder by closing the window you will see a well
+    "",
+    "After you have assigned the folder by closing the window you will see a well
   plate plot appear right above the button 'Assign Folder: Browse'. The wells will
   be colored according to the number of files that have been found in the folder you
   specified.",
-  "",
-  "Green/Complete means that all files have been found.",
-  "",
-  "Yellow/Incomplete means that only some files of the well have been found.
+    "",
+    "Green/Complete means that all files have been found.",
+    "",
+    "Yellow/Incomplete means that only some files of the well have been found.
   (e.g. you set 'Images per Well' to 3 which made cypro expect files
   'A1_1.csv', 'A1_2.csv' and 'A1_3.csv'. However only 'A1_1.csv' and 'A1_3.csv'
   have been found).",
-  "",
-  "Missing/Red means that no files of that well have been found at all.",
-  "",
-  "Blue/Ambiguous might appear if you stored the files in subfolders of the
+    "",
+    "Missing/Red means that no files of that well have been found at all.",
+    "",
+    "Blue/Ambiguous might appear if you stored the files in subfolders of the
   assigned folder and some folders contain files with equal names due to typos
   while naming the files. (e.g. ~/Ctrl/A1_1.csv, ~/Treatment/A1_1.csv)",
-  "",
-  "If you realized that you assigned the wrong folde or that some files were
+    "",
+    "If you realized that you assigned the wrong folde or that some files were
   named incorrectly you can fix what needs to be fixed and assign the directory
   again by clicking on 'Assign Folder: Browse'."), 
   
   if_ambiguous = c(
-  "In case of ambiguous file naming you can denote which filetype should be used.",
-  "",
-  "If the chosen filetype is not among the found files the file is considered
+    "In case of ambiguous file naming you can denote which filetype should be used.",
+    "",
+    "If the chosen filetype is not among the found files the file is considered
   to be missing."
   ),
   
   well_plate_status = c(
-  "This table provides summary information about the file availability for all well
+    "This table provides summary information about the file availability for all well
   plates. It updates every time you assign a folder to a well plate. 'Number of
   Files' sums up the number of files found and 'Expected Number of Files' sets that
   in relation to the number of files expected according to number of covered areas
   per well and the number of wells for which you specified cell line and conditions.",
-  "", 
-  "Missing or incomplete wells do not prevent you from reading in all other files found -
+    "", 
+    "Missing or incomplete wells do not prevent you from reading in all other files found -
   no need to design the experiment again if you realize that some files are missing.
   Just click on 'Load Data' and the missing files will be ignored. In case of ambiguous
   wells you need to rename or delete the files that are doubled before loading the data."),
   
   load_files_and_proceed = c(
-  "After clicking on 'Load Data' you should see a progress bar for every well plate
+    "After clicking on 'Load Data' you should see a progress bar for every well plate
   giving information about the reading progress. Once all files are read in you obtain
   information about any errors that occured while reading the files.",
-  "",
-  "In case of no errors you can simply click on 'Save & Proceed' and afterwards on
+    "",
+    "In case of no errors you can simply click on 'Save & Proceed' and afterwards on
   'Return Cypro Object'. If the box hints at errors occured you can try and fix the
   cause for these errors and then click on 'Load Data' again which will repeat the
   reading process. On the other hand you can ignore the errors and click on
@@ -241,7 +241,7 @@ image_processing_softwares <-
   c("Cell Profiler" = "cell_profiler", 
     "Cell Tracker" = "cell_tracker", 
     "ImageJ" = "imagej"
-    )
+  )
 
 imp_filter_criteria <- c("total_meas", "skipped_meas", "first_meas", "last_meas")
 
@@ -324,12 +324,12 @@ variable_relevance_descr <-
     "needed" = glue::glue(
       "This variable has to be provided by the input data ",
       "if you want to use the modules it is part of."
-      ),
+    ),
     "computable" = glue::glue(
       "This variable does not have to be part of the input data. ",
       "If it is not, cypro computes it based an the variables ",
       "needed by this module."
-      )
+    )
   )
 
 
@@ -346,7 +346,7 @@ pretty_exp_types <-
   list("one_time_imaging" = "One Time Imaging", 
        "time_lapse" = "Time Lapse", 
        "time_lapse_smrd" = "Time Lapse (summarized)"
-       )
+  )
 
 pretty_grouping_variables_list <-
   list("Cell Line &\n Condition" = "cl_condition", 
@@ -367,7 +367,7 @@ pretty_plottypes <- c("Violinplot" = "violinplot",
                       "Ridgeplot" = "ridgeplot", 
                       "Densityplot" = "density",
                       "Boxplot" = "boxplot"
-                      )
+)
 
 pretty_phases <- c("Before treatment" = "before_tmt",
                    "After first treatment" = "first_tmt", 
@@ -426,7 +426,7 @@ ct_warnings <- list(
   
   # renaming
   "how_to_name_input" = "Input needs to be named like this: 'new_group_name' = 'old_group_name'",
-
+  
   
   # statistical tests
   "stat_test_requirements" = "In order to perform statistical tests please choose 'boxplot' or 'violinplot' as input for argument 'plot_type' and specify only one variable as input for argument 'variables'."
@@ -438,4 +438,3 @@ ct_warnings <- list(
 
 
 # -----
-

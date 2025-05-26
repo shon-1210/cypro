@@ -73,16 +73,7 @@ Use \code{getGroupNames()} to obtain all valid input options.}
 determines the order in which the groups of interest are displayed. Groups that
 are not included are dropped which affects the choice of color.}
 
-\item{ncol}{Given to \code{ggplot2::facet_wrap()}. Affects the way the subplots
-are displayed.}
-
-\item{nrow}{Given to \code{ggplot2::facet_wrap()}. Affects the way the subplots
-are displayed.}
-
-\item{scales}{Given to \code{ggplot2::facet_wrap()}. Affects the way the subplots
-are displayed.}
-
-\item{space}{Given to \code{ggplot2::facet_wrap()}. Affects the way the subplots
+\item{scales, space, ncol, nrow}{Given to \code{ggplot2::facet_wrap()}. Affects the way the subplots
 are displayed.}
 
 \item{pt_alpha}{Numeric value. Specifies the degree of transparency of all points.}
@@ -124,8 +115,6 @@ results. If set to NULL defaults to left upper corner of the plot.}
 \item{corr_text_size}{Numeric value. The size used to print the correlation results.}
 }
 \value{
-
-
 A ggplot.
 }
 \description{

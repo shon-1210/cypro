@@ -68,12 +68,6 @@ color palette that is used to represent the groups. Names of the input vector mu
 to the group and the respective named element denotes the color with which to
 represent the group.}
 
-\item{ncol}{Given to \code{ggplot2::facet_wrap()}. Affects the way the subplots
-are displayed.}
-
-\item{nrow}{Given to \code{ggplot2::facet_wrap()}. Affects the way the subplots
-are displayed.}
-
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 
@@ -82,8 +76,6 @@ the computational progress will be printed.
 \item{...}{Additional arguments given to \code{ggdendro::ggdendrogram()}.}
 }
 \value{
-
-
 A ggplot.
 }
 \description{

@@ -173,6 +173,30 @@ loadDataFile <- function(object){
           
           body = shinydashboard::dashboardBody(
             
+            shinyjs::useShinyjs(),  # Add JS capabilities
+            
+            # 🔔 Top assignment warning
+            shiny::fluidRow(
+              shiny::column(
+                width = 12,
+                
+                shiny::div(
+                  style = "margin-bottom: 5px;",
+                  shiny::actionLink("toggle_warning", label = "Show/Hide assignment reminder", icon = shiny::icon("exclamation-triangle"))
+                ),
+                
+                shiny::div(
+                  id = "assign-warning",
+                  style = "background-color: #ffe6e6; border-left: 6px solid #cc0000; padding: 12px; margin-bottom: 20px; font-size: 14px;",
+                  shiny::strong("⚠️ Don’t forget to assign the result of loadDataFile()!"),
+                  shiny::br(),
+                  "Otherwise, your changes will be lost when the app closes.",
+                  shiny::br(), shiny::br(),
+                  shiny::code("my_object <- loadDataFile(my_object)")
+                )
+              )
+            ),
+            
             shinybusy::add_busy_spinner(spin = "cube-grid", margins = c(0,10), color = "red"),
             
             shinydashboard::tabItems(
@@ -181,39 +205,29 @@ loadDataFile <- function(object){
                                       moduleLoadDataFileUI(id = "ld"), 
                                       shiny::fluidRow(
                                         shiny::column(width = 12, align = "center", 
-                                                      
                                                       shiny::uiOutput(outputId = "return_cypro")
-                                                      
                                         )
                                       )
               )
             )
-            
           )
-          
         )
       }, 
       server = function(input, output, session){
         
-        # shiny helper 
         shinyhelper::observe_helpers()
+        shinyjs::show("assign-warning")  # Show on load
         
-        ld_results <-
-          moduleLoadDataFileServer(id = "ld", object = object)
+        observeEvent(input$toggle_warning, {
+          shinyjs::toggle("assign-warning")
+        })
+        
+        ld_results <- moduleLoadDataFileServer(id = "ld", object = object)
         
         output$return_cypro <- shiny::renderUI({
-          
           ld_list <- shiny::reactiveValuesToList(ld_results)
           
-          if(shiny::isTruthy(ld_list$proceed)){
-            
-            color <- "success"
-            
-          } else {
-            
-            color <- "warning"
-            
-          }
+          color <- if (shiny::isTruthy(ld_list$proceed)) "success" else "warning"
           
           shinyWidgets::actionBttn(
             inputId = "return_cypro",
@@ -221,44 +235,32 @@ loadDataFile <- function(object){
             color = color, 
             style = "gradient"
           )
-          
         })
-        
         
         oe <- shiny::observeEvent(input$return_cypro, {
           
           ld_list <- shiny::reactiveValuesToList(ld_results)
           
           check <- base::tryCatch({
-            
             base::class(ld_list$object) == "cypro"
-            
           }, error = function(error){
-            
             FALSE
-            
           })
           
           checkpoint(evaluate = check, case_false = "incomplete_cypro2")
           
           cypro_object <- ld_list$object
-          
           cypro_object@set_up$progress$load_data <- TRUE
           
-          if(!isTimeLapseExp(cypro_object)){
-            
+          if (!isTimeLapseExp(cypro_object)) {
             cypro_object@set_up$progress$quality_check <- TRUE
-            
           }
           
           shiny::stopApp(returnValue = cypro_object)
-          
         })
-        
       }
     )
   )
-  
 }
 
 #' @rdname loadDataFile
@@ -287,47 +289,65 @@ loadDataFiles <- function(object){
           
           body = shinydashboard::dashboardBody(
             
-            shinybusy::add_busy_spinner(spin = "cube-grid", margins = c(0,10), color = "red"),
+            shinyjs::useShinyjs(),
             
+            # ✅ Top Warning with persistent toggle
+            shiny::fluidRow(
+              shiny::column(
+                width = 12,
+                
+                # Toggle button (always visible)
+                shiny::div(
+                  style = "margin-bottom: 5px;",
+                  shiny::actionLink("toggle_warning", label = "Show/Hide assignment reminder", icon = shiny::icon("exclamation-triangle"))
+                ),
+                
+                # The collapsible warning box
+                shiny::div(
+                  id = "assign-warning",
+                  style = "background-color: #ffe6e6; border-left: 6px solid #cc0000; padding: 12px; margin-bottom: 20px; font-size: 14px;",
+                  shiny::strong("⚠️ Don’t forget to assign the result of loadDataFiles()!"),
+                  shiny::br(),
+                  "Otherwise, your changes will be lost when the app closes.",
+                  shiny::br(), shiny::br(),
+                  shiny::code("my_object <- loadDataFiles(my_object)")
+                )
+              )
+            ),
+            
+            # 🔄 UI body continues as normal
             shinydashboard::tabItems(
               shinydashboard::tabItem(tabName = "new_session",
                                       
                                       moduleLoadDataUI(id = "ld"), 
                                       shiny::fluidRow(
                                         shiny::column(width = 12, align = "center", 
-                                                      
                                                       shiny::uiOutput(outputId = "return_cypro")
-                                                      
                                         )
                                       )
               )
             )
-            
           )
-          
         )
       }, 
+      
       server = function(input, output, session){
         
-        # shiny helper 
         shinyhelper::observe_helpers()
+        shinyjs::show("assign-warning")
         
-        ld_results <-
-          moduleLoadDataServer(id = "ld", object = object)
+        # ✅ Toggle visibility of the warning
+        observeEvent(input$toggle_warning, {
+          shinyjs::toggle(id = "assign-warning")
+        })
+        
+        # Load module logic
+        ld_results <- moduleLoadDataServer(id = "ld", object = object)
         
         output$return_cypro <- shiny::renderUI({
-          
           ld_list <- shiny::reactiveValuesToList(ld_results)
           
-          if(shiny::isTruthy(ld_list$proceed)){
-            
-            color <- "success"
-            
-          } else {
-            
-            color <- "warning"
-            
-          }
+          color <- if (shiny::isTruthy(ld_list$proceed)) "success" else "warning"
           
           shinyWidgets::actionBttn(
             inputId = "return_cypro",
@@ -335,46 +355,32 @@ loadDataFiles <- function(object){
             color = color, 
             style = "gradient"
           )
-          
         })
         
-        
-        oe <- shiny::observeEvent(input$return_cypro, {
-          
+        observeEvent(input$return_cypro, {
           ld_list <- shiny::reactiveValuesToList(ld_results)
           
           check <- base::tryCatch({
-            
             base::class(ld_list$object) == "cypro"
-            
           }, error = function(error){
-            
             FALSE
-            
           })
           
           checkpoint(evaluate = check, case_false = "incomplete_cypro2")
           
           cypro_object <- ld_list$object
-          
           cypro_object@set_up$progress$load_data <- TRUE
           
-          if(!isTimeLapseExp(cypro_object)){
-            
+          if (!isTimeLapseExp(cypro_object)) {
             cypro_object@set_up$progress$quality_check <- TRUE
-            
           }
           
           shiny::stopApp(returnValue = cypro_object)
-          
         })
-        
       }
     )
   )
-  
 }
-
 
 #' @title Object initiation: Step 3
 #' 

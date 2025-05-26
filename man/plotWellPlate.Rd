@@ -68,12 +68,6 @@ represent the group.}
 \item{clrsp}{Character value. Specifies the color spectrum to be used to represent
 continuous values of numeric variables. Run \code{validColorSpectra()} to obtain
 valid input options.}
-
-\item{ncol}{Given to \code{ggplot2::facet_wrap()}. Affects the way the subplots
-are displayed.}
-
-\item{nrow}{Given to \code{ggplot2::facet_wrap()}. Affects the way the subplots
-are displayed.}
 }
 \value{
 A ggplot.

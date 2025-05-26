@@ -6,9 +6,6 @@
 \usage{
 variables_num()
 }
-\value{
-
-}
 \description{
 Title
 }

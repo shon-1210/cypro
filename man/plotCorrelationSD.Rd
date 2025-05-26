@@ -50,8 +50,6 @@ must feature in order to be displayed. Insignificant correlation values are cros
 the size of the crosses.}
 }
 \value{
-
-
 A ggplot.
 }
 \description{

@@ -9,8 +9,6 @@ ggplot_family()
 ggplot_family()
 }
 \value{
-
-
 A ggplot.
 }
 \description{
