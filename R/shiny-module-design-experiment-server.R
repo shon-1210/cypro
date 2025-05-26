@@ -938,7 +938,7 @@ moduleExperimentDesignServer <- function(id, usage = "in_function"){
     
     # update well_plate_df()
     well_plate_df(well_plate_df_new)
-    
+    ed_list$object <- set_up_cdata_meta(ed_list$object)
     shiny_fdb(in_shiny = TRUE, ui = "Well information successfully removed.")
     
   })

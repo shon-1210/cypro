@@ -1546,17 +1546,25 @@ getCellLines <- function(object){
 #' @rdname getCellLines
 #' @export
 #' 
+#' Improved: Returns all unique, actually assigned conditions across phases.
 getConditions <- function(object, phase = NULL){
   
   check_object(object)
   assign_default(object)
   
-  getMetaDf(object, phase = phase) %>% 
-    dplyr::pull(condition) %>% 
-    base::levels()
+  meta <- getMetaDf(object, phase = phase)
   
+  if (is.list(meta) && !is.data.frame(meta)) {
+    unique_conditions <- purrr::map(meta, ~ as.character(.x$condition)) %>% unlist() %>% unique()
+  } else {
+    unique_conditions <- as.character(meta$condition) %>% unique()
+  }
+  
+  # Remove NAs and "unknown"/blank if you want (optional):
+  unique_conditions <- unique_conditions[!is.na(unique_conditions) & unique_conditions != "unknown" & unique_conditions != ""]
+  
+  return(unique_conditions)
 }
-
 
 
 #' @title Obtain storage directory

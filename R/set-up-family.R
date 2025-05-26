@@ -8,42 +8,84 @@ set_up_cdata_meta <- function(object, verbose = TRUE){
     
     all_phases <- getPhases(object)
     
+    # PATCH: Propagate well plate info to tracks before building meta ----
+    wp_name <- names(object@well_plates)[1]
+    wp <- object@well_plates[[wp_name]][["wp_df_eval"]]
+    for (phase_i in seq_along(all_phases)) {
+      phase <- all_phases[phase_i]
+      tracks <- object@cdata[["tracks"]][[phase]]
+      # Extract well from cell_id (after _WROI_, e.g. A5, B2)
+      tracks$well <- stringr::str_extract(tracks$cell_id, "(?<=_WROI_)[A-H][0-9]+")
+      # For each well, parse out the Nth phase's condition from the full condition string
+      wp_tmp <- wp %>%
+        dplyr::select(well, cell_line, condition) %>%
+        dplyr::mutate(
+          phase_condition = stringr::str_trim(
+            stringr::str_split_fixed(condition, "->", length(all_phases))[, phase_i]
+          ),
+          phase_condition = stringr::str_remove(phase_condition, "^\\d+\\.")  # remove "1."/"2."
+        )
+      tracks <- dplyr::left_join(
+        tracks,
+        wp_tmp %>% dplyr::select(well, cell_line, phase_condition),
+        by = "well"
+      ) %>%
+        dplyr::mutate(
+          cell_line = as.factor(cell_line),
+          condition = as.factor(phase_condition)
+        ) %>%
+        dplyr::select(-phase_condition)
+      tracks$well <- NULL
+      object@cdata[["tracks"]][[phase]] <- tracks
+    }
+    # END PATCH ---------------------------------------------------------
+    
     object@cdata$meta <- 
       purrr::map(.x = all_phases,
                  .f = function(phase){
-                   
                    object@cdata[["tracks"]][[phase]] %>% 
                      dplyr::select(
                        cell_id, cell_line, condition
-                       ) %>% 
+                     ) %>% 
                      dplyr::distinct() %>% 
                      dplyr::mutate(
                        cell_line = base::as.factor(cell_line), 
                        condition = base::as.factor(condition)
-                      )
-                   
+                     )
                  }) %>% 
       purrr::set_names(nm = all_phases)
     
   } else {
     
     if(!isTimeLapseExp(object)){
-      
       grouping_variables <- 
         object@information$variable_denotation$additional$grouping_variables
-      
     } else {
-      
       grouping_variables <- character(0)
-      
     }
     
+    wp_name <- names(object@well_plates)[1]
+    wp <- object@well_plates[[wp_name]][["wp_df_eval"]]
+    tracks <- object@cdata[["tracks"]][[1]]
+    tracks$well <- stringr::str_extract(tracks$cell_id, "(?<=_WROI_)[A-H][0-9]+")
+    tracks <- dplyr::left_join(
+      tracks,
+      wp %>% dplyr::select(well, condition, cell_line, dplyr::any_of(grouping_variables)),
+      by = "well"
+    ) %>%
+      dplyr::mutate(
+        cell_line = as.factor(cell_line),
+        condition = as.factor(condition)
+      )
+    tracks$well <- NULL
+    object@cdata[["tracks"]][[1]] <- tracks
+    
     object@cdata$meta <-
-      object@cdata[["tracks"]][[1]] %>% 
+      tracks %>%
       dplyr::select(
         cell_id, cell_line, condition,
         dplyr::any_of(grouping_variables)
-      ) %>% 
+      ) %>%
       dplyr::distinct()
     
   }
